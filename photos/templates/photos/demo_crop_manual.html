@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo Crop Manual</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .container {
+            max-width: 860px;  /* DIPERLEBAR */
+            width: 100%;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 35px 40px;
+            border-radius: 16px;  /* TETAP MELENGKUNG */
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        h2 {
+            color: #2c3e50;
+            font-size: 26px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 20px 0 25px 0;
+        }
+        .btn {
+            padding: 10px 28px;
+            border: 2px solid #3498db;
+            border-radius: 30px;
+            background: transparent;
+            color: #3498db;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52,152,219,0.3);
+        }
+        .btn-active {
+            background: #2ecc71;
+            border-color: #2ecc71;
+            color: white;
+        }
+        .btn-active:hover {
+            background: #27ae60;
+            border-color: #27ae60;
+        }
+        h3 {
+            color: #2c3e50;
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #ecf0f1;
+        }
+        h3 span {
+            color: #3498db;
+        }
+
+        /* ===== TABLE ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #f8f9fa;
+            padding: 12px 10px;
+            text-align: center;
+            font-weight: 700;
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
+            font-size: 14px;
+        }
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f2f6;
+            vertical-align: middle;
+        }
+        tr:hover td {
+            background: #fafbfc;
+        }
+
+        /* === KOLOM FOTO (KIRI) === */
+        .col-foto {
+            width: 130px;
+            min-width: 130px;
+            text-align: center;
+        }
+        .photo-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: block;
+            margin: 0 auto;
+        }
+        .photo-preview:hover {
+            transform: scale(1.04);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* === KOLOM NAMA FILE (TENGAH) === */
+        .col-nama {
+            text-align: left;  /* RATA KIRI */
+            padding-left: 20px;  /* GESER 10px + padding */
+            min-width: 200px;
+        }
+        .file-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: #2c3e50;
+            display: block;
+        }
+        .file-jarak {
+            font-size: 12px;
+            color: #95a5a6;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* === KOLOM SIMILARITY (KANAN) === */
+        .col-sim {
+            text-align: center;
+            min-width: 120px;
+            width: 140px;
+        }
+        .similarity-value {
+            display: inline-block;
+            min-width: 55px;
+            font-weight: 700;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        /* ===== LAINNYA ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .empty-state p {
+            font-size: 16px;
+            margin: 6px 0;
+        }
+        .empty-state .hint {
+            font-size: 13px;
+            color: #bdc3c7;
+        }
+        .error-box {
+            background: #fef6f6;
+            border-left: 4px solid #e74c3c;
+            padding: 14px 18px;
+            border-radius: 8px;
+            color: #c0392b;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .back-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        .back-link:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+        .legend {
+            font-size: 13px;
+            color: #7f8c8d;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .legend span {
+            font-weight: 600;
+        }
+        .legend .dot-green {
+            color: #27ae60;
+            font-size: 16px;
+        }
+        .legend .dot-red {
+            color: #e74c3c;
+            font-size: 16px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 650px) {
+            .container {
+                padding: 18px;
+                max-width: 100%;
+            }
+            .btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            .photo-preview {
+                width: 70px;
+                height: 70px;
+            }
+            .col-foto {
+                width: 90px;
+                min-width: 90px;
+            }
+            table {
+                font-size: 12px;
+            }
+            th, td {
+                padding: 8px 4px;
+            }
+            .similarity-value {
+                font-size: 16px;
+                min-width: 40px;
+            }
+            .file-name {
+                font-size: 12px;
+            }
+            .legend {
+                font-size: 11px;
+                gap: 12px;
+            }
+            .col-sim {
+                min-width: 80px;
+                width: 90px;
+            }
+            .col-nama {
+                min-width: 100px;
+                padding-left: 10px;
+            }
+        }
+        @media (max-width: 480px) {
+            .photo-preview {
+                width: 55px;
+                height: 55px;
+            }
+            .col-foto {
+                width: 70px;
+                min-width: 70px;
+            }
+            .file-name {
+                font-size: 10px;
+            }
+            .file-jarak {
+                font-size: 9px;
+            }
+            .similarity-value {
+                font-size: 14px;
+                min-width: 35px;
+            }
+            .col-sim {
+                min-width: 60px;
+                width: 70px;
+            }
+            .col-nama {
+                min-width: 80px;
+                padding-left: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <h2>🔬 Perbandingan Crop Manual</h2>
+    <p class="subtitle">Pilih subjek untuk melihat hasil similarity setelah cropping manual</p>
+    
+    <div class="btn-group">
+        <a href="?subjek=alya" class="btn {% if subjek_terpilih == 'alya' %}btn-active{% endif %}">Alya</a>
+        <a href="?subjek=ira" class="btn {% if subjek_terpilih == 'ira' %}btn-active{% endif %}">Ira</a>
+        <a href="?subjek=fian" class="btn {% if subjek_terpilih == 'fian' %}btn-active{% endif %}">Fian</a>
+        <a href="?subjek=dida" class="btn {% if subjek_terpilih == 'dida' %}btn-active{% endif %}">Dida</a>
+    </div>
+    
+    {% if error %}
+    <div class="error-box">⚠️ {{ error }}</div>
+    {% endif %}
+    
+    {% if hasil %}
+    <h3>Hasil untuk: <span>{{ subjek_terpilih|capfirst }}</span></h3>
+    
+    <table>
+        <thead>
+            <tr>
+                <th class="col-foto">Foto</th>
+                <th class="col-nama">Nama File</th>
+                <th class="col-sim">Similarity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in hasil %}
+            <tr>
+                <td class="col-foto">
+                    <a href="{{ h.url_foto_asli|default:h.url_foto_crop }}" target="_blank" title="Klik untuk lihat foto asli">
+                        <img src="{{ h.url_foto_crop }}" class="photo-preview" alt="{{ h.nama_file }}">
+                    </a>
+                </td>
+                <td class="col-nama">
+                    <span class="file-name">{{ h.nama_file }}</span>
+                    {% if h.jarak %}
+                    <span class="file-jarak">jarak: {{ h.jarak }}</span>
+                    {% endif %}
+                </td>
+                <td class="col-sim">
+                    {% if h.similarity > 50 %}
+                        <span class="similarity-value" style="color: #27ae60;">{{ h.similarity }}%</span>
+                    {% else %}
+                        <span class="similarity-value" style="color: #e74c3c;">{{ h.similarity }}%</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div style="margin-top:16px; padding:12px 16px; background:#f8f9fa; border-radius:8px;">
+        <div class="legend">
+            <span>
+                <span class="dot-green">●</span> Similarity tinggi (&gt;50%)
+            </span>
+            <span>
+                <span class="dot-red">●</span> Similarity rendah (&lt;50%)
+            </span>
+            <span style="color:#95a5a6; font-weight:400;">
+                (Semakin tinggi = semakin mirip)
+            </span>
+        </div>
+    </div>
+    
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">👆</div>
+        <p><strong>Pilih salah satu subjek di atas</strong></p>
+        <p>untuk melihat hasil perbandingan similarity</p>
+        <p class="hint">Data diambil dari folder <code>media/demo_crop_manual/</code></p>
+    </div>
+    {% endif %}
+    
+    <div class="footer">
+        <a href="/" class="back-link">← Kembali ke Halaman Utama</a>
+        <span style="font-size:12px; color:#bdc3c7;">Demo Crop Manual v1.0</span>
+    </div>
+    
+</div>
+
+</body>
+</html>
