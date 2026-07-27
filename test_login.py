@@ -27,7 +27,7 @@ print("CSRF:", csrf[:20])
 data = urllib.parse.urlencode({
     "csrfmiddlewaretoken": csrf,
     "username": "bunga10",
-    "password": "bungaaa1212",
+    "password": "admin123",
 }).encode()
 
 req = urllib.request.Request("http://localhost:8080/login/", data=data)
