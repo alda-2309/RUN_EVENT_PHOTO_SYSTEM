@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RunSnap Admin{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+body {
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+    background-attachment: fixed;
+    color: white;
+    min-height: 100vh;
+}
+.topbar {
+    width:100%; padding:18px 40px;
+    display:flex; justify-content:space-between; align-items:center;
+    background: transparent; border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.brand { font-size:34px; font-weight:900; color: white; letter-spacing:1px; }
+.topbar-right { font-size:13px; color: rgba(255,255,255,0.85); }
+.topbar-right a { text-decoration:none; color: #fef08a; font-weight:600; margin:0 8px; transition:.3s; }
+.topbar-right a:hover { color: white; }
+.container { padding:35px 40px; }
+.page-title { font-size:30px; font-weight:600; margin-bottom:25px; color: white; }
+.card {
+    background: rgba(255,255,255,0.12); backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); border-radius:22px;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1); overflow:hidden; margin-bottom:25px;
+}
+.card-header {
+    padding:14px 18px; background: rgba(255,255,255,0.15);
+    font-weight:800; color: #fef08a; letter-spacing:1px; font-size:14px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+table { width:100%; border-collapse:collapse; }
+table td { padding:16px 18px; border-bottom: 1px solid rgba(255,255,255,0.15); font-size:14px; color: white; }
+table tr:hover { background: rgba(255,255,255,0.08); }
+table td a { text-decoration:none; color: #fef08a; font-weight:700; }
+.actions { text-align:right; }
+.actions a { margin-left:10px; text-decoration:none; font-weight:700; color: #fef08a; transition:.3s; }
+.actions a:hover { color: white; }
+.form-group { margin-bottom:22px; }
+.form-group label { display:block; margin-bottom:8px; font-weight:600; color: white; }
+.form-control {
+    width:100%; padding:14px 16px; border:none; outline:none; border-radius:16px;
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    color: white; font-size:14px; transition:0.3s; box-sizing:border-box;
+}
+.form-control:focus { border:1px solid #fef08a; box-shadow:0 0 15px rgba(254,240,138,0.3); }
+.form-control::placeholder { color: rgba(255,255,255,0.6); }
+select.form-control option { background:#14532d; color:white; }
+.btn {
+    display:inline-block; padding:12px 24px; border:none; border-radius:12px;
+    font-size:14px; font-weight:700; cursor:pointer; transition:.3s; text-decoration:none;
+}
+.btn-yellow { background:#fef08a; color:#14532d; }
+.btn-yellow:hover { background:#fff59d; box-shadow:0 4px 15px rgba(254,240,138,0.4); }
+.btn-red { background:#ef4444; color:white; }
+.btn-red:hover { background:#dc2626; }
+.btn-ghost { background:rgba(255,255,255,0.1); color:white; }
+.btn-ghost:hover { background:rgba(255,255,255,0.2); }
+.btn-group { display:flex; gap:15px; margin-top:30px; flex-wrap:wrap; }
+.success-message {
+    padding:18px 22px; margin-bottom:25px;
+    background: rgba(22,101,52,0.4); border: 1px solid #4ade80;
+    color: white; border-radius:18px; font-size:15px; font-weight:700;
+    box-shadow: 0 4px 15px rgba(22,163,74,0.2);
+}
+.error-message {
+    padding:18px 22px; margin-bottom:25px;
+    background: rgba(220,38,38,0.4); border: 1px solid #fca5a5;
+    color: white; border-radius:18px; font-size:15px; font-weight:700;
+}
+.footer { text-align:center; padding:25px; color: rgba(255,255,255,0.75); font-size:12px; margin-top:40px; }
+.back-btn {
+    display:inline-block; margin-bottom:20px; padding:10px 24px;
+    background: rgba(255,255,255,0.15); color: white; border-radius:12px;
+    text-decoration:none; font-weight:600; transition:.3s;
+}
+.back-btn:hover { background: rgba(255,255,255,0.25); }
+
+/* Gallery grid */
+.gallery {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px;
+}
+.photo-card {
+    background: rgba(255,255,255,0.12); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2); border-radius:16px; overflow:hidden; transition:.3s;
+}
+.photo-card:hover { transform:translateY(-5px); border:2px solid #fef08a; }
+.photo-card img { width:100%; height:200px; object-fit:cover; }
+.photo-card .info { padding:16px; }
+.photo-card .info h3 { font-size:16px; margin-bottom:8px; color: white; }
+.photo-card .info p { font-size:13px; color: rgba(255,255,255,0.7); margin-bottom:4px; }
+
+.empty { text-align:center; padding:40px; color: rgba(255,255,255,0.6); font-size:18px; }
+</style>
+{% block extra_style %}{% endblock %}
+</head>
+<body>
+    <div class="topbar">
+        <div class="brand">RunSnap Administration</div>
+        <div class="topbar-right">
+            {% if request.session.is_logged_in %}
+                WELCOME, <b>{{ request.session.username|upper }}</b>
+                <a href="/">VIEW SITE</a> /
+                <a href="{% url 'admin_logout' %}">LOG OUT</a>
+            {% else %}
+                <a href="{% url 'admin_login' %}">LOGIN</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}error-message{% else %}success-message{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="footer">
+        © 2026 RunSnap — All Rights Reserved
+    </div>
+</body>
+</html>

@@ -1,135 +1,20 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-
-    <title data-inertia>Sports events with photo galleries and AI search - RunSnap</title>
-    
-    <meta name="description" content="Galeri foto event olahraga dengan pengenalan wajah. Temukan foto lari Anda berdasarkan selfie atau nomor bib dalam hitungan detik di RunSnap.">
-    
-    <meta name="keywords" content="marketplace foto olahraga, galeri foto lomba lari, pencarian bib AI, face recognition event, foto marathon, foto runsnap, dokumentasi foto lari">
-    
-    <meta property="og:title" content="Foto event lari Anda, dalam hitungan detik.">
-    <meta property="og:description" content="Jelajahi galeri dari berbagai event lari. Cari menggunakan selfie atau nomor dada (bib).">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=900">
-    <meta property="og:url" content="https://runsnap.com/events">
-    <meta property="og:locale" content="id">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="RunSnap">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Foto event lari Anda, dalam hitungan detik.">
-    <meta name="twitter:description" content="Jelajahi galeri dari berbagai event lari. Cari menggunakan selfie atau nomor dada (bib).">
-    <meta name="twitter:image" content="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=900">
-
-    <link rel="canonical" href="https://runsnap.com/events">
-    <link rel="alternate" hreflang="id" href="https://runsnap.com/events">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght+300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <script>
-        (function () {
-            try {
-                var stored = localStorage.getItem('rs-theme');
-                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var resolved = stored === 'dark' || stored === 'light' ? stored : (prefersDark ? 'dark' : 'light');
-                if (resolved === 'dark') {
-                    document.documentElement.classList.add('dark');
-                }
-                document.documentElement.style.colorScheme = resolved;
-            } catch (_) {}
-        })();
-    </script>
-
-    <script type="text/javascript">
-        const Ziggy = {
-            "url": "https:\/\/runsnap.com",
-            "port": null,
-            "defaults": {},
-            "routes": {
-                "dashboard": {"uri": "\/", "methods": ["GET", "HEAD"]},
-                "search": {"uri": "search", "methods": ["GET", "HEAD"]},
-                "events": {"uri": "events", "methods": ["GET", "HEAD"]},
-                "tentang_kami": {"uri": "about-us", "methods": ["GET", "HEAD"]}
-            }
-        };
-    </script>
-
+{% extends "base.html" %}
+{% block title %}Events - RunSnap{% endblock %}
+{% block extra_style %}
 <style>
-
-* {
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
-}
-
-body {
-    /* Gradasi penuh dari hijau muda (#4ade80) ke hijau tua (#14532d) dan dikunci posisinya agar presisi saat di-scroll */
-    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
-    background-attachment: fixed;
-    color: white; /* Mengubah warna teks global menjadi putih agar kontras di atas warna hijau */
-    min-height: 100vh;
-}
-
-/* NAVBAR */
-
-.navbar {
-    width:100%;
-    /* Dibuat transparan tipis agar warna gradasi hijau menembus ke atas secara mewah */
-    background: transparent;
-    padding:18px 60px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.logo {
-    font-size:28px;
-    font-weight:700;
-    color: white;
-}
-
-.logo span {
-    color: white; /* Mengubah teks logo menjadi putih */
-}
-
-.menu {
-    display:flex;
-    gap:35px;
-    align-items: center;
-}
-
-.menu a {
-    text-decoration:none;
-    color: rgba(255, 255, 255, 0.85);
-    font-weight:600;
-    transition: .3s;
-}
-
-.menu a:hover {
-    color: white;
-}
-
 /* HERO */
-
 .hero {
     text-align:center;
     padding:70px 20px;
 }
-
 .hero h1 {
     font-size:48px;
     color: white;
 }
-
 .hero p {
     margin-top:15px;
     color: rgba(255, 255, 255, 0.85);
 }
-
 /* KATEGORI / EVENT LIST */
 .container{
     width:95%;
@@ -137,336 +22,120 @@ body {
     margin:auto;
     padding-bottom:80px;
 }
-
 .cards{
     display: grid;
-    /* Dikunci otomatis membagi menjadi 4 kolom ke samping secara presisi */
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     justify-content: center;
 }
-
 .card{
-    /* Efek kaca transparan premium (glassmorphism) */
     background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    
-    /* Ukuran kartu kecil dan kompak */
     width: 100%;
     border-radius:18px;
     overflow:hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     transition:.3s;
-    
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
-
 .card:hover{
     transform:translateY(-6px);
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.4);
 }
-
 .card img{
     width:100%;
-    height:145px; /* Ketinggian foto sedang, proporsional, tidak melar besar */
+    height:145px;
     object-fit:cover;
 }
-
 .content{
     padding:18px;
-    text-align: left; /* Rata kiri persis seperti gambar contoh kedua */
+    text-align: left;
 }
-
 .content h2{
-    font-size:16px; /* Dikecilkan sedikit agar serasi dengan ukuran kotaknya */
+    font-size:16px;
     margin-bottom:12px;
     font-weight:700;
     color: white;
 }
-
 .info{
-    color: rgba(255, 255, 255, 0.85); /* Teks info diubah agar cerah dan mudah dibaca */
+    color: rgba(255, 255, 255, 0.85);
     font-size:13px;
     margin-bottom:6px;
 }
-
 .btn{
     margin-top:15px;
     display:inline-block;
     padding:10px 24px;
-    background: #fef08a; /* Warna kuning lemon agar seragam dan kontras */
-    color: #14532d; /* Warna teks tombol hijau tua */
+    background: #fef08a;
+    color: #14532d;
     text-decoration:none;
     border-radius:30px;
     font-size:13px;
     font-weight:700;
     transition: .3s;
     width: auto;
+    border: none;
+    cursor: pointer;
 }
-
 .btn:hover{
     background: #fff59d;
     box-shadow: 0 4px 12px rgba(254, 240, 138, 0.3);
 }
-
-/* FOOTER */
-
-.footer {
-    background: #104324;
-    color: rgba(255, 255, 255, 0.9);
-    text-align: center;
-    padding: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* RESPONSIVE LAYOUT UNTUK HP */
 @media (max-width: 992px) {
-    .cards {
-        grid-template-columns: repeat(2, 1fr); /* Tampilan tablet/layar sedang jadi 2 kolom */
-    }
+    .cards { grid-template-columns: repeat(2, 1fr); }
 }
-
 @media (max-width: 576px) {
-    .cards {
-        grid-template-columns: 1fr; /* Tampilan HP otomatis berurutan ke bawah agar pas */
-    }
-    .navbar {
-        padding: 18px 20px;
-    }
+    .cards { grid-template-columns: 1fr; }
 }
-
 </style>
-</head>
+{% endblock %}
+{% block content %}
+<section class="hero">
+    <h1>Jadwal & Detail Event Lari</h1>
+    <p>Silakan pilih event lari di bawah ini untuk melihat informasi lengkap, agenda kegiatan, dan fasilitas peserta</p>
+</section>
 
-<body>
-
-    <nav class="navbar">
-
-<div class="logo">
-<span>Running Event Lari</span>
-</div>
-
-<div class="menu">
-    <a href="{% url 'dashboard' %}">Beranda</a>
-    <a href="{% url 'search' %}">Cari Foto</a>
-    <a href="{% url 'events' %}">Events</a>
-    <a href="{% url 'kategori' %}">Kategori</a>
-    <a href="{% url 'tentang_kami' %}">Tentang Kami</a>
-</div>
-
-</nav>
-
-
-    <section class="hero">
-        <h1>Jadwal & Detail Event Lari</h1>
-        <p>Silakan pilih event lari di bawah ini untuk melihat informasi lengkap, agenda kegiatan, dan fasilitas peserta</p>
-    </section>
-
-    <div class="container">
-    <!-- Menambahkan style flex agar semua kartu di dalamnya otomatis sejajar ke samping -->
+<div class="container">
     <div class="cards" style="display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 20px !important; justify-content: center !important; align-items: stretch !important; width: 100% !important;">
 
         <div class="card" style="flex: 1 1 230px !important; max-width: 280px !important;">
-    <img src="/media/images/poto_color_run.jpg" alt="Bandung Color Run Festival 2026" style="width: 100%; height: auto; object-fit: cover;">
-    
-    <div class="content">
-        <h2>Bandung Color Run Festival 2026</h2>
-        <p class="info">📍 Laswi Heritage, Bandung</p>
-        <p class="info">📅 Minggu, 17 Mei 2026</p>
-        
-        <button class="btn" onclick="bukaAcara(
-            'Bandung Color Run Festival 2026', 
-            '/media/images/poto_color_run.jpg', 
-            'Laswi Heritage, Bandung', 
-            'Minggu, 17 Mei 2026 (06:00 WIB)'
-        )">Lihat Acara →</button>
-    </div>
-</div>
+            <img src="/media/images/poto_color_run.jpg" alt="Bandung Color Run Festival 2026" style="width: 100%; height: auto; object-fit: cover;">
+            <div class="content">
+                <h2>Bandung Color Run Festival 2026</h2>
+                <p class="info">📍 Laswi Heritage, Bandung</p>
+                <p class="info">📅 Minggu, 17 Mei 2026</p>
+                <button class="btn" onclick="bukaAcara('Bandung Color Run Festival 2026', '/media/images/poto_color_run.jpg', 'Laswi Heritage, Bandung', 'Minggu, 17 Mei 2026 (06:00 WIB)')">Lihat Acara →</button>
+            </div>
+        </div>
 
         <div class="card" style="flex: 1 1 230px !important; max-width: 280px !important;">
-    <img src="/media/images/tiento-run-2026.jpg" alt="Tiento Run 10K 2026" style="width: 100%; height: auto; object-fit: cover;">
-    
-    <div class="content">
-        <h2>Tiento Run 10K 2026</h2>
-        <p class="info">📍 Balai Kota, Bandung</p>
-        <p class="info">📅 Minggu, 28 Juni 2026</p>
-        
-        <button class="btn" onclick="bukaAcara(
-            'Tiento Run 10K 2026', 
-            '/media/images/tiento-run-2026.jpg', 
-            'Balai Kota, Bandung', 
-            'Minggu, 28 Juni 2026 (06:00 WIB)'
-        )">Lihat Acara →</button>
-    </div>
-</div>
+            <img src="/media/images/tiento-run-2026.jpg" alt="Tiento Run 10K 2026" style="width: 100%; height: auto; object-fit: cover;">
+            <div class="content">
+                <h2>Tiento Run 10K 2026</h2>
+                <p class="info">📍 Balai Kota, Bandung</p>
+                <p class="info">📅 Minggu, 28 Juni 2026</p>
+                <button class="btn" onclick="bukaAcara('Tiento Run 10K 2026', '/media/images/tiento-run-2026.jpg', 'Balai Kota, Bandung', 'Minggu, 28 Juni 2026 (06:00 WIB)')">Lihat Acara →</button>
+            </div>
+        </div>
 
-        <!-- 3. Milo Activ Indonesia Race 2026 - Bandung Series -->
         <div class="card" style="flex: 1 1 230px !important; max-width: 280px !important;">
             <img src="/media/images/Milo Activ Indonesia Race 2026 - Bandung Series.jpg" alt="Milo Activ Indonesia Race 2026 - Bandung Series" style="width: 100%; height: auto; object-fit: cover;">
-            
             <div class="content">
                 <h2>Milo Activ Indonesia Race 2026 - Bandung Series</h2>
                 <p class="info">📍 Balai Kota, Bandung</p>
                 <p class="info">📅 Minggu, 19 Juli 2026</p>
-                
-                <button class="btn" onclick="bukaAcara(
-                    'Milo Activ Indonesia Race 2026 - Bandung Series', 
-                    '/media/images/milo-race-2026.jpg', 
-                    'Balai Kota, Bandung', 
-                    'Minggu, 19 Juli 2026 (05:00 WIB)'
-                )">Lihat Acara →</button>
+                <button class="btn" onclick="bukaAcara('Milo Activ Indonesia Race 2026 - Bandung Series', '/media/images/milo-race-2026.jpg', 'Balai Kota, Bandung', 'Minggu, 19 Juli 2026 (05:00 WIB)')">Lihat Acara →</button>
             </div>
         </div>
-
-
     </div>
 </div>
-
-<!-- ================= FOOTER ================= -->
-<style>
-.footer{
-    margin-top:80px;
-    background:#111827;
-    color:#fff;
-}
-.footer-container{
-    width:90%;
-    margin:auto;
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr 1fr 1fr;
-    gap:40px;
-    padding:70px 0 45px;
-}
-.footer h3{
-    color:#22c55e;
-    margin-bottom:20px;
-    font-size:20px;
-}
-.footer-logo h2{
-    font-size:34px;
-    margin-bottom:18px;
-}
-.footer-logo span{
-    color:#22c55e;
-}
-.footer-logo p{
-    color:#d1d5db;
-    line-height:1.8;
-    margin-bottom:25px;
-}
-.footer-logo a{
-    color:white;
-    text-decoration:none;
-    font-size:28px;
-    margin-right:12px;
-}
-.footer-menu a,
-.footer-contact a{
-    display:block;
-    color:#d1d5db;
-    text-decoration:none;
-    margin-bottom:14px;
-    transition:.3s;
-}
-.footer-menu a:hover,
-.footer-contact a:hover{
-    color:#22c55e;
-}
-.footer hr{
-    border:none;
-    border-top:1px solid rgba(255,255,255,.1);
-}
-.footer-bottom{
-    width:90%;
-    margin:auto;
-    padding:25px 0;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    color:#cbd5e1;
-    flex-wrap:wrap;
-    gap:15px;
-}
-@media(max-width:900px){
-    .footer-container{
-        grid-template-columns:1fr;
-        text-align:center;
-    }
-    .footer-bottom{
-        flex-direction:column;
-        text-align:center;
-    }
-}
-</style>
-
-<footer class="footer">
-    <div class="footer-container">
-        <!-- LOGO -->
-        <div class="footer-logo">
-            <h2><span>Running Event Lari</span></h2>
-            <p>
-                Website Dokumentasi Foto Event Lari yang membantu peserta menemukan
-                foto berdasarkan Event & Timestamp, Nomor Bib, dan Face Recognition
-                secara cepat dan mudah.
-            </p>
-            <a href="#">📷</a>
-            <a href="#">💬</a>
-            <a href="#">📧</a>
-        </div>
-
-        <!-- PESERTA -->
-        <div class="footer-menu">
-            <h3>Peserta</h3>
-            <a href="{% url 'search' %}">Cari Foto</a>
-            <a href="#">Event & Timestamp</a>
-            <a href="#">Nomor Bib</a>
-            <a href="#">Face Recognition</a>
-        </div>
-
-        <!-- MENU -->
-        <div class="footer-menu">
-            <h3>Menu</h3>
-            <a href="{% url 'dashboard' %}">Beranda</a>
-            <a href="#">Events</a>
-            <a href="#">Kategori</a>
-            <a href="{% url 'tentang_kami' %}">Tentang Kami</a>
-        </div>
-
-        <!-- KONTAK -->
-        <div class="footer-contact">
-            <h3>Kontak</h3>
-            <a href="#">📧 Running Event Lari@gmail.com</a>
-            <a href="#">📍 Jakarta</a>
-            <a href="#">☎ +62 812-3456-7890</a>
-        </div>
-
-        <!-- LEGAL -->
-        <div class="footer-menu">
-            <h3>Legal</h3>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms & Conditions</a>
-        </div>
-    </div>
-
-    <hr>
-
-    <div class="footer-bottom">
-        <div>
-            © 2026 <b>Running Event Lari</b> | Website Dokumentasi Foto Event Lari
-        </div>
-        <div>
-            Dibuat untuk Skripsi 
-        </div>
-    </div>
-</footer>
-
-
-<!-- ================= JAVASCRIPT KODINGAN NO 2 DITAROH DI SINI ================= -->
+{% endblock %}
+{% block extra_script %}
 <script>
 function bukaAcara(namaEvent, gambarUtama, lokasi, waktu) {
     let modal = document.getElementById('modalAcara');
@@ -477,7 +146,6 @@ function bukaAcara(namaEvent, gambarUtama, lokasi, waktu) {
     }
 
     modal.style.display = 'flex';
-
     modal.style.cssText = `
         position: fixed;
         top: 0;
@@ -495,187 +163,63 @@ function bukaAcara(namaEvent, gambarUtama, lokasi, waktu) {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     `;
 
-    // -----------------------------------------------------------------
-    // PENGECEKAN 1: JIKA YANG DIKLIK ADALAH MILO ACTIV INDONESIA RACE
-    // -----------------------------------------------------------------
     if (namaEvent.includes('Milo') || namaEvent.includes('MILO')) {
-        
         modal.innerHTML = `
             <div style="position: relative; max-width: 1200px; width: 95%; background: #ffffff; color: #111827; padding: 35px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); box-sizing: border-box; line-height: 1.6; text-align: left;">
-                
                 <button onclick="tutupAcara()" style="position: absolute; top: 20px; right: 20px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">✕</button>
-                
                 <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 5px; color: #166534; text-transform: uppercase; padding-right: 40px;">🟢 ${namaEvent}</h1>
                 <p style="font-size: 18px; font-weight: 600; margin-top: 0; margin-bottom: 20px; color: #374151;">Energy to Go Further — Energi Sehat Keluarga Indonesia!</p>
-                
                 <div style="background: #f0fdf4; padding: 15px; border-radius: 6px; margin-bottom: 25px; font-weight: 600; border: 1px solid #bbf7d0;">
                     <p style="margin: 5px 0;">📅 ${waktu}</p>
                     <p style="margin: 5px 0;">📍 ${lokasi}</p>
                     <p style="margin: 5px 0;">🏃‍♂️ Kategori: 10K, 5K, & Family Run 2.5K</p>
                 </div>
-
                 <h3 style="font-size: 22px; border-bottom: 2px solid #16a34a; padding-bottom: 8px; margin-bottom: 20px; color: #111827; font-weight: 800;">🌟 KETERANGAN & KESERUAN ACARA</h3>
-                
                 <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; font-size: 15px; color: #374151; line-height: 1.7; text-align: justify;">
-                    
                     <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 5px solid #16a34a;">
                         <strong style="color: #15803d; font-size: 18px; display: block; margin-bottom: 8px;">⚡ Apa Sih Milo Activ Indonesia Race 2026?</strong>
-                        <p style="margin: 0;">
-                            Milo Activ Indonesia Race (MAIR) 2026 Bandung Series adalah ajang olahraga lari jalan raya legendaris yang mengusung gaya hidup sehat, aktif, dan penuh energi. Mengambil lokasi start di Balai Kota Bandung yang bersejarah, event ini menghadirkan berbagai pilihan kategori mulai dari 10K Race, 5K Fun Run, hingga 2.5K Family Run yang aman bagi anak-anak dan keluarga.
-                        </p>
+                        <p style="margin: 0;">Milo Activ Indonesia Race (MAIR) 2026 Bandung Series adalah ajang olahraga lari jalan raya legendaris yang mengusung gaya hidup sehat, aktif, dan penuh energi...</p>
                     </div>
-
-                    <div style="background: #fffbeb; padding: 20px; border-radius: 8px; border-left: 5px solid #f59e0b;">
-                        <strong style="color: #d97706; font-size: 18px; display: block; margin-bottom: 8px;">🥤 Milo Energy Village & Aktivitas Keluarga</strong>
-                        <p style="margin: 0;">
-                            Setelah melewati garis finish, seluruh peserta dapat menikmati area <strong>Milo Activ Village</strong>. Nikmati sajian es MILO ikonik gratis, area foto interaktif, senam aktivasi bersama, serta berbagai permainan kebugaran menarik untuk anak-anak dan keluarga.
-                        </p>
-                    </div>
-
-                    <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 5px solid #0284c7;">
-                        <strong style="color: #0369a1; font-size: 18px; display: block; margin-bottom: 8px;">🎁 Paket Race Pack Spesial Milo</strong>
-                        <p style="margin: 0; margin-bottom: 10px;">
-                            Setiap peserta terdaftar akan mendapatkan paket Race Pack eksklusif khas Milo, yang berisi:
-                        </p>
-                        <ul style="padding-left: 20px; margin: 0; list-style-type: square; font-weight: 500;">
-                            <li><strong>Jersey Eksklusif Milo Activ:</strong> Bahan dry-fit premium hijau khas Milo yang adem dan nyaman digunakan.</li>
-                            <li><strong>Medali Finisher Solid Metallic:</strong> Medali eksklusif berdesain edisi khusus Bandung Series.</li>
-                            <li><strong>BIB & Timing Chip Digital:</strong> Sistem pencatatan waktu otomatis untuk kategori 10K & 5K.</li>
-                            <li><strong>Goodie Bag Produk Milo:</strong> Suplai nutrisi dan minuman MILO untuk menjaga energi latihan.</li>
-                            <li><strong>Stasiun Hidrasi Lengkap:</strong> Pengisian air mineral dan minuman energi di sepanjang lintasan.</li>
-                        </ul>
-                    </div>
-
-                    <div style="background: #fafafa; padding: 20px; border-radius: 8px; border-left: 5px solid #6b7280;">
-                        <strong style="color: #374151; font-size: 18px; display: block; margin-bottom: 8px;">🌿 Pengawalan Medis & Keamanan Lintasan</strong>
-                        <p style="margin: 0;">
-                            Keselamatan pelari adalah prioritas utama. Rute lari dijaga ketat oleh tim marshal, penutupan jalan secara terstruktur, serta dukungan armada medis bergerak (mobile medic) dan pos pertolongan pertama di titik-titik krusial lintasan.
-                        </p>
-                    </div>
-
                 </div>
             </div>
         `;
-
-    // -----------------------------------------------------------------
-    // PENGECEKAN 2: JIKA YANG DIKLIK ADALAH TIENTO RUN
-    // -----------------------------------------------------------------
     } else if (namaEvent.includes('Tiento') || namaEvent.includes('TIENTO')) {
-        
         modal.innerHTML = `
             <div style="position: relative; max-width: 1200px; width: 95%; background: #ffffff; color: #111827; padding: 35px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); box-sizing: border-box; line-height: 1.6; text-align: left;">
-                
                 <button onclick="tutupAcara()" style="position: absolute; top: 20px; right: 20px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">✕</button>
-                
                 <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 5px; color: #000; text-transform: uppercase; padding-right: 40px;">🌟 ${namaEvent}</h1>
                 <p style="font-size: 18px; font-weight: 600; margin-top: 0; margin-bottom: 20px; color: #374151;">Break Your Limits, Feel the Energy!</p>
-                
                 <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; margin-bottom: 25px; font-weight: 600;">
                     <p style="margin: 5px 0;">📅 ${waktu}</p>
                     <p style="margin: 5px 0;">📍 ${lokasi}</p>
                     <p style="margin: 5px 0;">🏃‍♂️ Jarak Lari: 10 Kilometer (Road Run Challenge)</p>
                 </div>
-
                 <h3 style="font-size: 22px; border-bottom: 2px solid #eab308; padding-bottom: 8px; margin-bottom: 20px; color: #111827; font-weight: 800;">🌟 KETERANGAN & KESERUAN ACARA</h3>
-                
                 <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; font-size: 15px; color: #374151; line-height: 1.7; text-align: justify;">
-                    
                     <div style="background: #fffbeb; padding: 20px; border-radius: 8px; border-left: 5px solid #eab308;">
                         <strong style="color: #ca8a04; font-size: 18px; display: block; margin-bottom: 8px;">⚡ Apa Sih TIENTO RUN 10K 2026?</strong>
-                        <p style="margin: 0;">
-                            TIENTO RUN 10K 2026 adalah ajang lomba lari jalan raya (road race) jarak 10 kilometer berskala nasional yang dirancang sebagai platform kompetisi, gaya hidup sehat, dan perayaan semangat sportivitas masyarakat Indonesia. Event ini diselenggarakan dengan standar manajemen profesional serta berorientasi pada keselamatan peserta, kualitas teknis perlombaan, dan pengalaman race-day kelas nasional.
-                        </p>
+                        <p style="margin: 0;">TIENTO RUN 10K 2026 adalah ajang lomba lari jalan raya (road race) jarak 10 kilometer berskala nasional...</p>
                     </div>
-
-                    <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 5px solid #22c55e;">
-                        <strong style="color: #16a34a; font-size: 18px; display: block; margin-bottom: 8px;">🎉 Fasilitas Race Village & Selebrasi Finisher</strong>
-                        <p style="margin: 0;">
-                            Setelah menyelesaikan rute lari, para peserta akan disambut di area *Race Village* yang berlokasi di Balai Kota Bandung. Area selebrasi ini menyediakan berbagai fasilitas pendukung premium, meliputi *Recovery Zone* (layanan fisioterapi gratis), pusat kuliner *Food Truck*, serta panggung hiburan utama yang menghadirkan pertunjukan musik langsung dan penampilan DJ.
-                        </p>
-                    </div>
-
-                    <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 5px solid #0284c7;">
-                        <strong style="color: #0369a1; font-size: 18px; display: block; margin-bottom: 8px;">🎁 Paket Premium Race Pack Eksklusif</strong>
-                        <p style="margin: 0; margin-bottom: 10px;">
-                            Sebagai wujud komitmen terhadap kualitas penyelenggaraan, Tiento menyediakan paket fasilitas merchandise resmi dengan standar premium untuk setiap peserta terdaftar, yang terdiri dari:
-                        </p>
-                        <ul style="padding-left: 20px; margin: 0; list-style-type: square; font-weight: 500;">
-                            <li><strong>Jersey Premium Tiento Edition:</strong> Menggunakan material kain dry-fit eksklusif yang ringan dan memiliki sirkulasi udara optimal.</li>
-                            <li><strong>Medali Logam Finisher:</strong> Medali eksklusif berbahan logam solid dengan desain grafir khusus ikon Kota Bandung.</li>
-                            <li><strong>Nomor Dada (BIB) + Timing Chip:</strong> Sistem pencatatan waktu resmi berbasis digital secara *real-time*.</li>
-                            <li><strong>String Bag & Totebag:</strong> Tas perlengkapan olahraga multifungsi.</li>
-                            <li><strong>Hidrasi & Penyegaran:</strong> Suplai air mineral, minuman isotonik, serta buah segar di setiap *water station*.</li>
-                        </ul>
-                    </div>
-
-                    <div style="background: #fafafa; padding: 20px; border-radius: 8px; border-left: 5px solid #6b7280;">
-                        <strong style="color: #374151; font-size: 18px; display: block; margin-bottom: 8px;">🌿 Manajemen Keamanan Jalur & Standar Medis Pengawal</strong>
-                        <p style="margin: 0;">
-                            Aspek keselamatan dan kenyamanan seluruh peserta menjadi prioritas utama penyelenggaraan. Penutupan dan sterilisasi jalur (*Clear Route*) dilakukan secara penuh sepanjang rute 10K melalui koordinasi ketat dengan jajaran kepolisian dan dinas perhubungan terkait.
-                        </p>
-                    </div>
-
                 </div>
             </div>
         `;
-
-    // -----------------------------------------------------------------
-    // PENGECEKAN 3: JIKA BUKAN MILO DAN TIENTO, MAKA TAMPILKAN COLOR RUN
-    // -----------------------------------------------------------------
     } else {
-        
         modal.innerHTML = `
             <div style="position: relative; max-width: 1200px; width: 95%; background: #ffffff; color: #111827; padding: 35px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); box-sizing: border-box; line-height: 1.6; text-align: left;">
-                
                 <button onclick="tutupAcara()" style="position: absolute; top: 20px; right: 20px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">✕</button>
-                
                 <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 5px; color: #000; text-transform: uppercase; padding-right: 40px;">🌟 ${namaEvent}</h1>
                 <p style="font-size: 18px; font-weight: 600; margin-top: 0; margin-bottom: 20px; color: #374151;">Run To The Color Vibes...</p>
-                
                 <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; margin-bottom: 25px; font-weight: 600;">
                     <p style="margin: 5px 0;">📅 ${waktu}</p>
                     <p style="margin: 5px 0;">📍 ${lokasi}</p>
                     <p style="margin: 5px 0;">🏃‍♂️ Jarak Lari: 5 Kilometer (Fun Run)</p>
                 </div>
-
-               <h3 style="font-size: 22px; border-bottom: 2px solid #22c55e; padding-bottom: 8px; margin-bottom: 20px; color: #111827; font-weight: 800;">🌟 KETERANGAN & KESERUAN ACARA</h3>
-                
+                <h3 style="font-size: 22px; border-bottom: 2px solid #22c55e; padding-bottom: 8px; margin-bottom: 20px; color: #111827; font-weight: 800;">🌟 KETERANGAN & KESERUAN ACARA</h3>
                 <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; font-size: 15px; color: #374151; line-height: 1.7; text-align: justify;">
-                    
                     <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 5px solid #22c55e;">
                         <strong style="color: #16a34a; font-size: 18px; display: block; margin-bottom: 8px;">🌈 Apa Sih Color Run Festival Itu?</strong>
-                        <p style="margin: 0;">
-                            Bukan sekadar ajang lari biasa, ini adalah festival lari paling fenomenal, penuh warna, dan paling dinanti-nantikan! Di sini, kamu tidak perlu mengkhawatirkan catatan waktu atau berkompetisi. Event ini dirancang 100% sebagai <em>Fun Run</em> untuk merayakan kegembiraan, kesehatan, dan kebersamaan.
-                        </p>
+                        <p style="margin: 0;">Bukan sekadar ajang lari biasa, ini adalah festival lari paling fenomenal, penuh warna...</p>
                     </div>
-
-                    <div style="background: #fffbeb; padding: 20px; border-radius: 8px; border-left: 5px solid #f59e0b;">
-                        <strong style="color: #d97706; font-size: 18px; display: block; margin-bottom: 8px;">🎸 After Run Party & Konser Musik</strong>
-                        <p style="margin: 0;">
-                            Keseruan sejati justru baru dimulai begitu kamu menyentuh garis finish! Semua pelari akan langsung berkumpul di area panggung utama untuk mengikuti <strong>After Run Color Party</strong> raksasa dengan lemparan bubuk warna bersama-sama.
-                        </p>
-                    </div>
-
-                    <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 5px solid #0284c7;">
-                        <strong style="color: #0369a1; font-size: 18px; display: block; margin-bottom: 8px;">🎁 Paket Merchandise (Race Pack) Premium</strong>
-                        <p style="margin: 0; margin-bottom: 10px;">
-                            Setiap tiket yang kamu beli sudah termasuk Race Pack eksklusif yang berisi:
-                        </p>
-                        <ul style="padding-left: 20px; margin: 0; list-style-type: square; font-weight: 500;">
-                            <li><strong>Jersey Resmi Festival:</strong> Berbahan dry-fit premium adem dan nyaman.</li>
-                            <li><strong>Finisher Medal:</strong> Medali eksklusif dengan desain ikonik.</li>
-                            <li><strong>Kacamata Warna & Tas Pinggang:</strong> Aksesori wajib biar gaya kamu makin modis.</li>
-                            <li><strong>Snack & Refreshment:</strong> Suplai air mineral segar dan camilan.</li>
-                        </ul>
-                    </div>
-
-                    <div style="background: #fafafa; padding: 20px; border-radius: 8px; border-left: 5px solid #6b7280;">
-                        <strong style="color: #374151; font-size: 18px; display: block; margin-bottom: 8px;">🌿 Dijamin 100% Aman & Ramah Lingkungan</strong>
-                        <p style="margin: 0;">
-                            Bubuk warna (color powder) yang digunakan terbuat dari tepung jagung alami (corn starch) dan pewarna makanan bersertifikasi. 100% aman untuk kulit, ramah lingkungan, dan sangat mudah dibilas air.
-                        </p>
-                    </div>
-
                 </div>
             </div>
         `;
@@ -689,6 +233,4 @@ function tutupAcara() {
     }
 }
 </script>
-
-</body>
-</html>
+{% endblock %}

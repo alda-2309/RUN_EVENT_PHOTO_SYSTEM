@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Running Event Lari{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+            background-attachment: fixed;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ================= NAVBAR ================= */
+        .navbar {
+            width: 100%;
+            background: transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+        }
+
+        .logo span {
+            color: #fef08a;
+        }
+
+        .menu {
+            display: flex;
+            gap: 34px;
+            align-items: center;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 15px;
+            font-weight: 600;
+            position: relative;
+            padding-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .menu a:hover {
+            color: white;
+        }
+
+        .menu a.active {
+            color: white;
+        }
+
+        .menu a.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 3px;
+            background: #fef08a;
+            border-radius: 10px;
+        }
+
+        .right-nav {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .language-dropdown {
+            position: relative;
+        }
+
+        .lang-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            color: white;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .language-menu {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 220px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 10px;
+            display: none;
+            z-index: 999;
+        }
+
+        .language-menu a {
+            display: block;
+            text-decoration: none;
+            color: #111827;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .language-menu a:hover {
+            background: #f3f4f6;
+            color: #16a34a;
+        }
+
+        .language-menu.show {
+            display: block;
+        }
+
+        .btn-outline {
+            padding: 10px 22px;
+            border-radius: 12px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-green {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 12px;
+            background: #fef08a;
+            color: #14532d;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-green:hover {
+            background: #fff59d;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(254, 240, 138, 0.6);
+        }
+
+        .user-info {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .user-info a {
+            color: #fef08a;
+            text-decoration: none;
+            margin-left: 8px;
+        }
+
+        /* ================= CONTENT ================= */
+        .content-wrapper {
+            flex: 1;
+        }
+
+        /* ================= FOOTER ================= */
+        .footer {
+            margin-top: 80px;
+            background: #111827;
+            color: #fff;
+        }
+
+        .footer-container {
+            width: 90%;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 40px;
+            padding: 70px 0 45px;
+        }
+
+        .footer h3 {
+            color: #22c55e;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .footer-logo h2 {
+            font-size: 34px;
+            margin-bottom: 18px;
+        }
+
+        .footer-logo span {
+            color: #22c55e;
+        }
+
+        .footer-logo p {
+            color: #d1d5db;
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+
+        .footer-logo a {
+            color: white;
+            text-decoration: none;
+            font-size: 28px;
+            margin-right: 12px;
+        }
+
+        .footer-menu a,
+        .footer-contact a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 14px;
+            transition: .3s;
+        }
+
+        .footer-menu a:hover,
+        .footer-contact a:hover {
+            color: #22c55e;
+        }
+
+        .footer hr {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, .1);
+        }
+
+        .footer-bottom {
+            width: 90%;
+            margin: auto;
+            padding: 25px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #cbd5e1;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        @media (max-width: 900px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+                padding: 18px 20px;
+            }
+            .menu {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 20px;
+            }
+        }
+    </style>
+
+    {% block extra_style %}{% endblock %}
+</head>
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+    <nav class="navbar">
+        <div class="logo">
+            Running <span>Event Lari</span>
+        </div>
+
+        <div class="menu">
+            <a href="{% url 'dashboard' %}" class="{% if active_page == 'dashboard' %}active{% endif %}">Beranda</a>
+            <a href="{% url 'search' %}" class="{% if active_page == 'search' %}active{% endif %}">Cari Foto</a>
+            <a href="{% url 'events' %}" class="{% if active_page == 'events' %}active{% endif %}">Events</a>
+            <a href="{% url 'kategori' %}" class="{% if active_page == 'kategori' %}active{% endif %}">Kategori</a>
+            <a href="{% url 'tentang_kami' %}" class="{% if active_page == 'tentang_kami' %}active{% endif %}">Tentang Kami</a>
+        </div>
+
+        <div class="right-nav">
+            <!-- LANGUAGE -->
+            <div class="language-dropdown" id="languageDropdown">
+                <div class="lang-btn" onclick="toggleLanguageMenu()">🌐</div>
+                <div class="language-menu" id="languageMenu">
+                    <a href="#" onclick="changeLanguage('id'); return false;">🇮🇩 Indonesia</a>
+                    <a href="#" onclick="changeLanguage('en'); return false;">🇺🇸 English</a>
+                    <a href="#" onclick="changeLanguage('kr'); return false;">🇰🇷 Korean</a>
+                    <a href="#" onclick="changeLanguage('cn'); return false;">🇨🇳 Chinese</a>
+                    <a href="#" onclick="changeLanguage('jp'); return false;">🇯🇵 Japanese</a>
+                    <a href="#" onclick="changeLanguage('fr'); return false;">🇫🇷 French</a>
+                    <a href="#" onclick="changeLanguage('de'); return false;">🇩🇪 German</a>
+                </div>
+            </div>
+
+            {% if request.session.user_id %}
+                <div class="user-info">
+                    👋 {{ request.session.username|default:request.user.username|upper }}
+                    {% if request.session.is_staff or request.session.is_superuser %}
+                        <a href="{% url 'admin_dashboard' %}">Dashboard</a> /
+                    {% endif %}
+                    <a href="{% url 'logout' %}">Logout</a>
+                </div>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn-outline">Masuk</a>
+                <a href="{% url 'register' %}" class="btn-green">Daftar</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- ================= CONTENT ================= -->
+    <div class="content-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- LOGO -->
+            <div class="footer-logo">
+                <h2><span>Running Event Lari</span></h2>
+                <p>
+                    Website Dokumentasi Foto Event Lari yang membantu peserta menemukan
+                    foto berdasarkan Event & Timestamp, Nomor Bib, dan Face Recognition
+                    secara cepat dan mudah.
+                </p>
+                <a href="#">📷</a>
+                <a href="#">💬</a>
+                <a href="#">📧</a>
+            </div>
+
+            <!-- PESERTA -->
+            <div class="footer-menu">
+                <h3>Peserta</h3>
+                <a href="{% url 'search' %}">Cari Foto</a>
+                <a href="#">Event & Timestamp</a>
+                <a href="#">Nomor Bib</a>
+                <a href="#">Face Recognition</a>
+            </div>
+
+            <!-- MENU -->
+            <div class="footer-menu">
+                <h3>Menu</h3>
+                <a href="{% url 'dashboard' %}">Beranda</a>
+                <a href="{% url 'events' %}">Events</a>
+                <a href="{% url 'kategori' %}">Kategori</a>
+                <a href="{% url 'tentang_kami' %}">Tentang Kami</a>
+            </div>
+
+            <!-- KONTAK -->
+            <div class="footer-contact">
+                <h3>Kontak</h3>
+                <a href="#">📧 Running Event Lari@gmail.com</a>
+                <a href="#">📍 Jakarta</a>
+                <a href="#">☎ +62 812-3456-7890</a>
+            </div>
+
+            <!-- LEGAL -->
+            <div class="footer-menu">
+                <h3>Legal</h3>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms & Conditions</a>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="footer-bottom">
+            <div>
+                © 2026 <b>Running Event Lari</b> | Website Dokumentasi Foto Event Lari
+            </div>
+            <div>
+                Dibuat untuk Skripsi
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script>
+        function toggleLanguageMenu() {
+            document.getElementById("languageMenu").classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.language-dropdown')) {
+                document.getElementById("languageMenu").classList.remove("show");
+            }
+        }
+
+        const translations = {
+            id: {
+                heroTitle: "Abadikan setiap momen berharga di setiap event lari.",
+                heroDesc: "Temukan ribuan foto-foto terbaik dari berbagai event lari. Abadikan pencapaianmu dan kenangan berharga di setiap langkah."
+            },
+            en: {
+                heroTitle: "Capture every precious moment in every running event.",
+                heroDesc: "Find thousands of the best photos from various running events. Capture your achievements and precious memories in every step."
+            },
+            kr: {
+                heroTitle: "모든 러닝 이벤트의 소중한 순간을 담아보세요.",
+                heroDesc: "다양한 러닝 이벤트의 최고의 사진을 찾아보세요. 모든 걸음 속의 추억과 성취를 기록하세요."
+            },
+            cn: {
+                heroTitle: "记录每场跑步活动中的珍贵时刻。",
+                heroDesc: "发现来自各种跑步活动的精彩照片。记录你的成就和珍贵回忆。"
+            },
+            jp: {
+                heroTitle: "すべてのランニングイベントの大切な瞬間を残しましょう。",
+                heroDesc: "さまざまなランニングイベントの最高の写真を見つけましょう。あなたの成果と思い出を記録しましょう。"
+            },
+            fr: {
+                heroTitle: "Capturez chaque moment précieux de chaque course.",
+                heroDesc: "Découvrez des milliers des meilleures photos de différents événements de course."
+            },
+            de: {
+                heroTitle: "Halte jeden besonderen Moment bei jedem Laufevent fest.",
+                heroDesc: "Finde tausende der besten Fotos von verschiedenen Laufevents."
+            }
+        };
+
+        function changeLanguage(lang) {
+            const t = translations[lang];
+            if (!t) return;
+            const heroTitle = document.getElementById('heroTitle');
+            const heroDesc = document.getElementById('heroDesc');
+            if (heroTitle) heroTitle.innerText = t.heroTitle;
+            if (heroDesc) heroDesc.innerText = t.heroDesc;
+        }
+    </script>
+
+    {% block extra_script %}{% endblock %}
+</body>
+</html>

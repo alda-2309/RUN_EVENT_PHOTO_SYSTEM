@@ -3,462 +3,440 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Detail Event Lari</title>
+<title>Peta Interaktif – Event Lari</title>
+<meta name="referrer" content="strict-origin-when-cross-origin">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- LEAFLET -->
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-<script
-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-editable/1.2.0/Leaflet.Editable.min.js"></script>
 
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
-}
-
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 body{
-    /* Gradasi penuh dari hijau muda (#4ade80) ke hijau tua (#14532d) dan dikunci posisinya */
-    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
-    background-attachment: fixed;
-    color: white; /* Mengubah warna teks global menjadi putih agar kontras di atas warna hijau */
-    min-height: 100vh;
+    background: linear-gradient(180deg,#4ade80 0%,#16a34a 40%,#14532d 100%);
+    background-attachment:fixed;color:white;min-height:100vh;
 }
-
-/* HEADER */
-
 .header{
-    /* Dibuat transparan tipis agar warna gradasi hijau menembus ke atas secara mewah */
-    background: transparent;
-    padding:20px 40px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background:transparent;padding:20px 40px;
+    border-bottom:1px solid rgba(255,255,255,0.2);
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;
 }
-
-.header h1{
-    color: white;
-}
-
-/* CONTAINER */
-
-.container{
-    width:90%;
-    margin:30px auto;
-}
-
-/* CARD */
-
+.header h1{color:white;font-size:1.4rem;}
+.header-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.container{width:95%;margin:20px auto;}
 .card{
-    /* Diubah menggunakan efek kaca transparan premium (glassmorphism) */
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding:25px;
-    border-radius:20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);
+    padding:20px;border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,0.15);
 }
-
-/* GRID */
-
-.grid{
-    display:grid;
-    grid-template-columns:2fr 1fr;
-    gap:25px;
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:20px;}
+#map{height:600px;border-radius:15px;border:1px solid rgba(255,255,255,0.2);z-index:1;}
+.panel{
+    background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.1);
+    padding:20px;border-radius:15px;max-height:600px;overflow-y:auto;
 }
-
-/* MAP */
-
-#map{
-    height:550px;
-    border-radius:15px;
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Menambahkan border tipis agar peta menyatu */
+.panel h2{margin-bottom:15px;color:white;font-size:1.1rem;}
+.btn{
+    padding:8px 16px;border:none;border-radius:10px;font-weight:600;cursor:pointer;
+    transition:.3s;font-size:0.85rem;display:inline-flex;align-items:center;gap:6px;
 }
-
-/* INFO */
-
-.info{
-    /* Menggunakan background transparan putih tipis di dalam kartu kaca agar lebih terbaca */
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding:20px;
-    border-radius:15px;
-}
-
-.info h2{
-    margin-bottom:15px;
-    color: white;
-}
-
-.info p{
-    margin-bottom:10px;
-    color: rgba(255, 255, 255, 0.85);
-}
-
-/* TITIK FOTO */
-
-.photo-points{
-    margin-top:25px;
-}
-
-.point-btn{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border:none;
-    border-radius:10px;
-    /* Diubah ke warna kuning lemon cerah agar kontras dan memikat perhatian pengguna */
-    background: #fef08a;
-    color: #14532d; /* Warna teks tombol disesuaikan ke hijau tua */
-    cursor:pointer;
-    font-weight:700;
-    transition: .3s;
-}
-
-.point-btn:hover{
-    background: #fff59d;
-    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
-}
-
+.btn-yellow{background:#fef08a;color:#14532d;}
+.btn-yellow:hover{background:#fff59d;box-shadow:0 4px 15px rgba(254,240,138,0.4);}
+.btn-danger{background:#ef4444;color:white;}
+.btn-danger:hover{background:#dc2626;}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.3);color:white;}
+.btn-outline:hover{background:rgba(255,255,255,0.1);}
+.btn-sm{padding:5px 10px;font-size:0.75rem;}
 .back-btn{
-    display:inline-block;
-    margin-bottom:20px;
-    text-decoration:none;
-    /* Menggunakan warna kuning lemon cerah yang senada dengan tombol titik foto */
-    background: #fef08a;
-    color: #14532d;
-    padding:12px 20px;
-    border-radius:10px;
-    font-weight: 700;
-    transition: .3s;
+    display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+    background:#fef08a;color:#14532d;padding:10px 18px;border-radius:10px;
+    font-weight:600;font-size:0.9rem;transition:.3s;
 }
+.back-btn:hover{background:#fff59d;box-shadow:0 4px 15px rgba(254,240,138,0.4);}
+.point-list{list-style:none;margin-top:10px;}
+.point-item{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:8px 12px;margin-bottom:6px;background:rgba(255,255,255,0.08);
+    border-radius:8px;transition:.2s;cursor:grab;
+}
+.point-item:hover{background:rgba(255,255,255,0.15);}
+.point-item.dragging{opacity:0.5;}
+.point-item .point-info{display:flex;align-items:center;gap:8px;flex:1;}
+.point-item .point-name{font-weight:500;font-size:0.85rem;}
+.point-item .point-actions{display:flex;gap:5px;}
+.drag-handle{cursor:grab;color:rgba(255,255,255,0.4);font-size:1rem;margin-right:5px;}
+.drag-handle:active{cursor:grabbing;}
+.empty-state{text-align:center;padding:30px 10px;color:rgba(255,255,255,0.5);font-size:0.9rem;}
 
-.back-btn:hover{
-    background: #fff59d;
-    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+.leaflet-container{background:#1a1a2e;}
+.checkpoint-marker{
+    display:flex;align-items:center;justify-content:center;
+    width:36px;height:36px;border-radius:50%;background:#ef4444;color:white;
+    font-weight:bold;font-size:0.8rem;border:3px solid white;
+    box-shadow:0 3px 10px rgba(0,0,0,0.3);cursor:pointer;transition:.2s;
+}
+.checkpoint-marker:hover{transform:scale(1.15);}
+
+/* Vertex disembunyikan dulu; muncul hanya saat mode edit */
+.leaflet-vertex-icon {
+    width: 14px !important;
+    height: 14px !important;
+    margin-left: -7px !important;
+    margin-top: -7px !important;
+    background: #fbbf24 !important;
+    border: 3px solid white !important;
+    border-radius: 50% !important;
+    cursor: grab !important;
+    touch-action: none !important;
+    pointer-events: auto !important;
+    z-index: 10000 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+    transition: transform 0.15s ease;
+    display: none !important;
+}
+body.route-editing .leaflet-vertex-icon {
+    display: block !important;
+}
+body.route-editing .leaflet-vertex-icon:hover {
+    transform: scale(1.2);
+}
+body.route-editing .leaflet-vertex-icon:active {
+    cursor: grabbing !important;
+    transform: scale(1.35);
 }
 
 @media(max-width:900px){
-
-.grid{
-    grid-template-columns:1fr;
+    .grid{grid-template-columns:1fr;}
+    #map{height:400px;}
+    .panel{max-height:400px;}
 }
-
-#map{
-    height:400px;
-}
-
-}
-
-/* MARKER NOMOR DI PETA */
-.number-marker{
-    width:30px;
-    height:30px;
-    background:#ef4444; /* Tetap merah menyala agar terlihat mencolok dan jelas di dalam peta basemap */
-    color:white;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:bold;
-    border:3px solid white;
-    box-shadow:0 3px 8px rgba(0,0,0,.3);
-    cursor:pointer;
-    transition:.2s;
-}
-
-.number-marker:hover{
-    transform:scale(1.15);
-}
-
 </style>
-
 </head>
 <body>
 
 <div class="header">
-    <h1>🏃 Bandung Color Run 2026</h1>
+    <div style="display:flex;align-items:center;gap:15px;">
+        <a href="/" class="back-btn">←</a>
+        <h1>📍 Peta Interaktif – Atur Route</h1>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-yellow" onclick="enableAddMode()">➕ Tambah Checkpoint</button>
+        <button class="btn btn-outline" onclick="toggleRouteEdit()" id="editRouteBtn">✏️ Edit Route</button>
+        <button class="btn btn-outline" onclick="saveAll()">💾 Simpan</button>
+        <button class="btn btn-danger" onclick="resetAll()">🗑️ Reset</button>
+    </div>
 </div>
 
 <div class="container">
-
-    <a href="/" class="back-btn">
-        ← Kembali ke Beranda
-    </a>
-
     <div class="card">
-
         <div class="grid">
-
-            <!-- MAP -->
             <div id="map"></div>
-
-            <!-- INFO -->
-            <div class="info">
-
-                <h2>Informasi Event</h2>
-
-                <p>📍 Lokasi : Gedung Sate Bandung</p>
-
-                <p>🕔 Start : 05.00 WIB</p>
-
-                <p>🏁 Finish : 09.00 WIB</p>
-
-                <p>💧 Water Station :</p>
-
-                <ul>
-                    <li>KM 1</li>
-                    <li>KM 3</li>
-                    <li>KM 5</li>
+            <div class="panel" id="panel">
+                <h2>🏁 Checkpoints</h2>
+                <p style="font-size:0.8rem;color:rgba(255,255,255,0.6);margin-bottom:10px;">
+                    Drag urutkan. <strong>Seret garis route</strong> saat mode edit aktif.
+                </p>
+                <div id="routeStatus" style="margin-bottom:10px;font-size:0.8rem;color:#fef08a;"></div>
+                <ul class="point-list" id="pointList">
+                    <li class="empty-state">Belum ada checkpoint. Klik "Tambah Checkpoint" lalu klik peta.</li>
                 </ul>
-
-                <br>
-
-                <p>🚑 Medical Point :</p>
-
-                <ul>
-                    <li>KM 2</li>
-                </ul>
-
-                <div class="photo-points">
-
-                    <h2>📸 Titik Dokumentasi</h2>
-
-                    <button class="point-btn">
-                        START
-                    </button>
-
-                    <button class="point-btn">
-                        KM 1
-                    </button>
-
-                    <button class="point-btn">
-                        KM 3
-                    </button>
-
-                    <button class="point-btn">
-                        KM 5
-                    </button>
-
-                    <button class="point-btn">
-                        FINISH
-                    </button>
-
-                </div>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
 
 <script>
+const EVENT_ID = 1;
+let map, checkpoints = [], markers = {}, addMode = false, draggedIndex = null, routeEditMode = false, routeGeometry = null;
 
-/* PETA BANDUNG */
+function initMap(){
+    map = L.map('map', {dragging: true, editable: true}).setView([-6.9175,107.6191], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', referrerPolicy: 'strict-origin-when-cross-origin'
+    }).addTo(map);
 
-var map = L.map('map').setView(
-[-6.9175,107.6191],
-14
-);
-
-/* OPEN STREET MAP */
-
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-    attribution:'© OpenStreetMap'
-}
-).addTo(map);
-
-/* TITIK EVENT */
-
-var start  = [-6.9218,107.6285];
-
-var finish = [-6.9222,107.6280];
-
-var km1    = [-6.911943514783501, 107.63373762121867]; // Jl. Supratman
-
-var km2    = [-6.905829076967106, 107.62927954765433]; // Jl. Ciliwung
-
-var km3    = [-6.907992162077544, 107.6237302520191]; // Jl. R.E Martadinata
-
-var km4 = [-6.913468833017716, 107.62910624210168]; // Jl Laswi
-
-var km5 = [-6.91781157015721, 107.63302181862615]; // Jl Laswi bagian atas
-
-var water1 = [-6.9075,107.6145];
-
-var water2 = [-6.9185,107.6265];
-
-
-var startIcon = L.divIcon({
-    html:"🏁",
-    className:"",
-    iconSize:[30,30]
-});
-
-var finishIcon = L.divIcon({
-    html:"🏆",
-    className:"",
-    iconSize:[30,30]
-});
-
-var waterIcon = L.divIcon({
-    html:"💧",
-    className:"",
-    iconSize:[30,30]
-});
-
-function numberIcon(number){
-
-    return L.divIcon({
-
-        className:"",
-        html:`
-        <div class="number-marker">
-            ${number}
-        </div>
-        `,
-        iconSize:[30,30],
-        iconAnchor:[15,15]
-
+    map.on('click', e => {
+        if(!addMode) return;
+        const name = prompt('Nama checkpoint:', 'Checkpoint ' + (checkpoints.length + 1));
+        if(name) addCheckpointAPI(e.latlng.lat, e.latlng.lng, name);
+        addMode = false;
+        resetAddBtn();
     });
 
+    if (map.editTools) {
+        map.editTools.featuresLayer = new L.FeatureGroup().addTo(map);
+    }
 }
 
+/* ❗ Fix: geser vertex -> map ikut geser */
+function fixVertexDrag(){
+    document.addEventListener('mousedown', e => {
+        const target = e.target;
+        if(target.classList && target.classList.contains('leaflet-vertex-icon')){
+            map.dragging.disable();
+            const onUp = () => {
+                map.dragging.enable();
+                document.removeEventListener('mouseup', onUp);
+            };
+            document.addEventListener('mouseup', onUp);
+        }
+    });
+}
 
-/* ===========================
-   START
-=========================== */
+function setRouteStatus(text, ok=true){
+    const el = document.getElementById('routeStatus');
+    if (!el) return;
+    el.style.color = ok ? '#fef08a' : '#fca5a5';
+    el.textContent = text;
+}
 
-L.marker(start,{
-    icon:startIcon
-})
-.addTo(map)
-.bindPopup(`
-    <b>🏁 START</b><br>
-    Bandung Color Run 2026
-`);
+async function syncRouteGeometry(){
+    if (!routeLine) return true;
+    const raw = routeLine.getLatLngs();
+    const flat = Array.isArray(raw[0]) ? raw[0] : raw;
+    const latlngs = flat.map(ll => ({lat: ll.lat, lng: ll.lng}));
+    routeGeometry = latlngs;
+    const ok = await saveRouteAPI({event_id: EVENT_ID, points: latlngs});
+    setRouteStatus(ok ? '✅ Route tersimpan' : '❌ Route gagal disimpan', ok);
+    return ok;
+}
 
+async function toggleRouteEdit(){
+    const btn = document.getElementById('editRouteBtn');
 
-/* =====================================
-   KM 1
-===================================== */
+    if (!routeEditMode) {
+        routeEditMode = true;
+        document.body.classList.add('route-editing');
+        btn.textContent = '✅ Selesai Edit';
+        btn.style.background = '#ef4444';
+        btn.style.color = 'white';
+        renderRoute();
+        return;
+    }
 
-L.marker(km1,{
-    icon:numberIcon(1)
-})
-.addTo(map)
-.bindPopup(`
-    <b>KM 1</b><br>
-    Jl. Supratman
-`);
+    // selesai edit -> simpan full geometry, lalu keluar mode edit
+    const ok = await syncRouteGeometry();
+    if (!ok) return;
+    routeEditMode = false;
+    document.body.classList.remove('route-editing');
+    btn.textContent = '✏️ Edit Route';
+    btn.style.background = 'transparent';
+    btn.style.color = 'white';
+    renderRoute();
+    setRouteStatus('✅ Mode edit ditutup');
+}
 
+function resetAddBtn(){
+    const btn = document.querySelector('.btn-yellow');
+    btn.textContent = '➕ Tambah Checkpoint';
+    btn.style.background = '#fef08a'; btn.style.color = '#14532d';
+}
 
-/* =====================================
-   KM 2
-===================================== */
+async function fetchCheckpoints(){
+    const resp = await fetch(`/events/api/points/?event_id=${EVENT_ID}`);
+    checkpoints = (await resp.json()).points || [];
 
-L.marker(km2,{
-    icon:numberIcon(2)
-})
-.addTo(map)
-.bindPopup(`
-    <b>KM 2</b><br>
-    Jl. Ciliwung
-`);
+    const routeResp = await fetch(`/events/api/route/?event_id=${EVENT_ID}`);
+    const routeData = await routeResp.json();
+    routeGeometry = routeData.route ? routeData.route.points : null;
 
+    renderAll();
+}
 
-/* =====================================
-   KM 3
-===================================== */
+async function addCheckpointAPI(lat, lng, name){
+    const resp = await fetch('/events/api/points/add/', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({event_id:EVENT_ID, lat, lng, name})
+    });
+    const data = await resp.json();
+    if(data.success){ checkpoints.push(data.point); renderAll(); }
+    else alert('Gagal: '+(data.error||''));
+}
 
-L.marker(km3,{
-    icon:numberIcon(3)
-})
-.addTo(map)
-.bindPopup(`
-    <b>KM 3</b><br>
-    Jl. R.E. Martadinata
-`);
+async function updateCheckpointAPI(id, updates){
+    return (await fetch(`/events/api/points/${id}/`, {
+        method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updates)
+    })).ok;
+}
 
+async function deleteCheckpointAPI(id){
+    return (await fetch(`/events/api/points/${id}/delete/`, {method:'DELETE'})).ok;
+}
 
-/* =====================================
-   KM 4
-===================================== */
+async function saveRouteAPI(payload){
+    return (await fetch('/events/api/route/save/', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+    })).ok;
+}
 
-L.marker(km4,{
-    icon:numberIcon(4)
-})
-.addTo(map)
-.bindPopup(`
-    <b>KM 4</b><br>
-    Jl. Laswi
-`);
+// ====================== RENDER ======================
+function renderAll(){ renderMarkers(); renderRoute(); renderList(); }
 
+function renderMarkers(){
+    Object.values(markers).forEach(m => map.removeLayer(m));
+    markers = {};
+    checkpoints.forEach((p, idx) => {
+        const icon = L.divIcon({
+            className:'',
+            html:`<div class="checkpoint-marker">${idx+1}</div>`,
+            iconSize:[36,36], iconAnchor:[18,18]
+        });
+        const m = L.marker([p.lat,p.lng], {icon, draggable:true}).addTo(map);
+        m.bindPopup(`<b>${p.name}</b><br><small>(${p.lat.toFixed(5)},${p.lng.toFixed(5)})</small>`);
+        m.on('dragend', function(e){
+            const pos = e.target.getLatLng();
+            p.lat=pos.lat; p.lng=pos.lng;
+            updateCheckpointAPI(p.id, {lat:pos.lat, lng:pos.lng});
+            renderRoute();
+        });
+        m.on('click', function(){
+            const n = prompt('Edit nama:', p.name);
+            if(n && n!==p.name){ p.name=n; updateCheckpointAPI(p.id, {name:n}); renderList(); }
+        });
+        markers[p.id]=m;
+    });
+}
 
-/* =====================================
-   KM 5
-===================================== */
+let routeLine = null;
+function renderRoute(){
+    if(routeLine) {
+        if (typeof routeLine.disableEdit === 'function') routeLine.disableEdit();
+        if (routeLine.editor && typeof routeLine.editor.disable === 'function') routeLine.editor.disable();
+        map.removeLayer(routeLine);
+    }
+    routeLine = null;
 
-L.marker(km5,{
-    icon:numberIcon(5)
-})
-.addTo(map)
-.bindPopup(`
-    <b>KM 5</b><br>
-    Area Finish
-`);
+    let latlngs = [];
+    if (routeGeometry && routeGeometry.length >= 2) {
+        latlngs = routeGeometry.map(p => [p.lat, p.lng]);
+    } else {
+        const sorted = [...checkpoints].sort((a,b)=>a.order-b.order);
+        if(sorted.length<2) return;
+        latlngs = sorted.map(p=>[p.lat,p.lng]);
+    }
 
+    routeLine = L.polyline(latlngs, {color:'#ef4444', weight:5, opacity:0.85}).addTo(map);
+    if (routeEditMode) {
+        if (typeof routeLine.enableEdit === 'function') routeLine.enableEdit();
+        if (routeLine.editor && typeof routeLine.editor.enable === 'function') routeLine.editor.enable();
+    }
+}
 
-/* =====================================
-   WATER STATION 1
-===================================== */
+function renderList(){
+    const list = document.getElementById('pointList');
+    if(!checkpoints.length){
+        list.innerHTML = '<li class="empty-state">Belum ada checkpoint. Klik "Tambah Checkpoint" lalu klik peta.</li>';
+        return;
+    }
+    const sorted = [...checkpoints].sort((a,b)=>a.order-b.order);
+    list.innerHTML = sorted.map((p,idx)=>`
+        <li class="point-item" data-id="${p.id}" draggable="true" data-index="${idx}">
+            <div class="point-info">
+                <span class="drag-handle">⠿</span>
+                <span class="point-name">${idx+1}. ${p.name}</span>
+            </div>
+            <div class="point-actions">
+                <button class="btn btn-sm btn-outline" onclick="editCheckpoint('${p.id}')">✏️</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteCheckpoint('${p.id}')">🗑️</button>
+            </div>
+        </li>
+    `).join('');
+    // drag-drop
+    const items = list.querySelectorAll('.point-item');
+    items.forEach(item => {
+        item.addEventListener('dragstart', e => {
+            draggedIndex = parseInt(e.target.dataset.index);
+            e.target.classList.add('dragging');
+        });
+        item.addEventListener('dragover', e => {
+            e.preventDefault();
+            const t = e.target.closest('.point-item');
+            if(t) t.style.borderBottom = '2px solid #fef08a';
+        });
+        item.addEventListener('drop', e => {
+            e.preventDefault();
+            const t = e.target.closest('.point-item');
+            if(!t) return;
+            t.style.borderBottom = '';
+            const ti = parseInt(t.dataset.index);
+            if(draggedIndex===null || draggedIndex===ti) return;
+            const s = [...checkpoints].sort((a,b)=>a.order-b.order);
+            const [moved] = s.splice(draggedIndex,1);
+            s.splice(ti,0,moved);
+            s.forEach((p,idx)=>{p.order=idx;});
+            renderAll();
+            draggedIndex=null;
+        });
+        item.addEventListener('dragend', e => {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.point-item').forEach(el => el.style.borderBottom='');
+        });
+    });
+}
 
-L.marker(water1,{
-    icon:waterIcon
-})
-.addTo(map)
-.bindPopup(`
-    <b>💧 Water Station 1</b>
-`);
+// ====================== ACTIONS ======================
+function enableAddMode(){
+    addMode = !addMode;
+    const btn = document.querySelector('.btn-yellow');
+    if(addMode){
+        btn.textContent = '❌ Batal';
+        btn.style.background = '#ef4444'; btn.style.color = 'white';
+    } else resetAddBtn();
+}
 
+function editCheckpoint(id){
+    const p = checkpoints.find(x=>x.id===id);
+    if(!p) return;
+    const n = prompt('Edit nama:', p.name);
+    if(n && n!==p.name){ p.name=n; updateCheckpointAPI(id,{name:n}); renderList(); }
+}
 
-/* =====================================
-   WATER STATION 2
-===================================== */
+async function deleteCheckpoint(id){
+    if(!confirm('Hapus checkpoint ini?')) return;
+    if(await deleteCheckpointAPI(id)){
+        checkpoints = checkpoints.filter(p=>p.id!==id);
+        checkpoints.forEach((p,idx)=>{p.order=idx;});
+        renderAll();
+    }
+}
 
-L.marker(water2,{
-    icon:waterIcon
-})
-.addTo(map)
-.bindPopup(`
-    <b>💧 Water Station 2</b>
-`);
+async function saveAll(){
+    if (routeEditMode) {
+        await syncRouteGeometry();
+    }
+    const payload = {
+        event_id: EVENT_ID,
+        points: routeGeometry || (routeLine ? routeLine.getLatLngs().map(ll => ({lat: ll.lat, lng: ll.lng})) : []),
+    };
+    alert((await saveRouteAPI(payload)) ? '✅ Route berhasil disimpan!' : '❌ Gagal menyimpan.');
+}
 
+async function resetAll(){
+    if(!confirm('Hapus SEMUA checkpoint dan route?')) return;
+    await fetch('/events/api/points/reset/', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({event_id: EVENT_ID})
+    });
+    checkpoints = [];
+    routeGeometry = null;
+    routeEditMode = false;
+    document.body.classList.remove('route-editing');
+    document.getElementById('editRouteBtn').textContent = '✏️ Edit Route';
+    document.getElementById('editRouteBtn').style.background = 'transparent';
+    document.getElementById('editRouteBtn').style.color = 'white';
+    setRouteStatus('');
+    renderAll();
+    alert('✅ Semua checkpoint dan route dihapus.');
+}
 
-/* =====================================
-   FINISH
-===================================== */
-
-L.marker(finish,{
-    icon:finishIcon
-})
-.addTo(map)
-.bindPopup(`
-    <b>🏆 FINISH</b><br>
-    Bandung Color Run 2026
-`);
-
+initMap();
+fetchCheckpoints();
+fixVertexDrag();
 </script>
 
 </body>

@@ -15,20 +15,16 @@ from config.db import db as mongo_db
 koleksi_foto = mongo_db['photos_photoevent']
 koleksi_wajah = mongo_db['photos_faceembedding']
 
-
 def _get_deepface():
     from deepface import DeepFace
     return DeepFace
 
-
 def l2_normalize(x):
     return x / np.sqrt(np.maximum(np.sum(np.square(x), axis=-1, keepdims=True), 1e-6))
-
 
 THRESHOLD = 0.50
 ITEMS_PER_PAGE = 12
 CACHE_TIMEOUT = 3600
-
 
 class PhotoObj:
     def __init__(self, doc):
@@ -65,7 +61,6 @@ class PhotoObj:
             return f"/media/lomba_lari/ui_ecorun/{nama_file}"
         return f"/media/{image_name}"
 
-
 def set_event_metadata(photo):
     folder_nama = photo.image_name.lower() if photo.image_name else ""
 
@@ -94,14 +89,12 @@ def set_event_metadata(photo):
         photo.event_location = "Vokasi Universitas Indonesia, Depok"
         photo.event_date = "5 April 2026"
 
-
 def get_page_range(page_obj, window=1):
     current = page_obj.number
     total = page_obj.paginator.num_pages
     start = max(current - window, 1)
     end = min(current + window, total)
     return range(start, end + 1)
-
 
 def _attach_face_crop(photo):
     face_doc = koleksi_wajah.find_one({'photo_id': photo.id})
@@ -111,7 +104,6 @@ def _attach_face_crop(photo):
         photo.face_crop_url = photo.image_url
     else:
         photo.face_crop_url = ''
-
 
 def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
     all_matches = []
@@ -137,7 +129,6 @@ def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
 
     all_matches.sort(key=lambda x: x['dist'])
     return [m['photo'] for m in all_matches if m['dist'] <= threshold_real]
-
 
 # ==========================================
 # VIEW: FACE RECOGNITION SEARCH
@@ -202,6 +193,7 @@ def face_search(request):
                     'hasil_foto': page_obj.object_list,
                     'waktu_proses': t1,
                     'selfie_url': f"/media/{selfie_rel}",
+                    'active_page': 'search',
                 })
             else:
                 t2_mulai = time.time()
@@ -275,6 +267,7 @@ def face_search(request):
                         'hasil_foto': page_obj.object_list,
                         'waktu_proses': waktu_total,
                         'selfie_url': selfie_url,
+                        'active_page': 'search',
                     })
                 else:
                     pesan = "Wajah Anda terdeteksi, namun tidak ditemukan di galeri event manapun."
@@ -293,6 +286,7 @@ def face_search(request):
             'berhasil': berhasil,
             'hasil_foto': hasil_foto,
             'waktu_proses': waktu_total,
+            'active_page': 'search',
         })
 
     if request.method == 'GET' and request.GET.get('page'):
@@ -322,12 +316,12 @@ def face_search(request):
                 'hasil_foto': page_obj.object_list,
                 'selfie_url': selfie_url,
                 'waktu_proses': waktu_data.get('waktu_total'),
+                'active_page': 'search',
             })
 
     request.session.pop('last_search_results', None)
     request.session.pop('last_search_selfie', None)
-    return render(request, 'photos/face_results.html')
-
+    return render(request, 'photos/face_results.html', {'active_page': 'search'})
 
 # ==========================================
 # VIEW: CARI BIB
@@ -339,6 +333,7 @@ def bib_search(request):
             return render(request, 'photos/bib_results.html', {
                 'pesan': 'Masukkan nomor bib.',
                 'berhasil': False,
+                'active_page': 'search',
             })
 
         hasil_foto = []
@@ -358,12 +353,14 @@ def bib_search(request):
                 'page_range': get_page_range(page_obj),
                 'hasil_foto': page_obj.object_list,
                 'bib_number': bib_number,
+                'active_page': 'search',
             })
         else:
             return render(request, 'photos/bib_results.html', {
                 'pesan': f"Tidak ditemukan foto dengan nomor bib '{bib_number}'.",
                 'berhasil': False,
                 'bib_number': bib_number,
+                'active_page': 'search',
             })
 
-    return render(request, 'photos/bib_results.html')
+    return render(request, 'photos/bib_results.html', {'active_page': 'search'})

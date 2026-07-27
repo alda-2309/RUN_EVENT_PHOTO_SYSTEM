@@ -1,0 +1,35 @@
+=== URLS RUN_EVENT_PHOTO_SYSTEM ===
+
+--- PUBLIC (template references) ---
+  bib_search: /photos/bib-search/
+  dashboard: /
+  events: /events/
+  face_search: /photos/face-search/
+  foto: /galeri/foto/
+  hasil: /galeri/hasil/
+  kategori: /kategori/
+  login: /admin/login/
+  login: /login/
+  logout: /admin/logout/
+  logout: /logout/
+  register: /register/
+  search: /search/
+  tentang_kami: /tentang-kami/
+
+--- ADMIN / INTERNAL ---
+  add_foto: /galeri/admin/foto/add/
+  autocomplete: /admin/autocomplete/
+  dasboart: /dasboart/
+  delete_foto: /galeri/admin/foto/delete/<int:foto_id>/
+  event_add: /events/manage/add/
+  event_detail: /events/manage/detail/
+  event_list: /events/manage/
+  foto_list: /galeri/admin/foto/
+  index: /admin/
+  jsi18n: /admin/jsi18n/
+  password_change: /admin/password_change/
+  password_change_done: /admin/password_change/done/
+  photo_delete: /photos/delete/<int:photo_id>/
+  photo_list: /photos/
+  photo_upload: /photos/upload/
+  view_on_site: /admin/r/<path:content_type_id>/<path:object_id>/

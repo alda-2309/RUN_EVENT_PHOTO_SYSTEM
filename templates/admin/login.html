@@ -1,0 +1,22 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Login Admin - RunSnap{% endblock %}
+{% block content %}
+<div class="card" style="max-width:450px; margin:40px auto; padding:30px;">
+    <h2 style="text-align:center; margin-bottom:20px; color:#fef08a;">🔐 Login Admin</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" name="username" class="form-control" placeholder="Masukkan username" required>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
+        </div>
+        <button type="submit" class="btn btn-yellow" style="width:100%; font-size:16px; padding:14px;">Masuk</button>
+    </form>
+    <p style="text-align:center; margin-top:20px; color:rgba(255,255,255,0.7); font-size:13px;">
+        <a href="/" style="color:#fef08a;">← Kembali ke Beranda</a>
+    </p>
+</div>
+{% endblock %}

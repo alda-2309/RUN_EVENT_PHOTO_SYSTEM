@@ -1,0 +1,28 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Foto - RunSnap Admin{% endblock %}
+{% block content %}
+<a href="{% url 'admin_dashboard' %}" class="back-btn">← Kembali ke Dashboard</a>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+    <h1 style="font-size:28px; font-weight:700;">🖼️ Daftar Foto</h1>
+    <a href="{% url 'admin_photo_upload' %}" class="btn btn-yellow">+ Upload Foto</a>
+</div>
+
+<div class="gallery">
+    {% for foto in fotos %}
+    <div class="photo-card">
+        {% if foto.image or foto.gambar %}
+            <img src="{{ foto.image.url|default:foto.gambar.url }}" alt="Foto" onerror="this.src='https://via.placeholder.com/400x250?text=Foto+Tidak+Tersedia'">
+        {% else %}
+            <img src="https://via.placeholder.com/400x250?text=No+Image">
+        {% endif %}
+        <div class="info">
+            <h3>{{ foto.event_name|default:foto.nama_event|default:"-" }}</h3>
+            <p>📅 {{ foto.uploaded_at|date:"d M Y"|default:foto.timestamp|default:"-" }}</p>
+            <a href="{% url 'admin_photo_delete' foto.id %}" class="btn btn-red" style="display:inline-block; padding:6px 16px; font-size:12px; margin-top:8px;" onclick="return confirm('Hapus foto ini?')">🗑️ Hapus</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty">Belum ada foto.</div>
+    {% endfor %}
+</div>
+{% endblock %}

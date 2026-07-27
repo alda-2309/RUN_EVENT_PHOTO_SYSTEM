@@ -26,6 +26,8 @@ events_collection = db['events']
 photos_collection = db['photos']
 galeri_collection = db['galeri']
 users_collection = db['users']
+map_points_collection = db['map_points']
+map_routes_collection = db['map_routes']
 
 # ============================================================
 # COUNTER AUTO-INCREMENT (simple sequential ID)

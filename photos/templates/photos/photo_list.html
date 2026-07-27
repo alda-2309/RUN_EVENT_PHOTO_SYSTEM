@@ -1,434 +1,198 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dokumentasi Event Lari</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-   <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins', sans-serif;
-}
-
-body{
-    background:#f7f8fa;
-}
-
-/* NAVBAR */
-
-.navbar{
-    width:100%;
-    background:#ffffff;
-    padding:16px 60px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    color:#111827;
-    border-bottom:1px solid #e5e7eb;
-}
-
-.logo{
-    font-size:18px;
-    font-weight:700;
-    color:#111827;
-}
-
-.menu{
-    display:flex;
-    gap:20px;
-}
-
-.menu a{
-    color:#111827;
-    text-decoration:none;
-    font-size:15px;
-    font-weight:600;
-}
-
-.menu a:hover{
-    color:#16a34a;
-}
-
-/* HERO */
-
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dokumentasi Event Lari{% endblock %}
+{% block extra_style %}
+<style>
 .hero{
     width:82%;
     margin:30px auto;
-
     padding:65px 40px;
-
     border-radius:28px;
-
-    background:#ffffff;
-
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     text-align:center;
-
-    color:#111827;
-
-    box-shadow:
-    0 4px 20px rgba(0,0,0,.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
-
 .hero h1{
-
     font-size:56px;
-
     margin-bottom:16px;
-
     font-weight:700;
-
-    color:#111827;
+    color: white;
 }
-
 .hero p{
-
     font-size:18px;
-
-    color:#64748b;
+    color: rgba(255, 255, 255, 0.85);
 }
-
-/* SEARCH */
-
 .search-box{
-
     width:82%;
-
     margin:30px auto;
-
-    background:#ffffff;
-
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     padding:26px;
-
     border-radius:22px;
-
     display:flex;
-
     gap:16px;
-
-    box-shadow:
-    0 4px 20px rgba(0,0,0,.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
-
 .search-box input{
-
     flex:1;
-
     padding:14px;
-
-    border:1px solid #d1d5db;
-
+    border:1px solid rgba(255, 255, 255, 0.3);
     border-radius:12px;
-
     font-size:16px;
-
     outline:none;
-
-    background:#fff;
-
+    background: white;
     color:#111827;
 }
-
 .search-box input:focus{
-
-    border:1px solid #16a34a;
+    border:1px solid #fef08a;
+    box-shadow: 0 0 0 3px rgba(254, 240, 138, 0.3);
 }
-
 .search-box button{
-
     width:220px;
-
     border:none;
-
     border-radius:12px;
-
-    background:#16a34a;
-
-    color:white;
-
+    background: #fef08a;
+    color: #14532d;
     font-size:22px;
-
+    font-weight: 700;
     cursor:pointer;
-
     transition:.3s;
 }
-
 .search-box button:hover{
-
-    background:#15803d;
+    background: #fff59d;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
 }
-
-/* GALLERY */
-
 .gallery{
-
     width:82%;
-
     margin:40px auto;
-
     display:grid;
-
     grid-template-columns:repeat(3,1fr);
-
     gap:22px;
 }
-
 .card{
-
-    background:#ffffff;
-
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius:18px;
-
     overflow:hidden;
-
-    box-shadow:
-    0 4px 20px rgba(0,0,0,.05);
-
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transition:.3s;
 }
-
 .card:hover{
-
     transform:translateY(-6px);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
 }
-
 .card img{
-
     width:100%;
-
     height:220px;
-
     object-fit:cover;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
-
 .card-content{
-
     padding:18px;
 }
-
 .card h2{
-
     font-size:20px;
-
     margin-bottom:10px;
-
-    color:#111827;
+    color: white;
 }
-
 .card p{
-
-    color:#64748b;
-
-    margin-bottom:15px;
-
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom:10px;
     line-height:1.5;
-
     font-size:14px;
 }
-
 .btn-group{
-
     display:flex;
-
     gap:12px;
+    margin-top:15px;
 }
-
 .btn{
-
     flex:1;
-
     padding:12px;
-
     border:none;
-
     border-radius:10px;
-
     color:white;
-
-    font-weight:600;
-
+    font-weight:700;
     cursor:pointer;
-
     font-size:14px;
+    transition: .3s;
+    text-decoration:none;
+    text-align:center;
+    display:inline-block;
 }
-
 .download{
-
-    background:#16a34a;
+    background: #fef08a;
+    color: #14532d;
 }
-
+.download:hover{
+    background: #fff59d;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+}
 .delete{
-
     background:#ef4444;
 }
-
-.download:hover{
-
-    background:#15803d;
-}
-
 .delete:hover{
-
     background:#dc2626;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
 }
-
 .empty{
-
     width:100%;
-
     text-align:center;
-
     font-size:22px;
-
-    color:#64748b;
-
+    color: rgba(255, 255, 255, 0.7);
     margin-top:40px;
+    grid-column:1/-1;
 }
-
 @media(max-width:1000px){
-
-.gallery{
-
-grid-template-columns:1fr;
-
+    .hero, .search-box, .gallery { width: 90%; }
+    .gallery{ grid-template-columns:1fr; }
+    .search-box{ flex-direction:column; }
+    .search-box button{ width:100%; height:55px; }
+    .hero h1{ font-size:38px; }
 }
-
-.search-box{
-
-flex-direction:column;
-
-}
-
-.search-box button{
-
-width:100%;
-
-height:55px;
-
-}
-
-.hero h1{
-
-font-size:38px;
-
-}
-
-}
-
 </style>
-</head>
-<body>
+{% endblock %}
+{% block content %}
+<div class="hero">
+    <h1>Dokumentasi Event Lari</h1>
+    <p>Cari foto event lari berdasarkan event dan timestamp</p>
+</div>
 
-    <!-- NAVBAR -->
+<form class="search-box">
+    <input type="text" placeholder="Cari Jenis Event">
+    <input type="date">
+    <button type="submit">Cari</button>
+</form>
 
-    <nav class="navbar">
-
-        <div class="logo">
-            🏃 Event Lari
-        </div>
-
-        <div class="menu">
-
-            <a href="/">Home</a>
-
-            {% if user.is_authenticated %}
-                <a href="/dasboart/">Dashboard</a>
-                <a href="/logout/">Logout</a>
-            {% else %}
-                <a href="{% url 'login' %}">Admin</a>
-            {% endif %}
-
-        </div>
-
-    </nav>
-
-    <!-- HERO -->
-
-    <div class="hero">
-
-        <h1>Dokumentasi Event Lari</h1>
-
-        <p>
-            Cari foto event lari berdasarkan event dan timestamp
-        </p>
-
-    </div>
-
-    <!-- SEARCH -->
-
-    <form class="search-box">
-
-        <input type="text" placeholder="Cari Jenis Event">
-
-        <input type="date">
-
-        <button type="submit">
-            Cari
-        </button>
-
-    </form>
-
-    <!-- GALLERY -->
-
-    <div class="gallery">
-
-        {% for photo in photos %}
-
-        <div class="card">
-
-            {% if photo.image %}
-                <img src="{{ photo.image.url }}" alt="">
-            {% else %}
-                <img src="https://via.placeholder.com/500x300?text=No+Image" alt="">
-            {% endif %}
-
-            <div class="card-content">
-
-                <h2>
-                    {{ photo.event.name }}
-                </h2>
-
-                <p>
-                    Upload:
-                    {{ photo.uploaded_at }}
-                </p>
-
-                <div class="btn-group">
-
-                    <a href="{{ photo.image.url }}" download style="flex:1;">
-
-                        <button class="btn download" style="width:100%;">
-                            Download
-                        </button>
-
-                    </a>
-
-                    <a href="{% url 'photo_delete' photo.id %}">
-                        <button class="btn delete">
-                            Hapus
-                        </button>
-                    </a>
-
-                </div>
-
+<div class="gallery">
+    {% for photo in photos %}
+    <div class="card">
+        {% if photo.image %}
+            <img src="/media/{{ photo.image }}" alt="">
+        {% else %}
+            <img src="https://via.placeholder.com/500x300?text=No+Image" alt="">
+        {% endif %}
+        <div class="card-content">
+            <h2>{{ photo.event_name|default:"-" }}</h2>
+            <p>Upload: {{ photo.uploaded_at|default:"-" }}</p>
+            <div class="btn-group">
+                {% if photo.image %}
+                <a href="/media/{{ photo.image }}" download class="btn download">Download</a>
+                {% endif %}
+                <a href="{% url 'admin_photo_delete' photo._id %}" class="btn delete" onclick="return confirm('Hapus foto ini?')">Hapus</a>
             </div>
-
         </div>
-
-        {% empty %}
-
-        <div class="empty">
-            Belum ada foto diupload
-        </div>
-
-        {% endfor %}
-
     </div>
-
-</body>
-</html>
+    {% empty %}
+    <div class="empty">Belum ada foto diupload</div>
+    {% endfor %}
+</div>
+{% endblock %}

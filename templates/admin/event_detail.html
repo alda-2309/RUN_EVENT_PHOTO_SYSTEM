@@ -1,0 +1,11 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Detail Event - RunSnap{% endblock %}
+{% block content %}
+<a href="{% url 'admin_event_list' %}" class="back-btn">← Kembali ke Daftar Event</a>
+<div class="card" style="max-width:600px; margin:0 auto; padding:30px; text-align:center;">
+    <div style="font-size:60px; margin-bottom:15px;">🏁</div>
+    <h2 style="color:#fef08a; margin-bottom:15px;">Detail Event</h2>
+    <p style="color:rgba(255,255,255,0.7);">Halaman detail event dalam pengembangan.</p>
+    <a href="{% url 'admin_event_list' %}" class="btn btn-yellow" style="margin-top:20px;">Kembali</a>
+</div>
+{% endblock %}

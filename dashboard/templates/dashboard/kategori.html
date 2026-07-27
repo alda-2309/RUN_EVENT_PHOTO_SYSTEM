@@ -1,102 +1,32 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Kategori Event | RunSnap</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+{% extends "base.html" %}
+{% block title %}Kategori Event | RunSnap{% endblock %}
+{% block extra_style %}
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
-}
-
-body{
-    /* Gradasi penuh dari hijau muda (#4ade80) ke hijau tua (#14532d) dan dikunci posisinya agar presisi saat di-scroll */
-    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
-    background-attachment: fixed;
-    color: white; /* Mengubah warna teks global menjadi putih agar kontras di atas warna hijau */
-    min-height: 100vh;
-}
-
-/* NAVBAR */
-
-.navbar{
-    width:100%;
-    /* Dibuat transparan tipis agar warna gradasi hijau menembus ke atas secara mewah */
-    background: transparent;
-    padding:18px 60px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.logo{
-    font-size:28px;
-    font-weight:700;
-    color: white;
-}
-
-.logo span{
-    color: #fef08a; /* Aksen warna kuning lemon lembut untuk teks pemanis logo */
-}
-
-.menu{
-    display:flex;
-    gap:35px;
-}
-
-.menu a{
-    text-decoration:none;
-    color: rgba(255, 255, 255, 0.85);
-    font-weight:600;
-    transition: .3s;
-}
-
-.menu a:hover{
-    color: white;
-}
-
 /* HERO */
-
 .hero{
     text-align:center;
     padding:70px 20px;
 }
-
 .hero h1{
     font-size:48px;
     color: white;
 }
-
 .hero p{
     margin-top:15px;
     color: rgba(255, 255, 255, 0.85);
 }
-
 /* KATEGORI */
-
 .container{
     width:85%;
     margin:auto;
 }
-
 .grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
     gap:25px;
     margin-bottom:70px;
 }
-
 .card{
-    /* Diubah menggunakan efek kaca transparan premium (glassmorphism) */
     background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -106,355 +36,73 @@ body{
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     transition:.3s;
 }
-
 .card:hover{
     transform:translateY(-8px);
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.4);
 }
-
 .card h2{
-    color: #fef08a; /* Mengubah judul kategori menggunakan warna kuning lemon agar kontras */
+    color: #fef08a;
     margin-bottom:10px;
 }
-
 .card p{
     color: rgba(255, 255, 255, 0.8);
     margin-bottom:25px;
 }
-
 .btn{
     display:inline-block;
     padding:12px 30px;
-    /* Tombol utama disesuaikan menggunakan warna kuning lemon cerah agar pop-out di atas hijau */
     background: #fef08a;
-    color: #14532d; /* Warna teks tombol disesuaikan ke hijau tua */
+    color: #14532d;
     text-decoration:none;
     border-radius:10px;
     font-weight: 700;
     transition:.3s;
 }
-
 .btn:hover{
     background: #fff59d;
     box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
 }
-
-.footer{
-    /* Latar belakang footer diubah menjadi hijau paling tua dari palet gradasi agar tampak mulus */
-    background: #104324;
-    color: rgba(255, 255, 255, 0.9);
-    text-align:center;
-    padding:20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 </style>
-
-</head>
-<body>
-
-<nav class="navbar">
-
-<div class="logo">
-Run<span>Snap</span>
-</div>
-
-<div class="menu">
-
-<a href="{% url 'dashboard' %}">Beranda</a>
-
-<a href="{% url 'search' %}">Cari Foto</a>
-
-<a href="{% url 'events' %}">Events</a>
-
-<a href="{% url 'kategori' %}">Kategori</a>
-
-<a href="{% url 'tentang_kami' %}">Tentang Kami</a>
-
-</div>
-
-</nav>
-
+{% endblock %}
+{% block content %}
 <section class="hero">
-
-<h1>Kategori Event</h1>
-
-<p>
-Pilih kategori event lari yang ingin kamu lihat.
-</p>
-
+    <h1>Kategori Event</h1>
+    <p>Pilih kategori event lari yang ingin kamu lihat.</p>
 </section>
 
 <div class="container">
-
-<div class="grid">
-
-<div class="card">
-<h2>🏃 Marathon</h2>
-<p>Dokumentasi lomba Marathon.</p>
-<a href="{% url 'hasil' %}?kategori=Marathon" class="btn">Lihat Foto</a>
-</div>
-
-<div class="card">
-<h2>🏃 Half Marathon</h2>
-<p>Dokumentasi lomba Half Marathon.</p>
-<a href="{% url 'hasil' %}?kategori=Half Marathon" class="btn">Lihat Foto</a>
-</div>
-
-<div class="card">
-<h2>🏅 10K Run</h2>
-<p>Dokumentasi lomba 10 Kilometer.</p>
-<a href="{% url 'hasil' %}?kategori=10K" class="btn">Lihat Foto</a>
-</div>
-
-<div class="card">
-<h2>🎽 5K Fun Run</h2>
-<p>Dokumentasi lomba 5 Kilometer.</p>
-<a href="{% url 'hasil' %}?kategori=5K" class="btn">Lihat Foto</a>
-</div>
-
-<div class="card">
-<h2>👨‍👩‍👧 Family Run</h2>
-<p>Dokumentasi Family Run.</p>
-<a href="{% url 'hasil' %}?kategori=Family Run" class="btn">Lihat Foto</a>
-</div>
-
-<div class="card">
-<h2>❤️ Charity Run</h2>
-<p>Dokumentasi Charity Run.</p>
-<a href="{% url 'hasil' %}?kategori=Charity Run" class="btn">Lihat Foto</a>
-</div>
-
-</div>
-
-</div>
-
-<!-- ================= FOOTER ================= -->
-
-<style>
-
-.footer{
-    margin-top:80px;
-    background:#111827;
-    color:#fff;
-}
-
-.footer-container{
-    width:90%;
-    margin:auto;
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr 1fr 1fr;
-    gap:40px;
-    padding:70px 0 45px;
-}
-
-.footer h3{
-    color:#22c55e;
-    margin-bottom:20px;
-    font-size:20px;
-}
-
-.footer-logo h2{
-    font-size:34px;
-    margin-bottom:18px;
-}
-
-.footer-logo span{
-    color:#22c55e;
-}
-
-.footer-logo p{
-    color:#d1d5db;
-    line-height:1.8;
-    margin-bottom:25px;
-}
-
-.footer-logo a{
-    color:white;
-    text-decoration:none;
-    font-size:28px;
-    margin-right:12px;
-}
-
-.footer-menu a,
-.footer-contact a{
-    display:block;
-    color:#d1d5db;
-    text-decoration:none;
-    margin-bottom:14px;
-    transition:.3s;
-}
-
-.footer-menu a:hover,
-.footer-contact a:hover{
-    color:#22c55e;
-}
-
-.footer hr{
-    border:none;
-    border-top:1px solid rgba(255,255,255,.1);
-}
-
-.footer-bottom{
-    width:90%;
-    margin:auto;
-    padding:25px 0;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    color:#cbd5e1;
-    flex-wrap:wrap;
-    gap:15px;
-}
-
-@media(max-width:900px){
-
-.footer-container{
-grid-template-columns:1fr;
-text-align:center;
-}
-
-.footer-bottom{
-flex-direction:column;
-text-align:center;
-}
-
-}
-
-</style>
-
-<footer class="footer">
-
-<div class="footer-container">
-
-    <!-- LOGO -->
-
-    <div class="footer-logo">
-
-        <h2>Run<span>Snap</span></h2>
-
-        <p>
-
-Website Dokumentasi Foto Event Lari yang membantu peserta menemukan
-foto berdasarkan Event & Timestamp, Nomor Bib, dan Face Recognition
-secara cepat dan mudah.
-
-        </p>
-
-        <a href="#">📷</a>
-        <a href="#">💬</a>
-        <a href="#">📧</a>
-
+    <div class="grid">
+        <div class="card">
+            <h2>🏃 Marathon</h2>
+            <p>Dokumentasi lomba Marathon.</p>
+            <a href="{% url 'hasil' %}?kategori=Marathon" class="btn">Lihat Foto</a>
+        </div>
+        <div class="card">
+            <h2>🏃 Half Marathon</h2>
+            <p>Dokumentasi lomba Half Marathon.</p>
+            <a href="{% url 'hasil' %}?kategori=Half Marathon" class="btn">Lihat Foto</a>
+        </div>
+        <div class="card">
+            <h2>🏅 10K Run</h2>
+            <p>Dokumentasi lomba 10 Kilometer.</p>
+            <a href="{% url 'hasil' %}?kategori=10K" class="btn">Lihat Foto</a>
+        </div>
+        <div class="card">
+            <h2>🎽 5K Fun Run</h2>
+            <p>Dokumentasi lomba 5 Kilometer.</p>
+            <a href="{% url 'hasil' %}?kategori=5K" class="btn">Lihat Foto</a>
+        </div>
+        <div class="card">
+            <h2>👨‍👩‍👧 Family Run</h2>
+            <p>Dokumentasi Family Run.</p>
+            <a href="{% url 'hasil' %}?kategori=Family Run" class="btn">Lihat Foto</a>
+        </div>
+        <div class="card">
+            <h2>❤️ Charity Run</h2>
+            <p>Dokumentasi Charity Run.</p>
+            <a href="{% url 'hasil' %}?kategori=Charity Run" class="btn">Lihat Foto</a>
+        </div>
     </div>
-
-    <!-- PESERTA -->
-
-    <div class="footer-menu">
-
-        <h3>Peserta</h3>
-
-        <a href="{% url 'search' %}">
-            Cari Foto
-        </a>
-
-        <a href="#">
-            Event & Timestamp
-        </a>
-
-        <a href="#">
-            Nomor Bib
-        </a>
-
-        <a href="#">
-            Face Recognition
-        </a>
-
-    </div>
-
-    <!-- MENU -->
-
-    <div class="footer-menu">
-
-        <h3>Menu</h3>
-
-        <a href="{% url 'dashboard' %}">
-            Beranda
-        </a>
-
-        <a href="#">
-            Events
-        </a>
-
-        <a href="#">
-            Kategori
-        </a>
-
-        <a href="{% url 'tentang_kami' %}">
-            Tentang Kami
-        </a>
-
-    </div>
-
-    <!-- KONTAK -->
-
-    <div class="footer-contact">
-
-        <h3>Kontak</h3>
-
-        <a href="#">
-            📧 runsnap@gmail.com
-        </a>
-
-        <a href="#">
-            📍 Jakarta
-        </a>
-
-        <a href="#">
-            ☎ +62 812-3456-7890
-        </a>
-
-    </div>
-
-    <!-- LEGAL -->
-
-    <div class="footer-menu">
-
-        <h3>Legal</h3>
-
-        <a href="#">
-            Privacy Policy
-        </a>
-
-        <a href="#">
-            Terms & Conditions
-        </a>
-
-    </div>
-
 </div>
-
-<hr>
-
-<div class="footer-bottom">
-
-    <div>
-
-        © 2026 <b>RunSnap</b> |
-        Website Dokumentasi Foto Event Lari
-
-    </div>
-
-    <div>
-
-        Dibuat untuk Skripsi |
-        Universitas
-
-    </div>
-
-</div>
-
-</footer>
-
-</body>
-</html>
+{% endblock %}

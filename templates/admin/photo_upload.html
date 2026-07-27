@@ -1,0 +1,51 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Upload Foto - RunSnap{% endblock %}
+{% block content %}
+<a href="{% url 'admin_photo_list' %}" class="back-btn">← Kembali ke Daftar Foto</a>
+<div class="card" style="max-width:600px; margin:0 auto; padding:35px;">
+    <h2 style="text-align:center; margin-bottom:25px; color:#fef08a; font-size:24px;">📸 Upload Foto Baru</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="error-message">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% if field.field.widget.input_type == 'file' %}
+                <div style="position:relative;">
+                    <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" id="{{ field.id_for_label }}" required
+                           style="width:100%; padding:14px; border-radius:16px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:white; font-size:14px; outline:none; box-sizing:border-box;">
+                </div>
+            {% elif field.field.widget.input_type == 'datetime-local' %}
+                <input type="datetime-local" name="{{ field.name }}" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" required
+                       style="width:100%; padding:14px; border-radius:16px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:white; font-size:14px; outline:none; box-sizing:border-box; color-scheme:dark;">
+            {% elif field.field.widget.input_type == 'select' %}
+                <select name="{{ field.name }}" id="{{ field.id_for_label }}" required
+                        style="width:100%; padding:14px; border-radius:16px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:white; font-size:14px; outline:none; box-sizing:border-box;">
+                    {% for value, label in field.field.choices %}
+                    <option value="{{ value }}" {% if field.value == value %}selected{% endif %} style="background:#14532d; color:white;">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <input type="text" name="{{ field.name }}" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" required
+                       style="width:100%; padding:14px; border-radius:16px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:white; font-size:14px; outline:none; box-sizing:border-box;">
+            {% endif %}
+            {% if field.errors %}
+            <div style="color:#fca5a5; font-size:13px; margin-top:5px;">{{ field.errors }}</div>
+            {% endif %}
+            {% if field.help_text %}
+            <div style="color:rgba(255,255,255,0.6); font-size:12px; margin-top:5px;">{{ field.help_text }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="btn-group" style="margin-top:25px;">
+            <button type="submit" class="btn btn-yellow" style="flex:1; font-size:16px; padding:14px;">📤 Upload Foto</button>
+            <a href="{% url 'admin_photo_list' %}" class="btn btn-ghost" style="flex:1; text-align:center; padding:14px;">Batal</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

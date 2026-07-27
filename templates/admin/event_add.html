@@ -1,0 +1,27 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Tambah Event - RunSnap{% endblock %}
+{% block content %}
+<a href="{% url 'admin_event_list' %}" class="back-btn">← Kembali ke Daftar Event</a>
+<div class="card" style="max-width:600px; margin:0 auto; padding:30px;">
+    <h2 style="text-align:center; margin-bottom:20px; color:#fef08a;">🏁 Tambah Event Baru</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Nama / Jenis Event</label>
+            <input type="text" name="event_type" class="form-control" placeholder="Contoh: Bandung Marathon 2026" required>
+        </div>
+        <div class="form-group">
+            <label>Tanggal & Waktu</label>
+            <input type="datetime-local" name="timestamp" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Lokasi</label>
+            <input type="text" name="location" class="form-control" placeholder="Contoh: Balai Kota, Bandung" required>
+        </div>
+        <div class="btn-group">
+            <button type="submit" class="btn btn-yellow" style="flex:1;">💾 Simpan Event</button>
+            <a href="{% url 'admin_event_list' %}" class="btn btn-ghost" style="flex:1;">Batal</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

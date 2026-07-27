@@ -1,0 +1,31 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Galeri Foto - RunSnap{% endblock %}
+{% block content %}
+<a href="{% url 'admin_dashboard' %}" class="back-btn">← Kembali ke Dashboard</a>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+    <h1 style="font-size:28px; font-weight:700;">🖼️ Galeri Foto</h1>
+</div>
+
+<div class="gallery">
+    {% for foto in fotos %}
+    <div class="photo-card">
+        {% if foto.gambar %}
+            <img src="{{ foto.gambar.url }}" alt="Foto" onerror="this.src='https://via.placeholder.com/400x250?text=Foto+Tidak+Tersedia'">
+        {% else %}
+            <img src="https://via.placeholder.com/400x250?text=No+Image">
+        {% endif %}
+        <div class="info">
+            <h3>{{ foto.nama_event|default:"-" }}</h3>
+            <p><strong>Jenis:</strong> {{ foto.jenis_event|default:"-" }}</p>
+            <p><strong>Timestamp:</strong> {{ foto.timestamp|default:"-" }}</p>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <a href="{{ foto.gambar.url }}" download class="btn btn-yellow" style="padding:6px 16px; font-size:12px;">⬇️ Download</a>
+                <a href="{% url 'admin_photo_delete' foto.id %}" class="btn btn-red" style="padding:6px 16px; font-size:12px;" onclick="return confirm('Hapus foto ini?')">🗑️ Hapus</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty">Belum ada foto.</div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -9,10 +9,20 @@ from config.db import (
 
 
 def home_view(request):
-    return render(request, 'dashboard/index.html')
+    return render(request, 'dashboard/index.html', {'active_page': 'dashboard'})
 
 
 def dasboart_view(request):
+    # Hanya admin yang boleh akses halaman ini
+    user_id = request.session.get('user_id')
+    is_logged_in = request.session.get('is_logged_in', False)
+    if not (user_id and is_logged_in):
+        return redirect('login')
+    user_data = users_collection.find_one({'_id': int(user_id)})
+    if not user_data or not (user_data.get('is_staff') or user_data.get('is_superuser')):
+        return redirect('dashboard')
+    request._mongo_user = user_data
+
     total_photos = photos_collection.count_documents({})
     total_events = events_collection.count_documents({})
 
@@ -54,7 +64,14 @@ def login_view(request):
             request.session['user_id'] = user_data['_id']
             request.session['username'] = user_data['username']
             request.session['is_logged_in'] = True
-            return redirect('dasboart')
+            request.session['is_staff'] = user_data.get('is_staff', False)
+            request.session['is_superuser'] = user_data.get('is_superuser', False)
+
+            # Redirect sesuai role
+            if user_data.get('is_staff') or user_data.get('is_superuser'):
+                return redirect('admin_dashboard')
+            else:
+                return redirect('dashboard')
         else:
             messages.error(request, 'Username atau password salah')
 
@@ -100,16 +117,13 @@ def logout_view(request):
 
 
 def search_view(request):
-    return render(request, 'dashboard/search.html')
-
+    return render(request, 'dashboard/search.html', {'active_page': 'search'})
 
 def tentang_kami_view(request):
-    return render(request, 'dashboard/tentang_kami.html')
-
+    return render(request, 'dashboard/tentang_kami.html', {'active_page': 'tentang_kami'})
 
 def events_view(request):
-    return render(request, 'dashboard/events.html')
-
+    return render(request, 'dashboard/events.html', {'active_page': 'events'})
 
 def kategori_view(request):
-    return render(request, 'dashboard/kategori.html')
+    return render(request, 'dashboard/kategori.html', {'active_page': 'kategori'})

@@ -1,52 +1,23 @@
 from django.urls import path
 from . import views
 
-from .views import (
-    home_view,
-    dasboart_view,
-    login_view,
-    register_view,
-    logout_view,
-    search_view,
-    tentang_kami_view,
-    events_view,
-)
-
 urlpatterns = [
 
     path(
         '',
-        home_view,
+        views.home_view,
         name='dashboard'
     ),
 
     path(
         'dasboart/',
-        dasboart_view,
+        views.dasboart_view,
         name='dasboart'
     ),
 
     path(
-        'login/',
-        login_view,
-        name='login'
-    ),
-
-    path(
-        'register/',
-        register_view,
-        name='register'
-    ),
-
-    path(
-        'logout/',
-        logout_view,
-        name='logout'
-    ),
-
-    path(
         'search/',
-        search_view,
+        views.search_view,
         name='search'
     ),
 
@@ -57,15 +28,15 @@ urlpatterns = [
     ),
 
     path(
-    "events/",
-    events_view,
-    name="events"
-),
+        "events/",
+        views.events_view,
+        name="events"
+    ),
 
     path(
-    "kategori/",
-    views.kategori_view,
-    name="kategori"
-),
+        "kategori/",
+        views.kategori_view,
+        name="kategori"
+    ),
 
 ]

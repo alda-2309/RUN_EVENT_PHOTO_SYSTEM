@@ -1,16 +1,16 @@
-from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
 
-    path('admin/', admin.site.urls),
+    # ADMIN — semua admin pake tema dasboart
+    path('admin/', include('dashboard.admin_urls')),
 
-    # DASHBOARD
+    # DASHBOARD — public pages
     path('', include('dashboard.urls')),
 
-    # EVENTS
+    # EVENTS — admin CRUD
     path('events/', include('events.urls')),
 
     # PHOTOS
@@ -18,6 +18,9 @@ urlpatterns = [
 
     # GALERI
     path('galeri/', include('galeri.urls')),
+
+    # USERS — auth
+    path('', include('users.urls')),
 
 ]
 

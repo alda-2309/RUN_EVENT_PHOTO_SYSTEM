@@ -421,10 +421,10 @@ grid-template-columns:1fr;
         <div class="brand">Running Event Lari Administration</div>
 
         <div class="topbar-right">
-            WELCOME, <b>{{ request.user.username|upper }}</b>
+            WELCOME, <b>{{ request.session.username|upper }}</b>
             <a href="/">VIEW SITE</a> /
             <a href="#">CHANGE PASSWORD</a> /
-            <a href="{% url 'logout' %}">LOG OUT</a>
+            <a href="{% url 'admin_logout' %}">LOG OUT</a>
         </div>
     </div>
 
@@ -509,13 +509,11 @@ grid-template-columns:1fr;
 
             <td class="actions">
 
-                <a href="{% url 'event_add' %}">
-                    + Add
-                </a>
+                <a href="{% url 'admin_event_add' %}">+ Add</a>
 
-                <a href="{% url 'event_list' %}">
-                    Change
-                </a>
+                                <a href="{% url 'admin_event_list' %}">
+                                    Change
+                                </a>
 
             </td>
         </tr>
@@ -523,17 +521,17 @@ grid-template-columns:1fr;
         <tr>
 
             <td>
-    <a href="{% url 'add_foto' %}">
+        <a href="{% url 'admin_photo_upload' %}">
         Fotos
     </a>
 </td>
 
 <td class="actions">
-    <a href="{% url 'add_foto' %}">
+    <a href="{% url 'admin_photo_upload' %}">
         + Add
     </a>
 
-    <a href="{% url 'photo_list' %}">
+    <a href="{% url 'admin_photo_list' %}">
         Change
     </a>
 </td>
