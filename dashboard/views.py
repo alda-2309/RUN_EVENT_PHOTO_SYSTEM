@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
 from django.contrib import messages
+from django.contrib.auth import logout as django_logout
 
 from config.db import (
     photos_collection, events_collection, users_collection,
@@ -48,17 +47,13 @@ def login_view(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        user = authenticate_user(username, password)
-        if user:
-            update_last_login(user['_id'])
-            # Create Django user in-memory for session
-            django_user = User(
-                id=user['_id'],
-                username=user['username'],
-                email=user.get('email', ''),
-            )
-            django_user.backend = 'config.auth_backend.MongoAuthBackend'
-            login(request, django_user)
+        user_data = authenticate_user(username, password)
+        if user_data:
+            update_last_login(user_data['_id'])
+            # Simpan session manual — bypass Django ORM login
+            request.session['user_id'] = user_data['_id']
+            request.session['username'] = user_data['username']
+            request.session['is_logged_in'] = True
             return redirect('dasboart')
         else:
             messages.error(request, 'Username atau password salah')
@@ -99,7 +94,8 @@ def register_view(request):
 
 
 def logout_view(request):
-    logout(request)
+    # Clear session manual — bypass Django auth
+    request.session.flush()
     return redirect('login')
 
 
