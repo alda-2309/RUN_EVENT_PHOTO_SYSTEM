@@ -1,0 +1,17 @@
+# Django Main App
+Django>=6.0,<7.0
+django-allauth>=65.0
+Pillow>=10.0
+
+# Face Recognition
+deepface>=0.0.93
+mediapipe>=0.10.14
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# MongoDB
+pymongo>=4.6.0
+
+# OCR Validator (optional, for ocr-validator/)
+# Tesseract: install via system package manager
+# easyocr>=1.7.0

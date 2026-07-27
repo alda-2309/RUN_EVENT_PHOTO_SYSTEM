@@ -1,11 +1,11 @@
 from pymongo import MongoClient
 
-# 1. Gunakan Connection String MongoDB Atlas Anda yang asli
-# Contoh: client = MongoClient("mongodb+srv://username:password@cluster0.xxxx.mongodb.net/")
-client = MongoClient("MASUKKAN_CONNECTION_STRING_ATLAS_DI_SINI") 
+client = MongoClient(
+    "mongodb+srv://tiaranurazm_db_user:hometownchachacha@clustermuti.mlnz2g4.mongodb.net/db_tugasakhir?retryWrites=true&w=majority",
+    tlsAllowInvalidCertificates=True,
+    serverSelectionTimeoutMS=5000
+)
 
-# 2. Nama database sesuai screenshot (db_photorun)
-db = client["db_photorun"] 
-
-# 3. Nama koleksi/tabel sesuai screenshot (photo_events)
-photo_collection = db["photo_events"]
+db = client['db_tugasakhir']
+koleksi_foto = db['photos_photoevent']
+koleksi_wajah = db['photos_faceembedding']

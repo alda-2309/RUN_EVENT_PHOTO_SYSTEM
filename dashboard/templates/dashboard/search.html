@@ -432,29 +432,42 @@ Pilih salah satu metode pencarian untuk menemukan foto terbaikmu.
 
 <section class="search-form">
 
-    
-
     <!-- Bib -->
     <div id="bibForm" class="form-box">
         <h2>🏃 Pencarian Nomor Bib</h2>
-
-        <label>Nomor Bib</label>
-        <input type="text" placeholder="Masukkan nomor bib">
-
-        <button>Cari Foto</button>
+        <form method="POST" action="{% url 'bib_search' %}">
+            {% csrf_token %}
+            <label>Nomor Bib</label>
+            <input type="text" name="bib_number" placeholder="Masukkan nomor bib" required>
+            <button type="submit">Cari Foto</button>
+        </form>
     </div>
 
     <!-- Face -->
     <div id="faceForm" class="form-box">
         <h2>😊 Face Recognition</h2>
-
-        <label>Upload Foto</label>
-        <input type="file">
-
-        <button>Cari Foto</button>
+        <form method="POST" action="{% url 'face_search' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label>Upload Foto</label>
+            <input type="file" name="foto" accept="image/*" required>
+            <button type="submit">Cari Foto</button>
+        </form>
     </div>
 
 </section>
+
+<script>
+function showForm(type) {
+    document.getElementById('bibForm').style.display = 'none';
+    document.getElementById('faceForm').style.display = 'none';
+    if (type === 'bib') {
+        document.getElementById('bibForm').style.display = 'block';
+    } else if (type === 'face') {
+        document.getElementById('faceForm').style.display = 'block';
+    }
+    document.getElementById(type + 'Form').scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+</script>
 
 <!-- ================= FOOTER ================= -->
 

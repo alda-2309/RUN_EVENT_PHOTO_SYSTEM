@@ -1,5 +1,4 @@
 from django.contrib import admin
-from .models import Event, Foto
+from .models import Foto
 
-admin.site.register(Event)
 admin.site.register(Foto)

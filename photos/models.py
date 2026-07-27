@@ -17,4 +17,4 @@ class Photo(models.Model):
     )
 
     def __str__(self):
-        return self.event.name
+        return f"{self.event.event_type} - {self.uploaded_at}"
