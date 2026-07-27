@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Detail Event Lari</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- LEAFLET -->
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<script
+src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    /* Gradasi penuh dari hijau muda (#4ade80) ke hijau tua (#14532d) dan dikunci posisinya */
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+    background-attachment: fixed;
+    color: white; /* Mengubah warna teks global menjadi putih agar kontras di atas warna hijau */
+    min-height: 100vh;
+}
+
+/* HEADER */
+
+.header{
+    /* Dibuat transparan tipis agar warna gradasi hijau menembus ke atas secara mewah */
+    background: transparent;
+    padding:20px 40px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header h1{
+    color: white;
+}
+
+/* CONTAINER */
+
+.container{
+    width:90%;
+    margin:30px auto;
+}
+
+/* CARD */
+
+.card{
+    /* Diubah menggunakan efek kaca transparan premium (glassmorphism) */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding:25px;
+    border-radius:20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* GRID */
+
+.grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:25px;
+}
+
+/* MAP */
+
+#map{
+    height:550px;
+    border-radius:15px;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Menambahkan border tipis agar peta menyatu */
+}
+
+/* INFO */
+
+.info{
+    /* Menggunakan background transparan putih tipis di dalam kartu kaca agar lebih terbaca */
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding:20px;
+    border-radius:15px;
+}
+
+.info h2{
+    margin-bottom:15px;
+    color: white;
+}
+
+.info p{
+    margin-bottom:10px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* TITIK FOTO */
+
+.photo-points{
+    margin-top:25px;
+}
+
+.point-btn{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    /* Diubah ke warna kuning lemon cerah agar kontras dan memikat perhatian pengguna */
+    background: #fef08a;
+    color: #14532d; /* Warna teks tombol disesuaikan ke hijau tua */
+    cursor:pointer;
+    font-weight:700;
+    transition: .3s;
+}
+
+.point-btn:hover{
+    background: #fff59d;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+}
+
+.back-btn{
+    display:inline-block;
+    margin-bottom:20px;
+    text-decoration:none;
+    /* Menggunakan warna kuning lemon cerah yang senada dengan tombol titik foto */
+    background: #fef08a;
+    color: #14532d;
+    padding:12px 20px;
+    border-radius:10px;
+    font-weight: 700;
+    transition: .3s;
+}
+
+.back-btn:hover{
+    background: #fff59d;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+}
+
+@media(max-width:900px){
+
+.grid{
+    grid-template-columns:1fr;
+}
+
+#map{
+    height:400px;
+}
+
+}
+
+/* MARKER NOMOR DI PETA */
+.number-marker{
+    width:30px;
+    height:30px;
+    background:#ef4444; /* Tetap merah menyala agar terlihat mencolok dan jelas di dalam peta basemap */
+    color:white;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    border:3px solid white;
+    box-shadow:0 3px 8px rgba(0,0,0,.3);
+    cursor:pointer;
+    transition:.2s;
+}
+
+.number-marker:hover{
+    transform:scale(1.15);
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="header">
+    <h1>🏃 Bandung Color Run 2026</h1>
+</div>
+
+<div class="container">
+
+    <a href="/" class="back-btn">
+        ← Kembali ke Beranda
+    </a>
+
+    <div class="card">
+
+        <div class="grid">
+
+            <!-- MAP -->
+            <div id="map"></div>
+
+            <!-- INFO -->
+            <div class="info">
+
+                <h2>Informasi Event</h2>
+
+                <p>📍 Lokasi : Gedung Sate Bandung</p>
+
+                <p>🕔 Start : 05.00 WIB</p>
+
+                <p>🏁 Finish : 09.00 WIB</p>
+
+                <p>💧 Water Station :</p>
+
+                <ul>
+                    <li>KM 1</li>
+                    <li>KM 3</li>
+                    <li>KM 5</li>
+                </ul>
+
+                <br>
+
+                <p>🚑 Medical Point :</p>
+
+                <ul>
+                    <li>KM 2</li>
+                </ul>
+
+                <div class="photo-points">
+
+                    <h2>📸 Titik Dokumentasi</h2>
+
+                    <button class="point-btn">
+                        START
+                    </button>
+
+                    <button class="point-btn">
+                        KM 1
+                    </button>
+
+                    <button class="point-btn">
+                        KM 3
+                    </button>
+
+                    <button class="point-btn">
+                        KM 5
+                    </button>
+
+                    <button class="point-btn">
+                        FINISH
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* PETA BANDUNG */
+
+var map = L.map('map').setView(
+[-6.9175,107.6191],
+14
+);
+
+/* OPEN STREET MAP */
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+    attribution:'© OpenStreetMap'
+}
+).addTo(map);
+
+/* TITIK EVENT */
+
+var start  = [-6.9218,107.6285];
+
+var finish = [-6.9222,107.6280];
+
+var km1    = [-6.911943514783501, 107.63373762121867]; // Jl. Supratman
+
+var km2    = [-6.905829076967106, 107.62927954765433]; // Jl. Ciliwung
+
+var km3    = [-6.907992162077544, 107.6237302520191]; // Jl. R.E Martadinata
+
+var km4 = [-6.913468833017716, 107.62910624210168]; // Jl Laswi
+
+var km5 = [-6.91781157015721, 107.63302181862615]; // Jl Laswi bagian atas
+
+var water1 = [-6.9075,107.6145];
+
+var water2 = [-6.9185,107.6265];
+
+
+var startIcon = L.divIcon({
+    html:"🏁",
+    className:"",
+    iconSize:[30,30]
+});
+
+var finishIcon = L.divIcon({
+    html:"🏆",
+    className:"",
+    iconSize:[30,30]
+});
+
+var waterIcon = L.divIcon({
+    html:"💧",
+    className:"",
+    iconSize:[30,30]
+});
+
+function numberIcon(number){
+
+    return L.divIcon({
+
+        className:"",
+        html:`
+        <div class="number-marker">
+            ${number}
+        </div>
+        `,
+        iconSize:[30,30],
+        iconAnchor:[15,15]
+
+    });
+
+}
+
+
+/* ===========================
+   START
+=========================== */
+
+L.marker(start,{
+    icon:startIcon
+})
+.addTo(map)
+.bindPopup(`
+    <b>🏁 START</b><br>
+    Bandung Color Run 2026
+`);
+
+
+/* =====================================
+   KM 1
+===================================== */
+
+L.marker(km1,{
+    icon:numberIcon(1)
+})
+.addTo(map)
+.bindPopup(`
+    <b>KM 1</b><br>
+    Jl. Supratman
+`);
+
+
+/* =====================================
+   KM 2
+===================================== */
+
+L.marker(km2,{
+    icon:numberIcon(2)
+})
+.addTo(map)
+.bindPopup(`
+    <b>KM 2</b><br>
+    Jl. Ciliwung
+`);
+
+
+/* =====================================
+   KM 3
+===================================== */
+
+L.marker(km3,{
+    icon:numberIcon(3)
+})
+.addTo(map)
+.bindPopup(`
+    <b>KM 3</b><br>
+    Jl. R.E. Martadinata
+`);
+
+
+/* =====================================
+   KM 4
+===================================== */
+
+L.marker(km4,{
+    icon:numberIcon(4)
+})
+.addTo(map)
+.bindPopup(`
+    <b>KM 4</b><br>
+    Jl. Laswi
+`);
+
+
+/* =====================================
+   KM 5
+===================================== */
+
+L.marker(km5,{
+    icon:numberIcon(5)
+})
+.addTo(map)
+.bindPopup(`
+    <b>KM 5</b><br>
+    Area Finish
+`);
+
+
+/* =====================================
+   WATER STATION 1
+===================================== */
+
+L.marker(water1,{
+    icon:waterIcon
+})
+.addTo(map)
+.bindPopup(`
+    <b>💧 Water Station 1</b>
+`);
+
+
+/* =====================================
+   WATER STATION 2
+===================================== */
+
+L.marker(water2,{
+    icon:waterIcon
+})
+.addTo(map)
+.bindPopup(`
+    <b>💧 Water Station 2</b>
+`);
+
+
+/* =====================================
+   FINISH
+===================================== */
+
+L.marker(finish,{
+    icon:finishIcon
+})
+.addTo(map)
+.bindPopup(`
+    <b>🏆 FINISH</b><br>
+    Bandung Color Run 2026
+`);
+
+</script>
+
+</body>
+</html>

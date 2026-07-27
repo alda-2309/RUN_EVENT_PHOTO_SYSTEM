@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Pencarian Foto Event</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    /* Gradasi penuh dari hijau muda (#4ade80) ke hijau tua (#14532d) dan dikunci posisinya */
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+    background-attachment: fixed;
+    color: white; /* Mengubah teks global halaman menjadi putih agar kontras di atas warna hijau */
+    min-height: 100vh;
+}
+
+/* Navbar */
+
+.navbar{
+    width:100%;
+    /* Dibuat transparan tipis agar warna gradasi hijau di body menembus ke atas secara mulus */
+    background: transparent;
+    padding:18px 60px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    color: white;
+}
+
+.logo span{
+    color: #fef08a; /* Aksen warna kuning lemon lembut untuk teks pemanis logo */
+}
+
+.menu{
+    display:flex;
+    gap:30px;
+}
+
+.menu a{
+    text-decoration:none;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight:600;
+    transition: .3s;
+}
+
+.menu a:hover{
+    color: white;
+}
+
+/* Hero */
+
+.hero{
+    text-align:center;
+    padding:60px 20px;
+}
+
+.hero h1{
+    font-size:42px;
+    color: white;
+}
+
+.hero p{
+    margin-top:15px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Form */
+
+.search-box{
+
+    width:700px;
+    margin:30px auto;
+    /* Diubah menggunakan efek kaca transparan premium (glassmorphism) */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    padding:35px;
+
+    border-radius:20px;
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+
+}
+
+.form-group{
+
+    margin-bottom:20px;
+
+}
+
+.form-group label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-weight:600;
+    color: white; /* Mengubah teks label menjadi putih agar terbaca jelas */
+
+}
+
+.form-group select,
+.form-group input{
+
+    width:100%;
+
+    padding:14px;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius:10px;
+
+    font-size:16px;
+    background: white; /* Tetap putih agar tulisan pengguna mudah diinput dan dibaca */
+    color: #111827;
+    transition: .3s;
+
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.25); /* Efek pendaran fokus disesuaikan ke hijau daun */
+}
+
+button{
+
+    width:100%;
+
+    padding:15px;
+
+    /* Tombol utama disesuaikan menggunakan warna kuning lemon cerah agar pop-out di atas hijau */
+    background: #fef08a;
+
+    color: #14532d; /* Warna teks tombol disesuaikan ke hijau tua */
+
+    border:none;
+
+    border-radius:10px;
+
+    font-size:17px;
+
+    font-weight: 700;
+
+    cursor:pointer;
+    transition: .3s;
+
+}
+
+button:hover{
+
+    background: #fff59d;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+
+}
+
+/* Responsive */
+
+@media(max-width:768px){
+
+.search-box{
+
+width:95%;
+
+}
+
+.navbar{
+
+padding:15px;
+
+flex-direction:column;
+
+gap:15px;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- Navbar -->
+
+<nav class="navbar">
+
+<div class="logo">
+
+<span>Running Event Lari</span>
+
+</div>
+
+<div class="menu">
+
+<a href="{% url 'dashboard' %}">Beranda</a>
+
+<a href="{% url 'search' %}">Cari Foto</a>
+
+</div>
+
+</nav>
+
+<!-- Hero -->
+
+<section class="hero">
+
+<h1>
+
+Cari Foto Berdasarkan Event & Timestamp
+
+</h1>
+
+<p>
+
+Pilih event dan masukkan timestamp untuk menemukan foto Anda.
+
+</p>
+
+</section>
+
+<!-- Form -->
+
+<div class="search-box">
+
+<form action="{% url 'hasil' %}" method="GET">
+
+<div class="form-group">
+
+<label>Jenis Event</label>
+
+<select name="event">
+
+<option value="">-- Pilih Event --</option>
+
+<option>Fun Run 5k</option>
+<option>Fun Run 10k</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>Timestamp</label>
+
+<input
+type="time"
+name="timestamp"
+required>
+
+</div>
+
+<button type="submit">
+
+🔍 Cari Foto
+
+</button>
+
+</form>
+
+</div>
+
+</body>
+</html>

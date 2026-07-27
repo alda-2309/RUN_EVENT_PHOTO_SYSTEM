@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentasi Event Lari</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
+body{
+    /* Gradasi penuh dari hijau muda (#4ade80) ke hijau tua (#14532d) */
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+    background-attachment: fixed; /* Menjaga gradasi tetap penuh dan presisi saat di-scroll */
+    color: white; /* Mengubah teks global menjadi putih agar kontras dengan latar belakang */
+    min-height: 100vh;
+}
+
+/* NAVBAR */
+
+.navbar{
+    width:100%;
+    /* Dibuat transparan penuh agar warna gradasi hijau di body menembus ke atas */
+    background: transparent;
+    padding:16px 60px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    /* Garis bawah dibuat transparan tipis agar menyatu dengan latar belakang */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logo{
+    font-size:18px;
+    font-weight:700;
+    color: white;
+}
+
+.menu{
+    display:flex;
+    gap:20px;
+}
+
+.menu a{
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration:none;
+    font-size:15px;
+    font-weight:600;
+    transition: color 0.3s ease;
+}
+
+.menu a:hover{
+    color: white;
+}
+
+/* HERO */
+
+.hero{
+    width:82%;
+    margin:30px auto;
+    padding:65px 40px;
+    border-radius:28px;
+    /* Efek kaca (glassmorphism) transparan agar menyatu dengan background gradasi hijau */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align:center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.hero h1{
+    font-size:56px;
+    margin-bottom:16px;
+    font-weight:700;
+    color: white;
+}
+
+.hero p{
+    font-size:18px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* SEARCH */
+
+.search-box{
+    width:82%;
+    margin:30px auto;
+    /* Menerapkan efek kaca transparan yang sama */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding:26px;
+    border-radius:22px;
+    display:flex;
+    gap:16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.search-box input{
+    flex:1;
+    padding:14px;
+    border:1px solid rgba(255, 255, 255, 0.3);
+    border-radius:12px;
+    font-size:16px;
+    outline:none;
+    /* Input tetap putih agar teks mudah dibaca saat mengetik */
+    background: white;
+    color:#111827;
+}
+
+.search-box input:focus{
+    border:1px solid #fef08a; /* Border kuning cerah saat input diklik */
+    box-shadow: 0 0 0 3px rgba(254, 240, 138, 0.3);
+}
+
+.search-box button{
+    width:220px;
+    border:none;
+    border-radius:12px;
+    /* Tombol utama berwarna kuning agar kontras di atas gradasi hijau */
+    background: #fef08a;
+    color: #14532d; /* Teks hijau tua agar terbaca jelas */
+    font-size:22px;
+    font-weight: 700;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.search-box button:hover{
+    background: #fff59d;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+}
+
+/* GALLERY */
+
+.gallery{
+    width:82%;
+    margin:40px auto;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:22px;
+}
+
+.card{
+    /* Menerapkan efek kaca transparan pada kartu */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.card img{
+    width:100%;
+    height:220px;
+    object-fit:cover;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.card-content{
+    padding:18px;
+}
+
+.card h2{
+    font-size:20px;
+    margin-bottom:10px;
+    color: white;
+}
+
+.card p{
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom:10px;
+    line-height:1.5;
+    font-size:14px;
+}
+
+.btn-group{
+    display:flex;
+    gap:12px;
+    margin-top:15px;
+}
+
+.btn{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+    font-size:14px;
+    transition: .3s;
+}
+
+.download{
+    /* Download menggunakan warna kuning agar kontras */
+    background: #fef08a;
+    color: #14532d;
+}
+
+.download:hover{
+    background: #fff59d;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+}
+
+.delete{
+    /* Delete menggunakan merah, tapi disesuaikan pendarannya */
+    background:#ef4444;
+}
+
+.delete:hover{
+    background:#dc2626;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.empty{
+    width:100%;
+    text-align:center;
+    font-size:22px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top:40px;
+}
+
+@media(max-width:1000px){
+
+    .hero, .search-box, .gallery {
+        width: 90%;
+    }
+
+    .gallery{
+        grid-template-columns:1fr;
+    }
+
+    .search-box{
+        flex-direction:column;
+    }
+
+    .search-box button{
+        width:100%;
+        height:55px;
+    }
+
+    .hero h1{
+        font-size:38px;
+    }
+
+}
+
+</style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            🏃 Event Lari
+        </div>
+
+        <div class="menu">
+
+            <a href="/">Home</a>
+
+            {% if user.is_authenticated %}
+                <a href="/dashboard/">Dashboard</a>
+                <a href="/logout/">Logout</a>
+            {% else %}
+                <a href="/login/">Admin</a>
+            {% endif %}
+
+        </div>
+
+    </nav>
+
+    <!-- HERO -->
+
+    <div class="hero">
+
+        <h1>Dokumentasi Event Lari</h1>
+
+        <p>
+            Cari foto event lari berdasarkan event dan timestamp
+        </p>
+
+    </div>
+
+    <!-- SEARCH -->
+
+    <form method="GET" class="search-box">
+
+        <input
+            type="text"
+            name="event"
+            placeholder="Cari Nama Event"
+            value="{{ request.GET.event }}"
+        >
+
+        <input
+            type="date"
+            name="tanggal"
+            value="{{ request.GET.tanggal }}"
+        >
+
+        <button type="submit">
+            Cari
+        </button>
+
+    </form>
+
+    <!-- GALLERY -->
+
+    <!-- GALLERY -->
+
+<div class="gallery">
+
+    {% for foto in fotos %}
+
+    <div class="card">
+
+        {% if foto.gambar %}
+            <img src="{{ foto.gambar.url }}" alt="Foto Event">
+        {% else %}
+            <img src="https://via.placeholder.com/500x300?text=No+Image" alt="No Image">
+        {% endif %}
+
+        <div class="card-content">
+
+            <h2>{{ foto.nama_event }}</h2>
+
+            <p>
+                <strong>Jenis Event:</strong>
+                {{ foto.jenis_event }}
+            </p>
+
+            <p>
+                <strong>Timestamp:</strong>
+                {{ foto.timestamp }}
+            </p>
+
+            <div class="btn-group">
+
+                <a href="{{ foto.gambar.url }}" download style="flex:1;text-decoration:none;">
+                    <button type="button" class="btn download" style="width:100%;">
+                        Download
+                    </button>
+                </a>
+
+            </div>
+
+            <div class="btn-group" style="margin-top:10px;">
+
+                <a href="{% url 'delete_foto' foto.id %}" style="flex:1;text-decoration:none;">
+                    <button type="button" class="btn delete" style="width:100%;">
+                        Hapus
+                    </button>
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <div class="empty">
+        Belum ada foto diupload
+    </div>
+
+    {% endfor %}
+
+</div>
+
+</body>
+</html>

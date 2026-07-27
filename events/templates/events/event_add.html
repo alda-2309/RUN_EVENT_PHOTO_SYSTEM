@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Event</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    /* Gradasi penuh dari hijau muda ke hijau tua dan dikunci posisinya agar presisi saat di-scroll */
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+    background-attachment: fixed;
+    color: white; /* Mengubah teks global halaman agar kontras di atas warna hijau */
+    min-height: 100vh;
+}
+
+.container{
+    width:80%;
+    max-width:900px;
+    margin:40px auto;
+}
+
+h1{
+    font-size:34px;
+    font-weight:700; /* Dibuat sedikit tebal agar lebih tegas dan modern */
+    margin-bottom:30px;
+    color: white;
+}
+
+.form-box{
+    /* Diubah menjadi efek kaca transparan premium agar menyatu dengan latar belakang penuh */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow:hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.form-row{
+    display:flex;
+    align-items:center;
+    min-height:75px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding:15px 25px;
+}
+
+.form-row label{
+    width:180px;
+    font-size:16px;
+    font-weight:600;
+    color: white; /* Mengubah teks label menjadi putih agar mudah dibaca */
+}
+
+.form-row input,
+.form-row select{
+    flex:1;
+    max-width:450px;
+    padding:10px 14px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    font-size:15px;
+    color: #111827; /* Teks dalam input tetap gelap agar kontras saat mengetik */
+}
+
+.form-row input:focus,
+.form-row select:focus{
+    outline:none;
+    border-color:#16a34a;
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.25); /* Efek pendaran fokus disesuaikan ke hijau daun */
+}
+
+.button-area{
+    margin-top:25px;
+    /* Dibuat semi-transparan premium agar menyatu dengan komponen form di atasnya */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius:10px;
+    padding:20px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.btn{
+    border:none;
+    background: #fef08a; /* Tombol utama menggunakan warna kuning lemon cerah agar pop-out di atas hijau */
+    color: #14532d; /* Warna teks tombol disesuaikan ke hijau tua */
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700; /* Dipertebal untuk meningkatkan keterbacaan */
+    cursor:pointer;
+    transition: .3s;
+}
+
+.btn:hover{
+    background: #fff59d;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+}
+
+@media(max-width:768px){
+
+    .container{
+        width:95%;
+    }
+
+    .form-row{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:10px;
+    }
+
+    .form-row label{
+        width:100%;
+    }
+
+    .form-row input,
+    .form-row select{
+        width:100%;
+        max-width:none;
+    }
+
+    .button-area{
+        flex-direction:column;
+    }
+
+    .btn{
+        width:100%;
+    }
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Add Event</h1>
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+        <div class="form-box">
+
+            <!-- Jenis Event -->
+            <div class="form-row">
+                <label>Jenis Event:</label>
+
+                <select name="event_type">
+
+                    <option value="Marathon">Marathon</option>
+                    <option value="Fun Run">Fun Run 5k</option>
+                    <option value="Fun Run">Fun Run 10k</option>
+                    <option value="Trail Run">Trail Run</option>
+                    <option value="Night Run">Night Run</option>
+
+                </select>
+            </div>
+
+            <!-- Timestamp -->
+            <div class="form-row">
+                <label>Timestamp:</label>
+
+                <input type="datetime-local"
+                       name="timestamp"
+                       required>
+            </div>
+
+            <!-- Lokasi -->
+            <div class="form-row">
+                <label>Lokasi:</label>
+
+                <input type="text"
+                       name="location"
+                       required>
+            </div>
+
+        </div>
+
+        <div class="button-area">
+
+            <button type="submit" class="btn">
+                SAVE
+            </button>
+
+            <button type="submit"
+                    name="_addanother"
+                    class="btn">
+                Save and add another
+            </button>
+
+            <button type="submit"
+                    name="_continue"
+                    class="btn">
+                Save and continue editing
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+</html>

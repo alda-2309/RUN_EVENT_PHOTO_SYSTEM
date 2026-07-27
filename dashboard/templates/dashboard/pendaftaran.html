@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulir Pendaftaran Event - RunSnap</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 40px 20px;
+            color: #1f2937;
+        }
+        .form-container {
+            max-width: 600px;
+            background: #ffffff;
+            margin: 0 auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-top: 0;
+            color: #111827;
+            border-bottom: 2px solid #22c55e;
+            padding-bottom: 10px;
+        }
+        .summary-box {
+            background-color: #f9fafb;
+            border-left: 4px solid #eab308;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        .summary-box p {
+            margin: 5px 0;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        input[type="text"], input[type="email"], input[type="tel"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+        }
+        .btn-submit {
+            background-color: #eab308;
+            color: #000000;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #ca8a04;
+        }
+        .btn-back {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #4b5563;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .btn-back:hover {
+            color: #111827;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <!-- Tombol kembali ke halaman utama dashboard -->
+        <a href="{% url 'dashboard' %}" class="btn-back">← Kembali ke Beranda</a>
+
+        <h2>Formulir Pendaftaran Peserta</h2>
+        
+        <!-- Kotak Ringkasan Pesanan dari Pop-up sebelumnya -->
+        <div class="summary-box">
+            <p>🏃‍♂️ Event: <span style="color: #111827;">{{ nama_event }}</span></p>
+            <p>🎫 Jumlah Tiket: <span style="color: #111827;">{{ jumlah_tiket }} Tiket</span></p>
+        </div>
+
+        <!-- Form Input Data Diri Peserta -->
+        <form action="#" method="POST">
+            {% csrf_csrf_token %} <!-- Proteksi keamanan bawaan Django -->
+            
+            <div class="form-group">
+                <label for="nama">Nama Lengkap (Sesuai KTP)</label>
+                <input type="text" id="nama" name="nama" placeholder="Masukkan nama lengkap Anda" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Alamat Email Aktif</label>
+                <input type="email" id="email" name="email" placeholder="contoh@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="whatsapp">Nomor WhatsApp (Untuk Pengiriman E-Ticket)</label>
+                <input type="tel" id="whatsapp" name="whatsapp" placeholder="0812XXXXXXXX" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ukuran_jersey">Ukuran Jersey</label>
+                <select id="ukuran_jersey" name="ukuran_jersey" required>
+                    <option value="">-- Pilih Ukuran Jersey --</option>
+                    <option value="S">S (Small)</option>
+                    <option value="M">M (Medium)</option>
+                    <option value="L">L (Large)</option>
+                    <option value="XL">XL (Extra Large)</option>
+                    <option value="XXL">XXL (Double Extra Large)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="gol_darah">Golongan Darah (Untuk Keperluan Medis Event)</label>
+                <select id="gol_darah" name="gol_darah">
+                    <option value="-">Tidak Tahu / Pilih</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="AB">AB</option>
+                    <option value="O">O</option>
+                </select>
+            </div>
+
+            <!-- Kirim data event & tiket tersembunyi agar ikut tersimpan ke database saat submit -->
+            <input type="hidden" name="nama_event" value="{{ nama_event }}">
+            <input type="hidden" name="jumlah_tiket" value="{{ jumlah_tiket }}">
+
+            <button type="submit" class="btn-submit">Lanjutkan ke Pembayaran</button>
+        </form>
+    </div>
+
+</body>
+</html>

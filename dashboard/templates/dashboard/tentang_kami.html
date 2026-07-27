@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tentang Kami | Running Event Lari</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    /* Gradasi penuh dari hijau muda ke hijau tua dan di-lock posisinya agar konsisten saat halaman di-scroll */
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+    background-attachment: fixed;
+    color: white; /* Mengubah warna teks global menjadi putih agar kontras di atas warna hijau */
+    min-height: 100vh;
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar{
+    width:100%;
+    /* Dibuat transparan penuh agar warna gradasi body menembus ke atas */
+    background: transparent;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 60px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 30px rgba(0,0,0,.03);
+}
+
+.logo{
+    font-size:28px;
+    font-weight:800;
+    color: white;
+}
+
+.logo span {
+    color: white; /* Mengubah teks logo menjadi putih */
+}
+
+.menu{
+    display:flex;
+    gap:35px;
+}
+
+.menu a{
+    text-decoration:none;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight:600;
+    transition: .3s;
+}
+
+.menu a:hover{
+    color: white;
+}
+
+/* ================= HERO ================= */
+
+.hero{
+    padding:90px 20px;
+    text-align:center;
+}
+
+.hero h1{
+    font-size:52px;
+    margin-bottom:15px;
+    color: white;
+}
+
+.hero p{
+    font-size:18px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ================= SECTION ================= */
+
+.section{
+    width:85%;
+    margin:70px auto;
+}
+
+.section-title{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+.section-title h2{
+    font-size:38px;
+    color: white;
+}
+
+.section-title p{
+    color: rgba(255, 255, 255, 0.8);
+    margin-top:10px;
+}
+
+/* ================= CARD ================= */
+
+.card-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:25px;
+}
+
+.card{
+    /* Menggunakan efek kaca transparan premium agar menyatu dengan background gradasi */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding:30px;
+    border-radius:18px;
+    text-align:center;
+    box-shadow:0 8px 32px rgba(0,0,0,.1);
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-8px);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.card h3{
+    margin:18px 0;
+    color: #fef08a; /* Mengubah judul card menggunakan warna kuning lemon agar kontras */
+}
+
+.card p{
+    color: rgba(255, 255, 255, 0.8);
+    line-height:1.7;
+}
+
+/* ================= VISI ================= */
+
+.visi{
+    /* Menerapkan efek kaca transparan bernuansa hijau */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding:40px;
+    border-radius:20px;
+    text-align:center;
+    box-shadow:0 8px 32px rgba(0,0,0,.1);
+}
+
+.visi p{
+    margin-top:20px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height:1.8;
+}
+
+/* ================= TIM ================= */
+
+.team{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+}
+
+.member{
+    /* Menerapkan efek kaca transparan pada kartu tim member */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius:18px;
+    padding:30px;
+    text-align:center;
+    box-shadow:0 8px 32px rgba(0,0,0,.1);
+}
+
+.avatar{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background: #fef08a; /* Warna latar belakang avatar disesuaikan kontras dengan warna kuning lemon */
+    color: #14532d; /* Warna ikon/huruf di dalam avatar diubah menjadi hijau tua */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:auto;
+    font-size:35px;
+    margin-bottom:20px;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.3);
+}
+
+.member h3{
+    margin-bottom:8px;
+    color: white;
+}
+
+.member p{
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* ================= FOOTER ================= */
+
+.footer{
+    margin-top:80px;
+    /* Latar belakang footer diubah menjadi hijau paling tua dari palet gradasi agar tampak mulus */
+    background: #104324;
+    color: rgba(255, 255, 255, 0.9);
+    text-align:center;
+    padding:25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="navbar">
+
+<div class="logo">
+<span>Running Event Lari</span>
+</div>
+
+<div class="menu">
+
+<a href="{% url 'dashboard' %}">Beranda</a>
+
+<a href="{% url 'search' %}">Cari Foto</a>
+
+<a href="{% url 'events' %}">Events</a>
+
+<a href="{% url 'kategori' %}">Kategori</a>
+
+<a href="{% url 'tentang_kami' %}">Tentang Kami</a>
+
+</div>
+
+</nav>
+
+<!-- ================= HERO ================= -->
+
+<section class="hero">
+
+<h1>Tentang Running Event Lari</h1>
+
+<p>
+Website Dokumentasi Foto Event Lari
+yang membantu peserta menemukan foto
+secara cepat dan mudah.
+</p>
+
+</section>
+
+<!-- ================= TENTANG ================= -->
+
+<section class="section">
+
+<div class="section-title">
+
+<h2>Apa itu Running Event Lari?</h2>
+
+</div>
+
+<div class="visi">
+
+<p>
+
+Running Event Lari merupakan website dokumentasi foto event lari yang dirancang
+untuk membantu peserta menemukan foto mereka secara cepat menggunakan
+fitur pencarian berdasarkan Event, Timestamp, Nomor Bib,
+serta Face Recognition.
+
+Website ini juga memudahkan panitia dalam mengelola dokumentasi
+foto event secara lebih terstruktur.
+
+</p>
+
+</div>
+
+</section>
+
+<!-- ================= VISI ================= -->
+
+<section class="section">
+
+<div class="section-title">
+
+<h2>Visi</h2>
+
+</div>
+
+<div class="visi">
+
+<p>
+
+Menjadi platform dokumentasi foto event lari yang modern,
+mudah digunakan, dan mampu memberikan pengalaman pencarian
+foto secara cepat, akurat, serta efisien.
+
+</p>
+
+</div>
+
+</section>
+
+<!-- ================= MISI ================= -->
+
+<section class="section">
+
+<div class="section-title">
+
+<h2>Misi</h2>
+
+</div>
+
+<div class="card-grid">
+
+<div class="card">
+
+<h3>📸 Dokumentasi</h3>
+
+<p>
+Mengelola dokumentasi foto event secara terstruktur.
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>⚡ Pencarian Cepat</h3>
+
+<p>
+Menyediakan pencarian berdasarkan Event,
+Timestamp, Nomor Bib dan Face Recognition.
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>😊 User Friendly</h3>
+
+<p>
+Memberikan tampilan sederhana dan mudah digunakan
+oleh seluruh peserta.
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>☁ Teknologi Modern</h3>
+
+<p>
+Memanfaatkan teknologi web modern
+untuk meningkatkan kualitas layanan.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ================= TUJUAN ================= -->
+
+<section class="section">
+
+<div class="section-title">
+
+<h2>Tujuan Website</h2>
+
+</div>
+
+<div class="card-grid">
+
+<div class="card">
+Mempermudah peserta menemukan foto event.
+</div>
+
+<div class="card">
+Mengurangi waktu pencarian foto.
+</div>
+
+<div class="card">
+Menyediakan dokumentasi event yang terstruktur.
+</div>
+
+<div class="card">
+Memberikan pengalaman pengguna yang lebih baik.
+</div>
+
+</div>
+
+</section>
+
+<!-- ================= TIM ================= -->
+
+<section class="section">
+
+<div class="section-title">
+
+<h2>Tim Pengembang</h2>
+
+</div>
+
+<div class="team">
+
+<div class="member">
+
+<div class="avatar">👩</div>
+
+<h3>Alda</h3>
+
+<p>Frontend Developer<br>UI/UX Designer</p>
+
+</div>
+
+<div class="member">
+
+<div class="avatar">👨</div>
+
+<h3>Nama Teman 1</h3>
+
+<p>Backend Developer<br>(Bib Search)</p>
+
+</div>
+
+<div class="member">
+
+<div class="avatar">👨</div>
+
+<h3>Nama Teman 2</h3>
+
+<p>AI Developer<br>(Face Recognition)</p>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<style>
+
+.footer{
+    margin-top:80px;
+    background:#111827;
+    color:#fff;
+}
+
+.footer-container{
+    width:90%;
+    margin:auto;
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr 1fr 1fr;
+    gap:40px;
+    padding:70px 0 45px;
+}
+
+.footer h3{
+    color:#22c55e;
+    margin-bottom:20px;
+    font-size:20px;
+}
+
+.footer-logo h2{
+    font-size:34px;
+    margin-bottom:18px;
+}
+
+.footer-logo span{
+    color:#22c55e;
+}
+
+.footer-logo p{
+    color:#d1d5db;
+    line-height:1.8;
+    margin-bottom:25px;
+}
+
+.footer-logo a{
+    color:white;
+    text-decoration:none;
+    font-size:28px;
+    margin-right:12px;
+}
+
+.footer-menu a,
+.footer-contact a{
+    display:block;
+    color:#d1d5db;
+    text-decoration:none;
+    margin-bottom:14px;
+    transition:.3s;
+}
+
+.footer-menu a:hover,
+.footer-contact a:hover{
+    color:#22c55e;
+}
+
+.footer hr{
+    border:none;
+    border-top:1px solid rgba(255,255,255,.1);
+}
+
+.footer-bottom{
+    width:90%;
+    margin:auto;
+    padding:25px 0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:#cbd5e1;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+@media(max-width:900px){
+
+.footer-container{
+grid-template-columns:1fr;
+text-align:center;
+}
+
+.footer-bottom{
+flex-direction:column;
+text-align:center;
+}
+
+}
+
+</style>
+
+<footer class="footer">
+
+<div class="footer-container">
+
+    <!-- LOGO -->
+
+    <div class="footer-logo">
+
+        <h2><span>Running Event Lari</span></h2>
+
+        <p>
+
+Website Dokumentasi Foto Event Lari yang membantu peserta menemukan
+foto berdasarkan Event & Timestamp, Nomor Bib, dan Face Recognition
+secara cepat dan mudah.
+
+        </p>
+
+        <a href="#">📷</a>
+        <a href="#">💬</a>
+        <a href="#">📧</a>
+
+    </div>
+
+    <!-- PESERTA -->
+
+    <div class="footer-menu">
+
+        <h3>Peserta</h3>
+
+        <a href="{% url 'search' %}">
+            Cari Foto
+        </a>
+
+        <a href="#">
+            Event & Timestamp
+        </a>
+
+        <a href="#">
+            Nomor Bib
+        </a>
+
+        <a href="#">
+            Face Recognition
+        </a>
+
+    </div>
+
+    <!-- MENU -->
+
+    <div class="footer-menu">
+
+        <h3>Menu</h3>
+
+        <a href="{% url 'dashboard' %}">
+            Beranda
+        </a>
+
+        <a href="#">
+            Events
+        </a>
+
+        <a href="#">
+            Kategori
+        </a>
+
+        <a href="{% url 'tentang_kami' %}">
+            Tentang Kami
+        </a>
+
+    </div>
+
+    <!-- KONTAK -->
+
+    <div class="footer-contact">
+
+        <h3>Kontak</h3>
+
+        <a href="#">
+            📧 Running Event Lari@gmail.com
+        </a>
+
+        <a href="#">
+            📍 Jakarta
+        </a>
+
+        <a href="#">
+            ☎ +62 812-3456-7890
+        </a>
+
+    </div>
+
+    <!-- LEGAL -->
+
+    <div class="footer-menu">
+
+        <h3>Legal</h3>
+
+        <a href="#">
+            Privacy Policy
+        </a>
+
+        <a href="#">
+            Terms & Conditions
+        </a>
+
+    </div>
+
+</div>
+
+<hr>
+
+<div class="footer-bottom">
+
+    <div>
+
+        © 2026 <b>Running Event Lari</b> |
+        Website Dokumentasi Foto Event Lari
+
+    </div>
+
+    <div>
+
+        Dibuat untuk Skripsi 
+
+    </div>
+
+</div>
+
+</footer>
+
+</body>
+
+</html>

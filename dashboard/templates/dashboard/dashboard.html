@@ -1,0 +1,602 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running Event Lari Administration</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+* {
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body {
+    /* Gradasi penuh dari hijau muda ke hijau tua dan di-lock posisinya agar konsisten saat di-scroll */
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+    background-attachment: fixed;
+    color: white; /* Mengubah warna teks global menjadi putih agar kontras di atas warna hijau */
+    min-height: 100vh;
+}
+
+/* ================= TOPBAR ================= */
+
+.topbar {
+    width:100%;
+    padding:18px 40px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    /* Dibuat transparan tipis agar warna gradasi hijau menembus ke atas */
+    background: transparent;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.brand {
+    font-size:34px;
+    font-weight:900;
+
+    color: white;
+
+    letter-spacing:1px;
+}
+
+.topbar-right {
+    font-size:13px;
+
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.topbar-right a {
+    text-decoration:none;
+
+    color: #fef08a; /* Menggunakan warna kuning lemon lembut untuk tautan di topbar */
+
+    font-weight:600;
+
+    margin:0 8px;
+
+    transition:.3s;
+}
+
+.topbar-right a:hover {
+
+    color: white;
+}
+
+/* ================= LAYOUT ================= */
+
+.container {
+    padding:35px 40px;
+}
+
+.page-title {
+    font-size:30px;
+    font-weight:600;
+    margin-bottom:25px;
+
+    color: white;
+}
+
+.grid {
+    display:grid;
+    grid-template-columns:2.2fr 1fr;
+    gap:25px;
+    align-items:start;
+}
+
+/* ================= STATS ================= */
+
+.stats {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+    margin-bottom:22px;
+}
+
+.stat-card {
+
+    padding:18px 20px;
+
+    border-radius:18px;
+
+    /* Menerapkan efek kaca transparan premium */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+    transition:.3s;
+}
+
+.stat-card:hover {
+
+    transform:translateY(-4px);
+
+    border: 1px solid #fef08a; /* Warna border hover disesuaikan ke kuning lembut */
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.stat-title {
+    font-size:12px;
+
+    color: rgba(255, 255, 255, 0.8);
+
+    margin-bottom:6px;
+}
+
+.stat-number {
+    font-size:26px;
+    font-weight:800;
+
+    color: white;
+}
+
+.stat-icon {
+    font-size:20px;
+    margin-bottom:10px;
+    color: #fef08a; /* Ikon statistik diubah menjadi kuning lemon agar pop-out */
+}
+
+/* ================= MAIN CARD ================= */
+
+.card {
+
+    /* Efek kaca transparan pada kartu utama tabel */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border-radius:22px;
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+    overflow:hidden;
+}
+
+.card-header {
+
+    padding:14px 18px;
+
+    /* Header tabel menggunakan warna hijau transparan yang kontras */
+    background: rgba(255, 255, 255, 0.15);
+
+    font-weight:800;
+
+    color: #fef08a; /* Teks judul tabel disesuaikan ke warna kuning lembut */
+
+    letter-spacing:1px;
+
+    font-size:14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+table {
+    width:100%;
+    border-collapse:collapse;
+}
+
+table td {
+
+    padding:16px 18px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+
+    font-size:14px;
+
+    color: white;
+}
+
+table tr:hover {
+
+    background: rgba(255, 255, 255, 0.08);
+}
+
+table td a {
+
+    text-decoration:none;
+
+    color: #fef08a;
+
+    font-weight:700;
+}
+
+.actions {
+    text-align:right;
+}
+
+.actions a {
+
+    margin-left:10px;
+
+    text-decoration:none;
+
+    font-weight:700;
+
+    color: #fef08a;
+
+    transition:.3s;
+}
+
+.actions a:hover {
+
+    color: white;
+}
+
+/* ================= RIGHT PANEL ================= */
+
+.right-panel {
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    position:relative;
+    top: 0px; /* Dinormalisasi dari -165px ke 0px agar posisinya sejajar dan pas di samping tabel */
+}
+
+.box {
+
+    /* Efek kaca transparan untuk box panel samping */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border-radius:22px;
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+    padding:22px;
+}
+
+.box h3 {
+
+    font-size:20px;
+
+    color: #fef08a; /* Mengubah teks judul box ke warna kuning lemon lembut */
+
+    margin-bottom:12px;
+
+    font-weight:700;
+}
+
+.box p {
+
+    font-size:13px;
+
+    color: rgba(255, 255, 255, 0.85);
+
+    margin:8px 0;
+}
+
+.divider {
+
+    margin:14px 0;
+
+    height:1px;
+
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ================= RECENT UPLOADS ================= */
+
+.recent-list {
+    margin-top:10px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.recent-item {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:10px;
+
+    border-radius:16px;
+
+    /* Item recent diubah ke background putih semi-transparan tipis */
+    background: rgba(255, 255, 255, 0.1);
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.recent-item img {
+    width:55px;
+    height:55px;
+    border-radius:12px;
+    object-fit:cover;
+}
+
+.recent-info h4 {
+
+    font-size:13px;
+
+    margin-bottom:3px;
+
+    color: white;
+}
+
+.recent-info span {
+
+    font-size:11px;
+
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* ================= FOOTER ================= */
+
+.footer {
+    text-align:center;
+    padding:25px;
+
+    color: rgba(255, 255, 255, 0.75);
+
+    font-size:12px;
+
+    margin-top:40px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1100px){
+
+.grid {
+grid-template-columns:1fr;
+}
+
+.stats {
+grid-template-columns:repeat(2,1fr);
+}
+
+}
+
+@media(max-width:650px){
+
+.topbar {
+padding:18px 20px;
+flex-direction:column;
+align-items:flex-start;
+gap:10px;
+}
+
+.container {
+padding:25px 20px;
+}
+
+.stats {
+grid-template-columns:1fr;
+}
+
+}
+
+/* SUCCESS MESSAGE */
+
+.success-message {
+
+    width:100%;
+
+    margin-bottom:25px;
+
+    /* Alert sukses disesuaikan menggunakan hijau transparan estetik */
+    background: rgba(22, 101, 52, 0.4);
+
+    border: 1px solid #4ade80;
+
+    color: white;
+
+    padding:18px 22px;
+
+    border-radius:18px;
+
+    font-size:15px;
+
+    font-weight:700;
+    box-shadow: 0 4px 15px rgba(22, 163, 74, 0.2);
+}
+
+</style>
+</head>
+
+<body>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="brand">Running Event Lari Administration</div>
+
+        <div class="topbar-right">
+            WELCOME, <b>{{ request.user.username|upper }}</b>
+            <a href="/">VIEW SITE</a> /
+            <a href="#">CHANGE PASSWORD</a> /
+            <a href="{% url 'logout' %}">LOG OUT</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- SUCCESS MESSAGE -->
+
+{% if messages %}
+
+    {% for message in messages %}
+
+        <div class="success-message">
+
+            {{ message }}
+
+        </div>
+
+    {% endfor %}
+
+{% endif %}
+
+        <div class="page-title">Site Administration</div>
+
+        <!-- STATS -->
+        <div class="stats">
+
+            <div class="stat-card">
+                <div class="stat-icon">📸</div>
+                <div class="stat-title">TOTAL PHOTOS</div>
+                <div class="stat-number">{{ total_photos }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🏁</div>
+                <div class="stat-title">TOTAL EVENTS</div>
+                <div class="stat-number">{{ total_events }}</div>
+            </div>
+
+
+        </div>
+
+        <div class="grid">
+
+            <!-- LEFT -->
+            <div>
+
+                <div class="card">
+                    <div class="card-header">AUTHENTICATION AND AUTHORIZATION</div>
+
+                    <table>
+                        <tr>
+                            <td><a href="#">Groups</a></td>
+                            <td class="actions">
+                                <a href="#">+ Add</a>
+                                <a href="#">Change</a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td><a href="#">Users</a></td>
+                            <td class="actions">
+                                <a href="#">+ Add</a>
+                                <a href="#">Change</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <br>
+
+                <div class="card">
+    <div class="card-header">GALERI</div>
+
+    <table>
+
+        <tr>
+            <td>
+                <a href="/admin/events/event/">
+                    Events
+                </a>
+            </td>
+
+            <td class="actions">
+
+                <a href="{% url 'event_add' %}">
+                    + Add
+                </a>
+
+                <a href="{% url 'event_list' %}">
+                    Change
+                </a>
+
+            </td>
+        </tr>
+
+        <tr>
+
+            <td>
+    <a href="{% url 'add_foto' %}">
+        Fotos
+    </a>
+</td>
+
+<td class="actions">
+    <a href="{% url 'add_foto' %}">
+        + Add
+    </a>
+
+    <a href="{% url 'photo_list' %}">
+        Change
+    </a>
+</td>
+
+        </tr>
+
+    </table>
+</div>
+
+            </div>
+
+            <!-- RIGHT -->
+            <div class="right-panel">
+
+                <div class="box">
+                    <h3>📌 Dashboard Summary</h3>
+
+                    <p><b>Total Photos:</b> {{ total_photos }}</p>
+                    <p><b>Total Events:</b> {{ total_events }}</p>
+
+                    <div class="divider"></div>
+
+                    <p><b>Marathon:</b> {{ marathon_count }}</p>
+                    <p><b>Trail Run:</b> {{ trail_count }}</p>
+                    <p><b>Fun Run:</b> {{ funrun_count }}</p>
+                    <p><b>Night Run:</b> {{ night_run_count }}</p>
+                </div>
+
+                <div class="box">
+                    <h3>🕒 Recent Uploads</h3>
+
+                    {% if latest_uploads %}
+                    <div class="recent-list">
+                        {% for photo in latest_uploads %}
+                        <div class="recent-item">
+
+                            {% if photo.image %}
+                                <img src="{{ photo.image.url }}">
+                            {% else %}
+                                <img src="https://via.placeholder.com/100">
+                            {% endif %}
+
+                            <div class="recent-info">
+                                <h4>{{ photo.event.name }}</h4>
+                                <span>{{ photo.uploaded_at }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                        <p>Tidak ada upload terbaru.</p>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+        © 2026 Running Event Lari — All Rights Reserved
+    </div>
+
+</body>
+</html>

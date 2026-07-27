@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tambah Event</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Poppins',sans-serif;
+        }
+
+        body{
+            background:#041126;
+            color:white;
+        }
+
+        /* HEADER */
+
+        .topbar{
+            width:100%;
+            background:#07152d;
+            border-bottom:3px solid #18c15c;
+            padding:25px 50px;
+
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+
+        .logo{
+            font-size:34px;
+            font-weight:700;
+            color:#1ed760;
+        }
+
+        .top-menu{
+            display:flex;
+            gap:18px;
+            align-items:center;
+            font-size:14px;
+        }
+
+        .top-menu a{
+            color:#1ed760;
+            text-decoration:none;
+            font-weight:600;
+        }
+
+        .top-menu span{
+            color:white;
+        }
+
+        /* BREADCRUMB */
+
+        .breadcrumb{
+            background:#07352f;
+            padding:18px 50px;
+            font-size:18px;
+        }
+
+        .breadcrumb a{
+            color:white;
+            text-decoration:none;
+        }
+
+        /* LAYOUT */
+
+        .wrapper{
+            display:flex;
+            min-height:calc(100vh - 140px);
+        }
+
+        /* SIDEBAR */
+
+        .sidebar{
+            width:320px;
+            background:#e8e8e8;
+            padding:30px;
+        }
+
+        .sidebar-box{
+            background:white;
+            border-radius:22px;
+            overflow:hidden;
+            margin-bottom:35px;
+
+            box-shadow:0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .sidebar-title{
+            background:#07352f;
+            color:#1ed760;
+            padding:18px 22px;
+            font-size:16px;
+            font-weight:700;
+            letter-spacing:1px;
+        }
+
+        .sidebar-item{
+            padding:18px 22px;
+            border-top:1px solid #ddd;
+
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+
+            font-size:18px;
+        }
+
+        .sidebar-item a{
+            text-decoration:none;
+            color:#18c15c;
+            font-weight:600;
+        }
+
+        /* CONTENT */
+
+        .content{
+            flex:1;
+            padding:40px 50px;
+        }
+
+        .page-title{
+            font-size:54px;
+            margin-bottom:30px;
+            font-weight:600;
+        }
+
+        /* FORM */
+
+        .form-box{
+            border:1px solid rgba(255,255,255,0.2);
+            border-radius:28px;
+            overflow:hidden;
+            background:#07152d;
+        }
+
+        .form-row{
+            display:flex;
+            align-items:center;
+
+            border-bottom:1px solid rgba(255,255,255,0.2);
+        }
+
+        .form-label{
+            width:250px;
+            padding:35px;
+            font-size:22px;
+            color:#999;
+            font-weight:600;
+        }
+
+        .form-input{
+            flex:1;
+            padding:25px;
+        }
+
+        .form-input input,
+        .form-input select{
+
+            width:420px;
+            padding:16px 20px;
+
+            background:#061227;
+            border:2px solid #27364f;
+            border-radius:10px;
+
+            color:white;
+            font-size:18px;
+            outline:none;
+        }
+
+        .form-input input:focus,
+        .form-input select:focus{
+            border-color:#1ed760;
+        }
+
+        /* BUTTONS */
+
+        .btn-area{
+            margin-top:35px;
+
+            background:#e9e9e9;
+
+            border-radius:8px;
+
+            padding:25px;
+
+            display:flex;
+            gap:20px;
+        }
+
+        .btn{
+            border:none;
+            background:#18c15c;
+            color:white;
+
+            padding:16px 34px;
+
+            border-radius:14px;
+
+            font-size:22px;
+            font-weight:600;
+
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .btn:hover{
+            background:#12a84f;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <!-- TOPBAR -->
+
+    <div class="topbar">
+
+        <div class="logo">
+            RunSnap Administration
+        </div>
+
+        <div class="top-menu">
+
+            <span>WELCOME, {{ request.user.username|upper }}.</span>
+
+            <a href="/">VIEW SITE</a>
+
+            <a href="/logout/">LOG OUT</a>
+
+        </div>
+
+    </div>
+
+    <!-- BREADCRUMB -->
+
+    <div class="breadcrumb">
+
+        <a href="/dasboart/">Home</a>
+        ›
+        <a href="#">Galeri</a>
+        ›
+        <a href="#">Events</a>
+        ›
+        Add event
+
+    </div>
+
+    <!-- WRAPPER -->
+
+    <div class="wrapper">
+
+        <!-- SIDEBAR -->
+
+        <div class="sidebar">
+
+            <div class="sidebar-box">
+
+                <div class="sidebar-title">
+                    EVENTS
+                </div>
+
+                <div class="sidebar-item">
+
+                    <a href="/events/add/">
+                        Events
+                    </a>
+
+                    <a href="/events/add/">
+                        + Add
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="sidebar-box">
+
+                <div class="sidebar-title">
+                    GALERI
+                </div>
+
+                <div class="sidebar-item">
+
+                    <a href="/events/add/">
+                        Events
+                    </a>
+
+                    <a href="/events/add/">
+                        + Add
+                    </a>
+
+                </div>
+
+                <div class="sidebar-item">
+
+                    <a href="/photos/upload/">
+                        Photos
+                    </a>
+
+                    <a href="/photos/upload/">
+                        + Add
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- CONTENT -->
+
+        <div class="content">
+
+            <h1 class="page-title">
+                Add event
+            </h1>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="form-box">
+
+                    <div class="form-row">
+
+                        <div class="form-label">
+                            Nama event:
+                        </div>
+
+                        <div class="form-input">
+                            {{ form.name }}
+                        </div>
+
+                    </div>
+
+                    <div class="form-row">
+
+                        <div class="form-label">
+                            Jenis event:
+                        </div>
+
+                        <div class="form-input">
+                            {{ form.event_type }}
+                        </div>
+
+                    </div>
+
+                    <div class="form-row">
+
+                        <div class="form-label">
+                            Tanggal event:
+                        </div>
+
+                        <div class="form-input">
+                            {{ form.date }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="btn-area">
+
+                    <button type="submit" class="btn">
+                        SAVE
+                    </button>
+
+                    <button type="submit" class="btn">
+                        Save and add another
+                    </button>
+
+                    <button type="submit" class="btn">
+                        Save and continue editing
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

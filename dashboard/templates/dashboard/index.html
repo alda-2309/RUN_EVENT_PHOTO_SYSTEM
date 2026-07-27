@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Running Event Lari</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+ <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Poppins',sans-serif;
+        }
+
+        body{
+            /* Gradasi penuh dari Hijau Muda (#4ade80) ke Hijau Tua (#14532d) */
+            background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+            background-attachment: fixed; /* Menjaga gradasi tetap penuh dan presisi saat di-scroll */
+            color: white; /* Mengubah teks global menjadi putih agar kontras dengan latar belakang */
+            min-height: 100vh;
+        }
+
+        /* ================= NAVBAR ================= */
+
+        .navbar{
+
+            width:100%;
+
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+
+            padding:18px 40px;
+
+            /* Garis bawah dibuat transparan tipis agar menyatu dengan latar belakang */
+            border-bottom:1px solid rgba(255, 255, 255, 0.2);
+
+            /* Dibuat transparan penuh agar warna gradasi hijau di body menembus ke atas */
+            background: transparent;
+        }
+
+        .logo-area{
+
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+
+        .logo-img{
+
+            width:55px;
+            height:55px;
+
+            object-fit:contain;
+            /* Latar belakang logo disesuaikan menggunakan putih transparan */
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .logo-text{
+
+            font-size:24px;
+            font-weight:800;
+
+            line-height:1;
+            color: white;
+        }
+
+        .logo-text span{
+            color: #fef08a; /* Aksen kuning lemon lembut yang sangat serasi dengan tema hijau */
+        }
+
+        .logo-sub {
+    font-size: 25px;      /* Perbesar ukuran huruf */
+    font-weight: 700;     /* Tebal (Bold) */
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+        .menu{
+
+            display:flex;
+            align-items:center;
+
+            gap:34px;
+        }
+
+        .menu a{
+
+            text-decoration:none;
+
+            color: rgba(255, 255, 255, 0.85);
+
+            font-size:15px;
+            font-weight:600;
+
+            position:relative;
+
+            padding-bottom:8px;
+            transition: color 0.3s ease;
+        }
+
+        .menu a:hover{
+            color: white;
+        }
+
+        .menu a.active{
+            color: white;
+        }
+
+        .menu a.active::after{
+
+            content:'';
+
+            position:absolute;
+
+            left:0;
+            bottom:0;
+
+            width:100%;
+            height:3px;
+
+            background: #fef08a; /* Garis aktif menggunakan warna kuning cerah */
+
+            border-radius:10px;
+        }
+
+        .right-nav{
+
+            display:flex;
+            align-items:center;
+
+            gap:14px;
+        }
+
+        .circle{
+
+            width:44px;
+            height:44px;
+
+            border-radius:50%;
+
+            border:1px solid rgba(255, 255, 255, 0.3);
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+
+            cursor:pointer;
+
+            position:relative;
+
+            font-size:16px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .circle:hover{
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+        }
+
+        .badge{
+
+            position:absolute;
+
+            top:2px;
+            right:2px;
+
+            width:16px;
+            height:16px;
+
+            border-radius:50%;
+
+            background: #fef08a; /* Badge warna kuning cerah agar terlihat menonjol */
+
+            color: #14532d;
+
+            font-size:9px;
+            font-weight:bold;
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border: 1px solid white;
+        }
+
+        .btn-outline{
+
+            padding:10px 22px;
+
+            border-radius:12px;
+
+            border:2px solid white;
+
+            background: transparent;
+
+            color: white;
+
+            font-weight:700;
+
+            cursor:pointer;
+
+            font-size:14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline:hover{
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-green{
+
+            padding:10px 22px;
+
+            border:none;
+
+            border-radius:12px;
+
+            background: #fef08a; /* Tombol utama berwarna kuning agar kontras di atas gradasi hijau */
+
+            color: #14532d;
+
+            font-weight:700;
+
+            cursor:pointer;
+
+            font-size:14px;
+            box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-green:hover{
+            background: #fff59d;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(254, 240, 138, 0.6);
+        }
+
+        /* ================= HERO ================= */
+
+        .hero{
+
+            width:100%;
+
+            display:grid;
+
+            grid-template-columns:1fr 1.1fr;
+
+            gap:35px;
+
+            padding:40px 45px 40px;
+
+            /* Diubah menjadi transparan penuh karena di-handle langsung oleh body */
+            background: transparent;
+        }
+
+        .hero-left{
+
+            padding-top:40px;
+        }
+
+        .hero-left h5{
+
+            color: rgba(255, 255, 255, 0.9);
+
+            font-size:14px;
+
+            margin-bottom:20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .hero-left h1{
+
+            font-size:48px;
+
+            line-height:1.2;
+
+            font-weight:800;
+
+            margin-bottom:24px;
+            color: white;
+        }
+
+        .line{
+
+            width:70px;
+            height:4px;
+
+            background: white;
+
+            border-radius:10px;
+
+            margin-bottom:28px;
+        }
+
+        .hero-left p{
+
+            color: rgba(255, 255, 255, 0.9);
+
+            font-size:16px;
+
+            line-height:1.8;
+        }
+
+
+        /* ================= RIGHT GRID ================= */
+
+        .hero-right{
+
+            display:grid;
+
+            grid-template-columns:2fr 1.2fr;
+
+            gap:18px;
+        }
+
+        .big-card{
+
+            position:relative;
+
+            height:300px;
+
+            overflow:hidden;
+
+            border-radius:24px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .side{
+
+            display:grid;
+            gap:18px;
+        }
+
+        .side-card{
+
+            position:relative;
+
+            height:140px;
+
+            overflow:hidden;
+
+            border-radius:24px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .bottom-card{
+
+            position:relative;
+
+            height:140px;
+
+            overflow:hidden;
+
+            border-radius:24px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .hero-right img{
+
+            width:100%;
+            height:100%;
+
+            object-fit:cover;
+        }
+
+        .overlay{
+
+            position:absolute;
+
+            left:0;
+            bottom:0;
+
+            width:100%;
+
+            padding:20px;
+
+            color:white;
+
+            background:
+            linear-gradient(
+                transparent,
+                rgba(20, 83, 45, 0.9)
+            );
+        }
+
+        .overlay h2{
+
+            font-size:22px;
+
+            margin-bottom:6px;
+        }
+
+        .overlay p{
+
+            font-size:14px;
+        }
+
+        /* ================= LANGUAGE ================= */
+
+.language-dropdown{
+
+    position:relative;
+}
+
+.lang-btn{
+
+    width:44px;
+    height:44px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(255, 255, 255, 0.3);
+
+    background: rgba(255, 255, 255, 0.15);
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    transition:0.3s;
+    color: white;
+}
+
+.lang-btn:hover{
+
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.language-menu{
+
+    position:absolute;
+
+    top:55px;
+    right:0;
+
+    width:220px;
+
+    background: white;
+
+    border-radius:16px;
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,0.15);
+
+    padding:10px;
+
+    display:none;
+
+    z-index:999;
+}
+
+.language-menu a{
+
+    display:block;
+
+    text-decoration:none;
+
+    color:#111827;
+
+    padding:12px 14px;
+
+    border-radius:10px;
+
+    font-size:14px;
+
+    transition:0.2s;
+}
+
+.language-menu a:hover{
+
+    background:#f3f4f6;
+    color: #16a34a;
+}
+
+.language-menu.show{
+
+    display:block;
+}
+
+        /* ================= BOTTOM CARD ================= */
+
+        .bottom-gallery{
+
+            display:grid;
+
+            grid-template-columns:
+            repeat(5,1fr);
+
+            gap:18px;
+
+            padding:40px 45px 60px;
+            /* Dibuat transparan penuh agar gradasi hijau merata sampai bawah website */
+            background: transparent;
+        }
+
+        .small-card{
+
+            border:1px solid rgba(255, 255, 255, 0.2);
+
+            border-radius:20px;
+
+            overflow:hidden;
+
+            /* Efek kaca transparan premium agar terlihat menyatu dengan background gradasi hijau */
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .small-card:hover{
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.22);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .small-card img{
+
+            width:100%;
+            height:120px;
+
+            object-fit:cover;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .small-content{
+
+            padding:16px;
+        }
+
+        .small-content h3{
+
+            font-size:18px;
+
+            margin-bottom:8px;
+            color: white; /* Judul kartu putih agar terbaca jelas di atas kartu transparan */
+        }
+
+        .small-content p{
+
+            color: rgba(255, 255, 255, 0.8); /* Deskripsi teks menggunakan putih transparan lembut */
+
+            font-size:13px;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media(max-width:1200px){
+
+            .hero{
+                grid-template-columns:1fr;
+                padding:40px 24px;
+            }
+
+            .bottom-gallery{
+                grid-template-columns:repeat(2,1fr);
+                padding:40px 24px;
+            }
+
+            .menu{
+                display:none;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+
+    <nav class="navbar">
+
+
+            <div>
+
+                <div class="logo-sub" id="logoSub">
+                    Running Event Lari 
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="menu">
+
+            <a class="active" href="#" id="menuHome">
+                Beranda
+            </a>
+
+            <a href="{% url 'search' %}">
+               Cari Foto
+            </a>
+           
+            <a href="{% url 'events' %}">
+                Events
+            </a>
+
+            <a href="{% url 'kategori' %}">
+                Kategori
+            </a>
+
+            <a href="{% url 'tentang_kami' %}">
+                Tentang Kami
+            </a>
+
+        </div>
+
+        <div class="right-nav">
+
+    <!-- LANGUAGE -->
+
+    <div class="language-dropdown" id="languageDropdown">
+
+        <div class="lang-btn" onclick="toggleLanguageMenu()">
+            🌐
+        </div>
+
+        <div class="language-menu" id="languageMenu">
+
+            <a href="#" onclick="changeLanguage('id'); return false;">
+                🇮🇩 Indonesia
+            </a>
+
+            <a href="#" onclick="changeLanguage('en'); return false;">
+                🇺🇸 English
+            </a>
+
+            <a href="#" onclick="changeLanguage('kr'); return false;">
+                🇰🇷 Korean
+            </a>
+
+            <a href="#" onclick="changeLanguage('cn'); return false;">
+                🇨🇳 Chinese
+            </a>
+
+            <a href="#" onclick="changeLanguage('jp'); return false;">
+                🇯🇵 Japanese
+            </a>
+
+            <a href="#" onclick="changeLanguage('fr'); return false;">
+                🇫🇷 French
+            </a>
+
+            <a href="#" onclick="changeLanguage('de'); return false;">
+                🇩🇪 German
+            </a>
+
+        </div>
+
+    </div>
+
+    <a href="{% url 'login' %}" class="btn-outline" id="btnLogin">
+    Masuk
+</a>
+
+<a href="{% url 'register' %}" class="btn-green" id="btnRegister">
+    Daftar
+</a>
+
+</div>
+
+    </nav>
+
+    <!-- ================= HERO ================= -->
+
+    <section class="hero">
+
+        <div class="hero-left">
+
+            <h1 id="heroTitle">
+                Abadikan setiap momen berharga di setiap event lari.
+            </h1>
+
+            <div class="line"></div>
+
+            <p id="heroDesc">
+                Temukan ribuan foto-foto terbaik dari berbagai event lari.
+                Abadikan pencapaianmu dan kenangan berharga di setiap langkah.
+            </p>
+
+        </div>
+
+        <div class="hero-right">
+
+            <div class="big-card">
+
+                <img src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1400">
+
+                <div class="overlay">
+
+                </div>
+
+            </div>
+
+            <div class="side">
+
+                <div class="side-card">
+
+                    <img src="https://images.unsplash.com/photo-1486218119243-13883505764c?q=80&w=1200">
+
+                    <div class="overlay">
+
+
+                    </div>
+
+                </div>
+
+                <div class="side-card">
+
+                    <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=1200">
+
+                    <div class="overlay">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="bottom-card">
+
+                <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=1200">
+
+                <div class="overlay">
+
+                </div>
+
+            </div>
+
+            <div class="bottom-card">
+
+                <img src="https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?q=80&w=1200">
+
+                <div class="overlay">
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- TOMBOL PETA EVENT -->
+
+<div style="text-align:center; margin:30px 0;">
+
+    <a href="/events/detail/">
+
+        <button
+            style="
+                background:#16a34a;
+                color:white;
+                border:none;
+                padding:15px 30px;
+                border-radius:12px;
+                font-size:16px;
+                font-weight:600;
+                cursor:pointer;
+            ">
+
+            🗺️ Lihat Peta Event
+
+        </button>
+
+    </a>
+
+</div>
+
+    <!-- ================= BOTTOM GALLERY ================= -->
+
+    <section class="bottom-gallery">
+
+        <div class="small-card">
+
+            <img src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200">
+
+            <div class="small-content">
+
+                <h3>
+                    Jakarta Marathon 2024
+                </h3>
+
+                <p>
+                    Marathon
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="small-card">
+
+            <img src="https://images.unsplash.com/photo-1486218119243-13883505764c?q=80&w=1200">
+
+            <div class="small-content">
+
+                <h3>
+                    Bandung 10K Challenge
+                </h3>
+
+                <p>
+                    10K
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="small-card">
+
+            <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=1200">
+
+            <div class="small-content">
+
+                <h3>
+                    Trail Run Sentul 2024
+                </h3>
+
+                <p>
+                    Trail Run
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="small-card">
+
+            <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=1200">
+
+            <div class="small-content">
+
+                <h3>
+                    Fun Run for Charity 2024
+                </h3>
+
+                <p>
+                    Fun Run / Charity Run
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="small-card">
+
+            <img src="https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?q=80&w=1200">
+
+            <div class="small-content">
+
+                <h3>
+                    Surabaya Half Marathon
+                </h3>
+
+                <p>
+                    Half Marathon
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= JAVASCRIPT LANGUAGE ================= -->
+
+    <script>
+
+        function toggleLanguageMenu() {
+
+            document.getElementById("languageMenu").classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+
+            if (!event.target.closest('.language-dropdown')) {
+
+                document.getElementById("languageMenu").classList.remove("show");
+            }
+        }
+
+
+        const translations = {
+
+            id: {
+                logoSub: "Dokumentasi Foto Event Lari",
+                menuHome: "Beranda",
+                menuEvent: "Events",
+                menuGallery: "Galeri",
+                menuFeature: "Fitur",
+                menuCategory: "Kategori",
+                menuAbout: "Tentang Kami",
+                btnLogin: "Masuk",
+                btnRegister: "Daftar",
+                heroTitle: "Abadikan setiap momen berharga di setiap event lari.",
+                heroDesc: "Temukan ribuan foto-foto terbaik dari berbagai event lari. Abadikan pencapaianmu dan kenangan berharga di setiap langkah."
+            },
+
+            en: {
+                logoSub: "Running Event Photo Documentation",
+                menuHome: "Home",
+                menuEvent: "Events",
+                menuGallery: "Gallery",
+                menuFeature: "Features",
+                menuCategory: "Categories",
+                menuAbout: "About Us",
+                btnLogin: "Login",
+                btnRegister: "Register",
+                heroTitle: "Capture every precious moment in every running event.",
+                heroDesc: "Find thousands of the best photos from various running events. Capture your achievements and precious memories in every step."
+            },
+
+            kr: {
+                logoSub: "러닝 이벤트 사진 문서",
+                menuHome: "홈",
+                menuEvent: "이벤트",
+                menuGallery: "갤러리",
+                menuFeature: "기능",
+                menuCategory: "카테고리",
+                menuAbout: "회사 소개",
+                btnLogin: "로그인",
+                btnRegister: "회원가입",
+                heroTitle: "모든 러닝 이벤트의 소중한 순간을 담아보세요.",
+                heroDesc: "다양한 러닝 이벤트의 최고의 사진을 찾아보세요. 모든 걸음 속의 추억과 성취를 기록하세요."
+            },
+
+            cn: {
+                logoSub: "跑步活动照片记录",
+                menuHome: "首页",
+                menuEvent: "活动",
+                menuGallery: "画廊",
+                menuFeature: "功能",
+                menuCategory: "类别",
+                menuAbout: "关于我们",
+                btnLogin: "登录",
+                btnRegister: "注册",
+                heroTitle: "记录每场跑步活动中的珍贵时刻。",
+                heroDesc: "发现来自各种跑步活动的精彩照片。记录你的成就和珍贵回忆。"
+            },
+
+            jp: {
+                logoSub: "ランニングイベント写真記録",
+                menuHome: "ホーム",
+                menuEvent: "イベント",
+                menuGallery: "ギャラリー",
+                menuFeature: "機能",
+                menuCategory: "カテゴリー",
+                menuAbout: "私たちについて",
+                btnLogin: "ログイン",
+                btnRegister: "登録",
+                heroTitle: "すべてのランニングイベントの大切な瞬間を残しましょう。",
+                heroDesc: "さまざまなランニングイベントの最高の写真を見つけましょう。あなたの成果と思い出を記録しましょう。"
+            },
+
+            fr: {
+                logoSub: "Documentation Photo des Événements de Course",
+                menuHome: "Accueil",
+                menuEvent: "Événements",
+                menuGallery: "Galerie",
+                menuFeature: "Fonctionnalités",
+                menuCategory: "Catégories",
+                menuAbout: "À propos",
+                btnLogin: "Connexion",
+                btnRegister: "Inscription",
+                heroTitle: "Capturez chaque moment précieux de chaque course.",
+                heroDesc: "Découvrez des milliers des meilleures photos de différents événements de course."
+            },
+
+            de: {
+                logoSub: "Dokumentation von Laufveranstaltungen",
+                menuHome: "Startseite",
+                menuEvent: "Veranstaltungen",
+                menuGallery: "Galerie",
+                menuFeature: "Funktionen",
+                menuCategory: "Kategorien",
+                menuAbout: "Über uns",
+                btnLogin: "Anmelden",
+                btnRegister: "Registrieren",
+                heroTitle: "Halte jeden besonderen Moment bei jedem Laufevent fest.",
+                heroDesc: "Finde tausende der besten Fotos von verschiedenen Laufevents."
+            }
+        };
+
+
+        function changeLanguage(lang) {
+
+            document.getElementById("logoSub").innerText = translations[lang].logoSub;
+            document.getElementById("menuHome").innerText = translations[lang].menuHome;
+            document.getElementById("menuEvent").innerText = translations[lang].menuEvent;
+            document.getElementById("menuGallery").innerText = translations[lang].menuGallery;
+            document.getElementById("menuFeature").innerText = translations[lang].menuFeature;
+            document.getElementById("menuCategory").innerText = translations[lang].menuCategory;
+            document.getElementById("menuAbout").innerText = translations[lang].menuAbout;
+            document.getElementById("btnLogin").innerText = translations[lang].btnLogin;
+            document.getElementById("btnRegister").innerText = translations[lang].btnRegister;
+            document.getElementById("heroTitle").innerText = translations[lang].heroTitle;
+            document.getElementById("heroDesc").innerText = translations[lang].heroDesc;
+
+        }
+
+    </script>
+
+<!-- ================= FOOTER ================= -->
+
+<style>
+
+.footer{
+    margin-top:80px;
+    background:#111827;
+    color:#fff;
+}
+
+.footer-container{
+    width:90%;
+    margin:auto;
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr 1fr 1fr;
+    gap:40px;
+    padding:70px 0 45px;
+}
+
+.footer h3{
+    color:#22c55e;
+    margin-bottom:20px;
+    font-size:20px;
+}
+
+.footer-logo h2{
+    font-size:34px;
+    margin-bottom:18px;
+}
+
+.footer-logo span{
+    color:#22c55e;
+}
+
+.footer-logo p{
+    color:#d1d5db;
+    line-height:1.8;
+    margin-bottom:25px;
+}
+
+.footer-logo a{
+    color:white;
+    text-decoration:none;
+    font-size:28px;
+    margin-right:12px;
+}
+
+.footer-menu a,
+.footer-contact a{
+    display:block;
+    color:#d1d5db;
+    text-decoration:none;
+    margin-bottom:14px;
+    transition:.3s;
+}
+
+.footer-menu a:hover,
+.footer-contact a:hover{
+    color:#22c55e;
+}
+
+.footer hr{
+    border:none;
+    border-top:1px solid rgba(255,255,255,.1);
+}
+
+.footer-bottom{
+    width:90%;
+    margin:auto;
+    padding:25px 0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:#cbd5e1;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+@media(max-width:900px){
+
+.footer-container{
+grid-template-columns:1fr;
+text-align:center;
+}
+
+.footer-bottom{
+flex-direction:column;
+text-align:center;
+}
+
+}
+
+</style>
+
+<footer class="footer">
+
+<div class="footer-container">
+
+    <!-- LOGO -->
+
+    <div class="footer-logo">
+
+        <h2><span>Running Event Lari</span></h2>
+
+        <p>
+
+Website Dokumentasi Foto Event Lari yang membantu peserta menemukan
+foto berdasarkan Event & Timestamp, Nomor Bib, dan Face Recognition
+secara cepat dan mudah.
+
+        </p>
+
+        <a href="#">📷</a>
+        <a href="#">💬</a>
+        <a href="#">📧</a>
+
+    </div>
+
+    <!-- PESERTA -->
+
+    <div class="footer-menu">
+
+        <h3>Peserta</h3>
+
+        <a href="{% url 'search' %}">
+            Cari Foto
+        </a>
+
+        <a href="#">
+            Event & Timestamp
+        </a>
+
+        <a href="#">
+            Nomor Bib
+        </a>
+
+        <a href="#">
+            Face Recognition
+        </a>
+
+    </div>
+
+    <!-- MENU -->
+
+    <div class="footer-menu">
+
+        <h3>Menu</h3>
+
+        <a href="{% url 'dashboard' %}">
+            Beranda
+        </a>
+
+        <a href="#">
+            Events
+        </a>
+
+        <a href="#">
+            Kategori
+        </a>
+
+        <a href="{% url 'tentang_kami' %}">
+            Tentang Kami
+        </a>
+
+    </div>
+
+    <!-- KONTAK -->
+
+    <div class="footer-contact">
+
+        <h3>Kontak</h3>
+
+        <a href="#">
+            📧 Running Event Lari@gmail.com
+        </a>
+
+        <a href="#">
+            📍 Jakarta
+        </a>
+
+        <a href="#">
+            ☎ +62 812-3456-7890
+        </a>
+
+    </div>
+
+    <!-- LEGAL -->
+
+    <div class="footer-menu">
+
+        <h3>Legal</h3>
+
+        <a href="#">
+            Privacy Policy
+        </a>
+
+        <a href="#">
+            Terms & Conditions
+        </a>
+
+    </div>
+
+</div>
+
+<hr>
+
+<div class="footer-bottom">
+
+    <div>
+
+        © 2026 <b>Running Event Lari</b> |
+        Website Dokumentasi Foto Event Lari
+
+    </div>
+
+    <div>
+
+        Dibuat untuk Skripsi 
+
+    </div>
+
+</div>
+
+</footer>
+
+</body>
+</html>
+

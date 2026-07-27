@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Cari Foto - RunSnap</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+* {
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body {
+    /* Gradasi penuh dari hijau muda ke hijau tua dan di-lock posisinya agar presisi saat di-scroll */
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+    background-attachment: fixed;
+    color: white; /* Mengubah teks global halaman agar kontras di atas warna hijau */
+    min-height: 100vh;
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar {
+
+    width:100%;
+
+    /* Dibuat transparan tipis agar gradasi hijau di latar belakang tembus dan terlihat mewah */
+    background: transparent;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:18px 60px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 30px rgba(0,0,0,.03);
+
+}
+
+.logo {
+
+    font-size:28px;
+
+    font-weight:800;
+    color: white;
+
+}
+
+.logo span {
+    color: white; /* Mengubah teks logo menjadi putih */
+}
+
+.menu {
+
+    display:flex;
+
+    gap:40px;
+
+}
+
+.menu a {
+
+    text-decoration:none;
+
+    color: rgba(255, 255, 255, 0.8);
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.menu a:hover {
+
+    color: white;
+
+}
+
+.menu .active {
+
+    color: white;
+    border-bottom: 2px solid #fef08a; /* Memberi garis bawah indikator aktif berwarna kuning lembut */
+    padding-bottom: 4px;
+
+}
+
+/* ================= HEADER ================= */
+
+.header {
+
+    text-align:center;
+
+    margin-top:70px;
+
+    margin-bottom:50px;
+
+}
+
+.header h1 {
+
+    font-size:48px;
+
+    font-weight:800;
+
+    color: white;
+
+}
+
+.header p {
+
+    margin-top:18px;
+
+    color: rgba(255, 255, 255, 0.85);
+
+    font-size:18px;
+
+}
+
+/* ================= CARD ================= */
+
+.container {
+
+    width:1200px;
+
+    margin:auto;
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:35px;
+
+    flex-wrap:wrap;
+
+    margin-bottom:80px;
+
+}
+
+.card {
+
+    width:340px;
+
+    /* Diubah menjadi efek kaca (glassmorphism) transparan agar menyatu dengan latar belakang penuh */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    border-radius:25px;
+
+    padding:40px 30px;
+
+    text-align:center;
+
+    transition:.3s;
+
+    text-decoration:none;
+
+    color: white;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+
+}
+
+.card:hover {
+
+    transform:translateY(-10px);
+
+    border:2px solid #fef08a; /* Warna border hover disesuaikan kontras menggunakan kuning lemon */
+    background: rgba(255, 255, 255, 0.2);
+
+}
+
+.icon {
+
+    font-size:60px;
+
+}
+
+.card h2 {
+
+    margin-top:20px;
+
+    font-size:30px;
+    color: white;
+
+}
+
+.card p {
+
+    margin-top:18px;
+
+    color: rgba(255, 255, 255, 0.8);
+
+    line-height:1.8;
+
+    font-size:16px;
+
+}
+
+.button {
+
+    margin-top:35px;
+
+    display:inline-block;
+
+    padding:12px 30px;
+
+    background: #fef08a; /* Tombol kartu utama diubah ke kuning lemon cerah agar sangat jelas terlihat */
+
+    color: #14532d; /* Warna teks tombol disesuaikan ke hijau tua */
+
+    border-radius:12px;
+
+    text-decoration:none;
+
+    font-weight:600;
+    transition: .3s;
+
+}
+
+.button:hover {
+
+    background: #fff59d;
+    box-shadow: 0 5px 15px rgba(254, 240, 138, 0.4);
+
+}
+
+.search-form {
+    width:900px;
+    margin:50px auto;
+}
+
+.form-box {
+    display:none;
+    /* Box form menggunakan latar putih semi-transparan premium agar tidak kaku */
+    background: rgba(255, 255, 255, 0.95);
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 12px 30px rgba(0,0,0,.15);
+}
+
+.form-box label {
+    display:block;
+    margin-top:15px;
+    font-weight:600;
+    color: #14532d; /* Mengubah label form ke warna hijau tua */
+}
+
+.form-box input,
+.form-box select {
+    width:100%;
+    padding:12px;
+    margin-top:8px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    color: #111827;
+}
+
+/* Ditambahkan efek interaktif fokus pada isian form */
+.form-box input:focus,
+.form-box select:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+}
+
+.form-box button {
+    margin-top:20px;
+    padding:12px 25px;
+    background: linear-gradient(90deg, #16a34a, #14532d); /* Tombol form menggunakan gradasi hijau daun */
+    color:white;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight: 600;
+    transition: .3s;
+}
+
+.form-box button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(22, 163, 74, 0.3);
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1200px){
+
+.container {
+
+width:100%;
+
+padding:20px;
+
+}
+
+.search-form {
+    width: 100%;
+    padding: 0 20px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="navbar">
+
+<div class="logo">
+<span>Running Event Lari</span>
+</div>
+
+<div class="menu">
+
+<a href="{% url 'dashboard' %}">Beranda</a>
+
+<a href="{% url 'search' %}">Cari Foto</a>
+
+<a href="{% url 'events' %}">Events</a>
+
+<a href="{% url 'kategori' %}">Kategori</a>
+
+<a href="{% url 'tentang_kami' %}">Tentang Kami</a>
+
+</div>
+
+</nav>
+
+
+<!-- ================= HEADER ================= -->
+
+<section class="header">
+
+<h1>
+
+Cari Foto Anda
+
+</h1>
+
+<p>
+
+Pilih salah satu metode pencarian untuk menemukan foto terbaikmu.
+
+</p>
+
+</section>
+
+<!-- ================= CARD ================= -->
+
+<div class="container">
+
+    <!-- Event & Timestamp -->
+    <a href="{% url 'foto' %}" class="card">
+        <div class="icon">
+            📅
+        </div>
+
+        <h2>
+            Event & Timestamp
+        </h2>
+
+        <p>
+            Cari foto berdasarkan event yang diikuti dan waktu pengambilan foto.
+        </p>
+
+        <div class="button">
+            Mulai Cari →
+        </div>
+
+    </a>
+
+    <!-- Nomor Bib -->
+    <div class="card" onclick="showForm('bib')">
+
+        <div class="icon">
+            🏃
+        </div>
+
+        <h2>
+            Nomor Bib
+        </h2>
+
+        <p>
+            Masukkan nomor bib peserta untuk menemukan seluruh foto yang tersedia.
+        </p>
+
+        <div class="button">
+            Mulai Cari →
+        </div>
+
+    </div>
+
+    <!-- Face Recognition -->
+    <div class="card" onclick="showForm('face')">
+
+        <div class="icon">
+            😊
+        </div>
+
+        <h2>
+            Face Recognition
+        </h2>
+
+        <p>
+            Upload foto wajahmu dan sistem akan mencari foto yang paling sesuai.
+        </p>
+
+        <div class="button">
+            Mulai Cari →
+        </div>
+
+    </div>
+
+</div>
+
+<section class="search-form">
+
+    
+
+    <!-- Bib -->
+    <div id="bibForm" class="form-box">
+        <h2>🏃 Pencarian Nomor Bib</h2>
+
+        <label>Nomor Bib</label>
+        <input type="text" placeholder="Masukkan nomor bib">
+
+        <button>Cari Foto</button>
+    </div>
+
+    <!-- Face -->
+    <div id="faceForm" class="form-box">
+        <h2>😊 Face Recognition</h2>
+
+        <label>Upload Foto</label>
+        <input type="file">
+
+        <button>Cari Foto</button>
+    </div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<style>
+
+.footer{
+    margin-top:80px;
+    background:#111827;
+    color:#fff;
+}
+
+.footer-container{
+    width:90%;
+    margin:auto;
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr 1fr 1fr;
+    gap:40px;
+    padding:70px 0 45px;
+}
+
+.footer h3{
+    color:#22c55e;
+    margin-bottom:20px;
+    font-size:20px;
+}
+
+.footer-logo h2{
+    font-size:34px;
+    margin-bottom:18px;
+}
+
+.footer-logo span{
+    color:#22c55e;
+}
+
+.footer-logo p{
+    color:#d1d5db;
+    line-height:1.8;
+    margin-bottom:25px;
+}
+
+.footer-logo a{
+    color:white;
+    text-decoration:none;
+    font-size:28px;
+    margin-right:12px;
+}
+
+.footer-menu a,
+.footer-contact a{
+    display:block;
+    color:#d1d5db;
+    text-decoration:none;
+    margin-bottom:14px;
+    transition:.3s;
+}
+
+.footer-menu a:hover,
+.footer-contact a:hover{
+    color:#22c55e;
+}
+
+.footer hr{
+    border:none;
+    border-top:1px solid rgba(255,255,255,.1);
+}
+
+.footer-bottom{
+    width:90%;
+    margin:auto;
+    padding:25px 0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:#cbd5e1;
+    flex-wrap:wrap;
+    gap:15px;
+}
+
+@media(max-width:900px){
+
+.footer-container{
+grid-template-columns:1fr;
+text-align:center;
+}
+
+.footer-bottom{
+flex-direction:column;
+text-align:center;
+}
+
+}
+
+</style>
+
+<footer class="footer">
+
+<div class="footer-container">
+
+    <!-- LOGO -->
+
+    <div class="footer-logo">
+
+        <h2><span>Running Event Lari</span></h2>
+
+        <p>
+
+Website Dokumentasi Foto Event Lari yang membantu peserta menemukan
+foto berdasarkan Event & Timestamp, Nomor Bib, dan Face Recognition
+secara cepat dan mudah.
+
+        </p>
+
+        <a href="#">📷</a>
+        <a href="#">💬</a>
+        <a href="#">📧</a>
+
+    </div>
+
+    <!-- PESERTA -->
+
+    <div class="footer-menu">
+
+        <h3>Peserta</h3>
+
+        <a href="{% url 'search' %}">
+            Cari Foto
+        </a>
+
+        <a href="#">
+            Event & Timestamp
+        </a>
+
+        <a href="#">
+            Nomor Bib
+        </a>
+
+        <a href="#">
+            Face Recognition
+        </a>
+
+    </div>
+
+    <!-- MENU -->
+
+    <div class="footer-menu">
+
+        <h3>Menu</h3>
+
+        <a href="{% url 'dashboard' %}">
+            Beranda
+        </a>
+
+        <a href="#">
+            Events
+        </a>
+
+        <a href="#">
+            Kategori
+        </a>
+
+        <a href="{% url 'tentang_kami' %}">
+            Tentang Kami
+        </a>
+
+    </div>
+
+    <!-- KONTAK -->
+
+    <div class="footer-contact">
+
+        <h3>Kontak</h3>
+
+        <a href="#">
+            📧 Running Event Lari@gmail.com
+        </a>
+
+        <a href="#">
+            📍 Jakarta
+        </a>
+
+        <a href="#">
+            ☎ +62 812-3456-7890
+        </a>
+
+    </div>
+
+    <!-- LEGAL -->
+
+    <div class="footer-menu">
+
+        <h3>Legal</h3>
+
+        <a href="#">
+            Privacy Policy
+        </a>
+
+        <a href="#">
+            Terms & Conditions
+        </a>
+
+    </div>
+
+</div>
+
+<hr>
+
+<div class="footer-bottom">
+
+    <div>
+
+        © 2026 <b>Running Event Lari</b> |
+        Website Dokumentasi Foto Event Lari
+
+    </div>
+
+    <div>
+
+        Dibuat untuk Skripsi 
+        
+    </div>
+
+</div>
+
+</footer>
+
+</body>
+
+</html>

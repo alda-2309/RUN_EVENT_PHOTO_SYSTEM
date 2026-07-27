@@ -1,0 +1,267 @@
+<!-- templates/galeri/foto/add.html -->
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Foto</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    /* Gradasi penuh dari hijau muda ke hijau tua dan di-lock posisinya agar konsisten saat di-scroll */
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 40%, #14532d 100%);
+    background-attachment: fixed;
+    color: white; /* Mengubah warna teks global menjadi putih agar kontras di atas warna hijau */
+    min-height: 100vh;
+}
+
+/* HEADER */
+
+.topbar{
+    /* Topbar diubah menjadi transparan tipis agar menyatu dengan latar belakang utama */
+    background: transparent;
+    color:white;
+    padding:18px 30px;
+    font-size:24px;
+    font-weight:800;
+    letter-spacing:.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.breadcrumb{
+    /* Menggunakan hijau tua transparan tipis agar senada dengan background */
+    background: rgba(20, 83, 45, 0.4);
+    color:#d1fae5;
+    padding:10px 30px;
+    font-size:13px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.breadcrumb a{
+    color: #fef08a; /* Warna tautan breadcrumb diubah ke kuning lemon lembut agar kontras */
+    text-decoration:none;
+}
+
+/* CONTAINER */
+
+.container{
+    max-width:900px;
+    margin:40px auto;
+    /* Diubah menggunakan efek kaca transparan premium (glassmorphism) */
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding:32px;
+    border-radius:18px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+h1{
+    margin-bottom:30px;
+    color: white; /* Diubah menjadi putih agar terbaca jelas */
+    font-size:30px;
+    font-weight:700;
+    position:relative;
+}
+
+h1::after{
+    content:'';
+    width:60px;
+    height:4px;
+    background: #fef08a; /* Garis aksen judul diganti ke kuning lemon cerah */
+    position:absolute;
+    left:0;
+    bottom:-8px;
+    border-radius:10px;
+}
+
+/* FORM */
+
+.form-row{
+    display:flex;
+    align-items:center;
+    padding:16px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.form-row label{
+    width:180px;
+    font-size:14px;
+    font-weight:700;
+    color: white; /* Diubah menjadi putih agar kontras di atas efek kaca */
+}
+
+.form-row input,
+.form-row select,
+.form-row textarea{
+    width:400px;
+    padding:12px 14px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    font-size:14px;
+    background: white; /* Tetap putih agar tulisan pengguna mudah diinput */
+    color: #111827;
+    transition:.25s;
+}
+
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus{
+    outline:none;
+    border-color:#16a34a;
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.25); /* Efek pendaran fokus disesuaikan ke hijau daun */
+    background:white;
+    transform:scale(1.01);
+}
+
+/* BUTTON AREA */
+
+.submit-box{
+    margin-top:28px;
+    /* Dibuat semi-transparan premium agar menyatu dengan komponen form di atasnya */
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding:18px;
+    border-radius:14px;
+    display:flex;
+    gap:12px;
+}
+
+/* BUTTON */
+
+.btn{
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:700;
+    transition:.25s;
+}
+
+.btn-primary{
+    background: #fef08a; /* Tombol utama menggunakan warna kuning lemon cerah agar dominan */
+    color: #14532d; /* Warna teks tombol disesuaikan ke hijau tua */
+    box-shadow: 0 6px 15px rgba(254, 240, 138, 0.3);
+}
+
+.btn-primary:hover{
+    transform:translateY(-2px);
+    background: #fff59d;
+    box-shadow: 0 10px 20px rgba(254, 240, 138, 0.5);
+}
+
+.btn-primary:active{
+    transform:scale(.98);
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+    .container{
+        width:92%;
+        padding:20px;
+    }
+
+    .form-row{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
+    }
+
+    .form-row label{
+        width:100%;
+    }
+
+    .form-row input,
+    .form-row select,
+    .form-row textarea{
+        width:100%;
+    }
+
+    .submit-box{
+        flex-direction:column;
+    }
+
+    .btn{
+        width:100%;
+    }
+}
+
+</style>
+</head>
+<body>
+
+    <div class="topbar">
+        Galeri Event Lari
+    </div>
+
+    <div class="breadcrumb">
+        <a href="/dasboart/">Home</a>
+        › Galeri
+        › Fotos
+        › Add Foto
+    </div>
+
+    <div class="container">
+
+        <h1>Add Foto</h1>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Nama Event -->
+            <div class="form-row">
+                 <label>Nama Event:</label>
+                 {{ form.nama_event }}
+            </div>
+
+            <!-- Gambar -->
+            <div class="form-row">
+                <label>Gambar:</label>
+                {{ form.gambar }}
+            </div>
+
+            <!-- Timestamp -->
+            <div class="form-row">
+                <label>Timestamp:</label>
+                {{ form.timestamp }}
+            </div>
+
+            <!-- Jenis Event -->
+            <div class="form-row">
+                <label>Jenis Event:</label>
+                {{ form.jenis_event }}
+            </div>
+
+            <div class="submit-box">
+                <button type="submit" class="btn btn-primary">
+                    SAVE
+                </button>
+
+                <button type="submit" name="_addanother" class="btn btn-primary">
+                    Save and add another
+                </button>
+
+                <button type="submit" name="_continue" class="btn btn-primary">
+                    Save and continue editing
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</body>
+</html>
