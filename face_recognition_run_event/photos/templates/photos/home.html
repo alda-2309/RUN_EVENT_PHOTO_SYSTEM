@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Running Photo</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7f6; }
+        .menu-container { text-align: center; background: white; padding: 50px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; margin-bottom: 30px; }
+        .options { display: flex; gap: 20px; justify-content: center; }
+        .card { 
+            padding: 30px; width: 200px; border: 2px solid #eee; border-radius: 10px; 
+            text-decoration: none; color: #333; transition: 0.3s; 
+        }
+        .card:hover { border-color: #27ae60; transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .card i { font-size: 40px; display: block; margin-bottom: 15px; }
+        .card span { font-weight: bold; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <h1>Pilih Metode Pencarian</h1>
+        <div class="options">
+            <a href="/cari-bib/" class="card">
+                <span>🔢</span><br>
+                <span>Pencarian BIB</span>
+            </a>
+            <a href="/test-ai/" class="card">
+                <span>👤</span><br>
+                <span>Deteksi Wajah</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
