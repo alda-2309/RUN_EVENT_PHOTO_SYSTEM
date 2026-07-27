@@ -1,4 +1,1 @@
-from django.contrib import admin
-from .models import Foto
-
-admin.site.register(Foto)
+# Admin — data galeri ada di MongoDB, tidak perlu registrasi model Django

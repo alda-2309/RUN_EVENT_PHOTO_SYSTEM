@@ -1,63 +1,38 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Event
+from config.db import events_collection, get_next_id
+from datetime import datetime
 
-
-# LIST EVENT
 def event_list(request):
-
-    events = Event.objects.all()
-
+    events = list(events_collection.find().sort('_id', -1))
     q = request.GET.get('q')
     date = request.GET.get('date')
 
     if q:
-        events = events.filter(event_type__icontains=q)
-
+        events = [e for e in events if q.lower() in e.get('event_type', '').lower()]
     if date:
-        events = events.filter(timestamp__date=date)
+        try:
+            date_filter = datetime.strptime(date, '%Y-%m-%d').date()
+            events = [e for e in events if e.get('timestamp') and e['timestamp'].date() == date_filter]
+        except ValueError:
+            pass
 
-    context = {
-        'events': events
-    }
-
-    return render(
-        request,
-        'events/event_list.html',
-        context
-    )
+    return render(request, 'events/event_list.html', {'events': events})
 
 
-# TAMBAH EVENT
 def event_add(request):
-
     if request.method == 'POST':
-
-        Event.objects.create(
-
-            event_type=request.POST.get('event_type'),
-
-            timestamp=request.POST.get('timestamp'),
-
-            location=request.POST.get('location')
-
-        )
-
-        messages.success(
-            request,
-            '✅ Event berhasil ditambahkan!'
-        )
-
+        event_data = {
+            '_id': get_next_id('events'),
+            'event_type': request.POST.get('event_type'),
+            'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%dT%H:%M'),
+            'location': request.POST.get('location'),
+        }
+        events_collection.insert_one(event_data)
+        messages.success(request, '✅ Event berhasil ditambahkan!')
         return redirect('dasboart')
+    return render(request, 'events/event_add.html')
 
-    return render(
-        request,
-        'events/event_add.html'
-    )
 
 def event_detail(request):
-    return render(
-        request,
-        'events/event_detail.html'
-    )
-
+    return render(request, 'events/event_detail.html')

@@ -1,12 +1,5 @@
 from django import forms
-from .models import Photo
 
-class PhotoForm(forms.ModelForm):
-
-    class Meta:
-        model = Photo
-
-        fields = [
-            'event',
-            'image',
-        ]
+class PhotoForm(forms.Form):
+    event_id = forms.IntegerField(widget=forms.HiddenInput())
+    image = forms.ImageField()

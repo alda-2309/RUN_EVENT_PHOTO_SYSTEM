@@ -10,7 +10,10 @@ from django.core.files.storage import default_storage
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.conf import settings
-from config.monggo_connection import koleksi_foto, koleksi_wajah
+from config.db import db as mongo_db
+
+koleksi_foto = mongo_db['photos_photoevent']
+koleksi_wajah = mongo_db['photos_faceembedding']
 
 
 def _get_deepface():
