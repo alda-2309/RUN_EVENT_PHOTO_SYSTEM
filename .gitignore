@@ -1,0 +1,57 @@
+# =========================
+# Global / common
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.sqlite3
+*.db
+.env
+.venv/
+venv/
+env/
+ENV/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Python packaging / cache
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# =========================
+# Django / app data
+# =========================
+db.sqlite3
+media/
+sessions/
+staticfiles/
+
+# Local debug / temporary scripts
+debug_login.py
+debug_login2.py
+test_login.py
+test_mongodb.py
+reset_passwords.py
+urls_list.txt
+server.log
+db.sqlite3_OLD
+
+# =========================
+# OCR Validator project
+# =========================
+ocr-validator/uploads/
+ocr-validator/*.log
+ocr-validator/*.sql
+
+# NOTE:
+# If database.sql should stay tracked, remove the rule above for *.sql.
