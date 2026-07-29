@@ -20,15 +20,20 @@
             <td style="font-weight:700; color:#fef08a;">Jenis Event</td>
             <td style="font-weight:700; color:#fef08a;">Timestamp</td>
             <td style="font-weight:700; color:#fef08a;">Lokasi</td>
+            <td style="font-weight:700; color:#fef08a;">Aksi</td>
         </tr>
         {% for event in events %}
         <tr>
             <td>{{ event.event_type }}</td>
             <td>{{ event.timestamp|date:"d M Y H:i" }}</td>
             <td>{{ event.location|default:"-" }}</td>
+            <td class="actions">
+                <a href="{% url 'admin_event_edit' event.id %}">✏️ Edit</a>
+                <a href="{% url 'admin_event_delete' event.id %}" onclick="return confirm('Hapus event ini?')">🗑️ Hapus</a>
+            </td>
         </tr>
         {% empty %}
-        <tr><td colspan="3" class="empty">Belum ada event.</td></tr>
+        <tr><td colspan="4" class="empty">Belum ada event.</td></tr>
         {% endfor %}
     </table>
 </div>

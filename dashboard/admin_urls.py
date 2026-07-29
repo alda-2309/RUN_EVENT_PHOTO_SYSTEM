@@ -72,8 +72,8 @@ def dashboard(request):
 
     latest_uploads = list(photos_collection.find().sort('_id', -1).limit(5))
     for photo in latest_uploads:
-        event = events_collection.find_one({'_id': photo.get('event_id')})
-        photo['event_name'] = event['event_type'] if event else 'Unknown'
+        photo['event_name'] = photo.get('nama_event', 'Unknown')
+        photo['id'] = photo['_id']
 
     context = {
         'total_photos': total_photos,
@@ -89,6 +89,8 @@ def dashboard(request):
 @admin_required
 def event_list(request):
     events = list(events_collection.find().sort('_id', -1))
+    for e in events:
+        e['id'] = e['_id']
     q = request.GET.get('q')
     date = request.GET.get('date')
 
@@ -118,12 +120,75 @@ def event_add(request):
     return render(request, 'admin/event_add.html')
 
 @admin_required
+def event_edit(request, event_id):
+    event = events_collection.find_one({'_id': int(event_id)})
+    if not event:
+        messages.error(request, 'Event tidak ditemukan.')
+        return redirect('admin_event_list')
+
+    if request.method == 'POST':
+        events_collection.update_one(
+            {'_id': int(event_id)},
+            {'$set': {
+                'event_type': request.POST.get('event_type'),
+                'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%dT%H:%M'),
+                'location': request.POST.get('location'),
+            }}
+        )
+        messages.success(request, '✅ Event berhasil diupdate!')
+        return redirect('admin_event_list')
+
+    return render(request, 'admin/event_edit.html', {'event': event})
+
+@admin_required
+def event_delete(request, event_id):
+    events_collection.delete_one({'_id': int(event_id)})
+    messages.success(request, '✅ Event berhasil dihapus!')
+    return redirect('admin_event_list')
+
+@admin_required
 def event_detail(request):
     return render(request, 'admin/event_detail.html')
 
 @admin_required
+def photo_edit(request, photo_id):
+    foto = photos_collection.find_one({'_id': int(photo_id)})
+    if not foto:
+        messages.error(request, 'Foto tidak ditemukan.')
+        return redirect('admin_photo_list')
+
+    if request.method == 'POST':
+        update_fields = {
+            'nama_event': request.POST.get('nama_event', ''),
+            'jenis_event': request.POST.get('jenis_event', ''),
+        }
+        # Handle upload gambar baru
+        if request.FILES.get('gambar'):
+            from django.core.files.storage import default_storage
+            import os
+            from django.conf import settings
+            # Hapus gambar lama
+            old_path = os.path.join(settings.MEDIA_ROOT, foto.get('gambar', ''))
+            if old_path and os.path.exists(old_path):
+                os.remove(old_path)
+            gambar = request.FILES['gambar']
+            filepath = default_storage.save(f'foto/{gambar.name}', gambar)
+            update_fields['gambar'] = filepath
+
+        photos_collection.update_one(
+            {'_id': int(photo_id)},
+            {'$set': update_fields}
+        )
+        messages.success(request, '✅ Foto berhasil diupdate!')
+        return redirect('admin_photo_list')
+
+    return render(request, 'admin/photo_edit.html', {'foto': foto})
+
+@admin_required
 def photo_list(request):
     fotos = list(photos_collection.find().sort('_id', -1))
+    for f in fotos:
+        f['id'] = f['_id']
     return render(request, 'admin/photo_list.html', {'fotos': fotos})
 
 @admin_required
@@ -218,9 +283,12 @@ urlpatterns = [
     path('change-password/', change_password, name='admin_change_password'),
     path('events/', event_list, name='admin_event_list'),
     path('events/add/', event_add, name='admin_event_add'),
+    path('events/edit/<int:event_id>/', event_edit, name='admin_event_edit'),
+    path('events/delete/<int:event_id>/', event_delete, name='admin_event_delete'),
     path('events/detail/', event_detail, name='admin_event_detail'),
     path('photos/', photo_list, name='admin_photo_list'),
     path('photos/upload/', photo_upload, name='admin_photo_upload'),
+    path('photos/edit/<int:photo_id>/', photo_edit, name='admin_photo_edit'),
     path('photos/delete/<int:photo_id>/', photo_delete, name='admin_photo_delete'),
     path('foto/', foto_list, name='admin_foto_list'),
     path('foto/delete/<int:foto_id>/', photo_delete, name='admin_foto_delete'),

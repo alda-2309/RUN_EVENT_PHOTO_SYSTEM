@@ -1,7 +1,7 @@
 {% extends "admin/base_admin.html" %}
 {% block title %}Upload Foto - RunSnap{% endblock %}
 {% block content %}
-<a href="{% url 'admin_photo_list' %}" class="back-btn">← Kembali ke Daftar Foto</a>
+<a href="{% url 'admin_dashboard' %}" class="back-btn">← Kembali ke Dashboard</a>
 <div class="card" style="max-width:600px; margin:0 auto; padding:35px;">
     <h2 style="text-align:center; margin-bottom:25px; color:#fef08a; font-size:24px;">📸 Upload Foto Baru</h2>
     <form method="POST" enctype="multipart/form-data">

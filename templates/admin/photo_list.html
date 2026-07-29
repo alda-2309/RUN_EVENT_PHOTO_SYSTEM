@@ -10,15 +10,20 @@
 <div class="gallery">
     {% for foto in fotos %}
     <div class="photo-card">
-        {% if foto.image or foto.gambar %}
-            <img src="{{ foto.image.url|default:foto.gambar.url }}" alt="Foto" onerror="this.src='https://via.placeholder.com/400x250?text=Foto+Tidak+Tersedia'">
-        {% else %}
-            <img src="https://via.placeholder.com/400x250?text=No+Image">
-        {% endif %}
+        {% with foto.image|default:foto.gambar as img_path %}
+            {% if img_path %}
+                <img src="/media/{{ img_path }}" alt="Foto" onerror="this.src='https://via.placeholder.com/400x250?text=Foto+Tidak+Tersedia'">
+            {% else %}
+                <img src="https://via.placeholder.com/400x250?text=No+Image">
+            {% endif %}
+        {% endwith %}
         <div class="info">
             <h3>{{ foto.event_name|default:foto.nama_event|default:"-" }}</h3>
             <p>📅 {{ foto.uploaded_at|date:"d M Y"|default:foto.timestamp|default:"-" }}</p>
-            <a href="{% url 'admin_photo_delete' foto.id %}" class="btn btn-red" style="display:inline-block; padding:6px 16px; font-size:12px; margin-top:8px;" onclick="return confirm('Hapus foto ini?')">🗑️ Hapus</a>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+                <a href="{% url 'admin_photo_edit' foto.id %}" class="btn btn-yellow" style="display:inline-block; padding:6px 16px; font-size:12px;">✏️ Edit</a>
+                <a href="{% url 'admin_photo_delete' foto.id %}" class="btn btn-red" style="display:inline-block; padding:6px 16px; font-size:12px;" onclick="return confirm('Hapus foto ini?')">🗑️ Hapus</a>
+            </div>
         </div>
     </div>
     {% empty %}

@@ -508,14 +508,12 @@ flex-direction:column;
                         {% for photo in latest_uploads %}
                         <div class="recent-item">
 
-                            {% if photo.image %}
-                                <img src="{{ photo.image.url }}">
-                            {% else %}
-                                <img src="https://via.placeholder.com/100">
-                            {% endif %}
+                            {% with photo.image|default:photo.gambar as img_path %}
+                                <img src="/media/{{ img_path }}">
+                            {% endwith %}
 
                             <div class="recent-info">
-                                <h4>{{ photo.event.name }}</h4>
+                                <h4>{{ photo.event_name }}</h4>
                                 <span>{{ photo.uploaded_at }}</span>
                             </div>
                         </div>
