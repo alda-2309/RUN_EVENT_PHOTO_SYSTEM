@@ -285,7 +285,7 @@
 
             {% if request.session.user_id %}
                 <div class="user-info">
-                    👋 {{ request.session.username|default:request.user.username|upper }}
+                    👋 {{ request.session.username|upper }}
                     {% if request.session.is_staff or request.session.is_superuser %}
                         <a href="{% url 'admin_dashboard' %}">Dashboard</a> /
                     {% endif %}

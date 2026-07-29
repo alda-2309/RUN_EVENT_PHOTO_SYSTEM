@@ -3,7 +3,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from config.db import (
     photos_collection, events_collection, users_collection,
-    get_next_id, create_user, authenticate_user, update_last_login
+    get_next_id, create_user, authenticate_user, update_last_login,
+    hash_password, verify_password
 )
 from datetime import datetime
 
@@ -172,6 +173,41 @@ def foto_list(request):
     fotos = list(photos_collection.find().sort('_id', -1))
     return render(request, 'admin/foto_list.html', {'fotos': fotos})
 
+@admin_required
+def change_password(request):
+    if request.method == 'POST':
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        user_id = request.session.get('user_id')
+        user_data = users_collection.find_one({'_id': int(user_id)})
+
+        if not user_data:
+            messages.error(request, 'User tidak ditemukan.')
+            return redirect('admin_change_password')
+
+        if not verify_password(current_password, user_data['password']):
+            messages.error(request, 'Password saat ini salah.')
+            return redirect('admin_change_password')
+
+        if new_password != confirm_password:
+            messages.error(request, 'Password baru tidak cocok.')
+            return redirect('admin_change_password')
+
+        if len(new_password) < 6:
+            messages.error(request, 'Password baru minimal 6 karakter.')
+            return redirect('admin_change_password')
+
+        users_collection.update_one(
+            {'_id': int(user_id)},
+            {'$set': {'password': hash_password(new_password)}}
+        )
+        messages.success(request, '✅ Password berhasil diubah!')
+        return redirect('admin_dashboard')
+
+    return render(request, 'admin/change_password.html')
+
 # ============================================================
 # URL PATTERNS
 # ============================================================
@@ -179,6 +215,7 @@ urlpatterns = [
     path('login/', login, name='admin_login'),
     path('logout/', logout_view, name='admin_logout'),
     path('', dashboard, name='admin_dashboard'),
+    path('change-password/', change_password, name='admin_change_password'),
     path('events/', event_list, name='admin_event_list'),
     path('events/add/', event_add, name='admin_event_add'),
     path('events/detail/', event_detail, name='admin_event_detail'),

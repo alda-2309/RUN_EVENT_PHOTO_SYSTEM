@@ -8,7 +8,7 @@ urlpatterns = [
     path('manage/detail/', views.event_detail, name='event_detail'),
 
     # Public map page
-    path('map/', views.event_detail, name='event_map'),
+    path('map/', views.event_map_view, name='event_map'),
 
     # API endpoints for map interactivity
     path('api/points/', views.api_get_points, name='api_get_points'),

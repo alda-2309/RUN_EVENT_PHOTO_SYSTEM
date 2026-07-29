@@ -610,24 +610,37 @@ required>
 
 <label>Password</label>
 
+<div style="position:relative;">
+
 <input
 type="password"
 name="password1"
 placeholder="Masukkan password"
-required>
+required
+id="regPass1">
+
+<span onclick="togglePass('regPass1', this)" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:1.2rem; user-select:none; color:#6b7280; transition:.2s;">👁</span>
 
 </div>
 
+</div>
 
 <div>
 
 <label>Konfirmasi Password</label>
 
+<div style="position:relative;">
+
 <input
 type="password"
 name="password2"
 placeholder="Masukkan ulang password"
-required>
+required
+id="regPass2">
+
+<span onclick="togglePass('regPass2', this)" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:1.2rem; user-select:none; color:#6b7280; transition:.2s;">👁</span>
+
+</div>
 
 </div>
 
@@ -675,6 +688,19 @@ Masuk
 </div>
 
 </body>
+
+<script>
+function togglePass(id, el) {
+    const inp = document.getElementById(id);
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        el.textContent = '👁';
+    } else {
+        inp.type = 'password';
+        el.textContent = '👁';
+    }
+}
+</script>
 
 </html>
 ```

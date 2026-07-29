@@ -1,12 +1,33 @@
 import json
 from datetime import datetime
+from functools import wraps
 from bson import ObjectId
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from config.db import events_collection, map_points_collection, map_routes_collection, get_next_id
+from config.db import events_collection, map_points_collection, map_routes_collection, get_next_id, users_collection
+
+# ============================================================
+# HELPER — cek admin dari session
+# ============================================================
+def _is_admin(request):
+    user_id = request.session.get('user_id')
+    is_logged_in = request.session.get('is_logged_in', False)
+    if not (user_id and is_logged_in):
+        return False
+    user_data = users_collection.find_one({'_id': int(user_id)})
+    return bool(user_data and (user_data.get('is_staff') or user_data.get('is_superuser')))
+
+def admin_required_api(view_func):
+    """Decorator untuk proteksi API endpoint — hanya admin bisa akses"""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not _is_admin(request):
+            return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 # ============================================================
 # ADMIN EVENT MANAGEMENT
@@ -28,7 +49,6 @@ def event_list(request):
 
     return render(request, 'events/event_list.html', {'events': events})
 
-
 def event_add(request):
     if request.method == 'POST':
         event_data = {
@@ -42,9 +62,13 @@ def event_add(request):
         return redirect('admin_event_list')
     return render(request, 'events/event_add.html')
 
-
 def event_detail(request):
     return render(request, 'events/event_detail.html')
+
+def event_map_view(request):
+    """Public map view — admin bisa edit, user cuma lihat"""
+    is_admin = _is_admin(request)
+    return render(request, 'events/event_detail.html', {'is_admin': is_admin})
 
 
 # ============================================================
@@ -100,6 +124,7 @@ def api_get_route(request):
 
 
 @csrf_exempt
+@admin_required_api
 @require_http_methods(['POST'])
 def api_add_point(request):
     """POST /events/api/points/add/ — tambah titik baru"""
@@ -132,6 +157,7 @@ def api_add_point(request):
 
 
 @csrf_exempt
+@admin_required_api
 @require_http_methods(['PUT'])
 def api_update_point(request, point_id):
     """PUT /events/api/points/<point_id>/ — update nama, icon, posisi"""
@@ -159,6 +185,7 @@ def api_update_point(request, point_id):
 
 
 @csrf_exempt
+@admin_required_api
 @require_http_methods(['DELETE'])
 def api_delete_point(request, point_id):
     """DELETE /events/api/points/<point_id>/ — hapus titik"""
@@ -170,6 +197,7 @@ def api_delete_point(request, point_id):
 
 
 @csrf_exempt
+@admin_required_api
 @require_http_methods(['POST'])
 def api_save_route(request):
     """POST /events/api/route/save/ — simpan route geometry asli"""
@@ -192,6 +220,7 @@ def api_save_route(request):
 
 
 @csrf_exempt
+@admin_required_api
 @require_http_methods(['POST'])
 def api_reset_points(request):
     """POST /events/api/points/reset/ — hapus semua titik & route untuk event_id"""

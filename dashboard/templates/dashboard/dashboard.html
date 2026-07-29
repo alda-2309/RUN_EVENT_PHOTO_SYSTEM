@@ -92,19 +92,17 @@ body {
     align-items:start;
 }
 
+
 /* ================= STATS ================= */
 
 .stats {
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
+    display:flex;
     gap:18px;
-    margin-bottom:22px;
+    margin-bottom:18px;
 }
-
 .stat-card {
-
+    flex:1;
     padding:18px 20px;
-
     border-radius:18px;
 
     /* Menerapkan efek kaca transparan premium */
@@ -241,8 +239,6 @@ table td a {
     display:flex;
     flex-direction:column;
     gap:20px;
-    position:relative;
-    top: 0px; /* Dinormalisasi dari -165px ke 0px agar posisinya sejajar dan pas di samping tabel */
 }
 
 .box {
@@ -362,7 +358,7 @@ grid-template-columns:1fr;
 }
 
 .stats {
-grid-template-columns:repeat(2,1fr);
+flex-direction:column;
 }
 
 }
@@ -381,7 +377,7 @@ padding:25px 20px;
 }
 
 .stats {
-grid-template-columns:1fr;
+flex-direction:column;
 }
 
 }
@@ -423,7 +419,7 @@ grid-template-columns:1fr;
         <div class="topbar-right">
             WELCOME, <b>{{ request.session.username|upper }}</b>
             <a href="/">VIEW SITE</a> /
-            <a href="#">CHANGE PASSWORD</a> /
+            <a href="{% url 'admin_change_password' %}">CHANGE PASSWORD</a> /
             <a href="{% url 'admin_logout' %}">LOG OUT</a>
         </div>
     </div>
@@ -448,99 +444,43 @@ grid-template-columns:1fr;
 
         <div class="page-title">Site Administration</div>
 
-        <!-- STATS -->
-        <div class="stats">
-
-            <div class="stat-card">
-                <div class="stat-icon">📸</div>
-                <div class="stat-title">TOTAL PHOTOS</div>
-                <div class="stat-number">{{ total_photos }}</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">🏁</div>
-                <div class="stat-title">TOTAL EVENTS</div>
-                <div class="stat-number">{{ total_events }}</div>
-            </div>
-
-
-        </div>
-
-        <div class="grid">
+                <div class="grid">
 
             <!-- LEFT -->
             <div>
+                <!-- STATS -->
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">📸</div>
+                        <div class="stat-title">TOTAL PHOTOS</div>
+                        <div class="stat-number">{{ total_photos }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏁</div>
+                        <div class="stat-title">TOTAL EVENTS</div>
+                        <div class="stat-number">{{ total_events }}</div>
+                    </div>
+                </div>
 
                 <div class="card">
-                    <div class="card-header">AUTHENTICATION AND AUTHORIZATION</div>
-
+                    <div class="card-header">GALERI</div>
                     <table>
                         <tr>
-                            <td><a href="#">Groups</a></td>
+                            <td><a href="/admin/events/event/">Events</a></td>
                             <td class="actions">
-                                <a href="#">+ Add</a>
-                                <a href="#">Change</a>
+                                <a href="{% url 'admin_event_add' %}">+ Add</a>
+                                <a href="{% url 'admin_event_list' %}">Change</a>
                             </td>
                         </tr>
-
                         <tr>
-                            <td><a href="#">Users</a></td>
+                            <td><a href="{% url 'admin_photo_upload' %}">Fotos</a></td>
                             <td class="actions">
-                                <a href="#">+ Add</a>
-                                <a href="#">Change</a>
+                                <a href="{% url 'admin_photo_upload' %}">+ Add</a>
+                                <a href="{% url 'admin_photo_list' %}">Change</a>
                             </td>
                         </tr>
                     </table>
                 </div>
-
-                <br>
-
-                <div class="card">
-    <div class="card-header">GALERI</div>
-
-    <table>
-
-        <tr>
-            <td>
-                <a href="/admin/events/event/">
-                    Events
-                </a>
-            </td>
-
-            <td class="actions">
-
-                <a href="{% url 'admin_event_add' %}">+ Add</a>
-
-                                <a href="{% url 'admin_event_list' %}">
-                                    Change
-                                </a>
-
-            </td>
-        </tr>
-
-        <tr>
-
-            <td>
-        <a href="{% url 'admin_photo_upload' %}">
-        Fotos
-    </a>
-</td>
-
-<td class="actions">
-    <a href="{% url 'admin_photo_upload' %}">
-        + Add
-    </a>
-
-    <a href="{% url 'admin_photo_list' %}">
-        Change
-    </a>
-</td>
-
-        </tr>
-
-    </table>
-</div>
-
             </div>
 
             <!-- RIGHT -->

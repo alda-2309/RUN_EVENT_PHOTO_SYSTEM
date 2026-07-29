@@ -649,11 +649,18 @@ required>
 
 <label>Password</label>
 
+<div style="position:relative;">
+
 <input
 type="password"
 name="password"
 placeholder="Masukkan password"
-required>
+required
+id="userPass">
+
+<span onclick="togglePass('userPass', this)" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:1.2rem; user-select:none; color:#6b7280; transition:.2s;">👁</span>
+
+</div>
 
 
 
@@ -729,5 +736,18 @@ Daftar Sekarang
 </div>
 
 </body>
+
+<script>
+function togglePass(id, el) {
+    const inp = document.getElementById(id);
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        el.textContent = '👁';
+    } else {
+        inp.type = 'password';
+        el.textContent = '👁';
+    }
+}
+</script>
 
 </html>

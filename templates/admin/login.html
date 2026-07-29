@@ -11,7 +11,10 @@
         </div>
         <div class="form-group">
             <label>Password</label>
-            <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
+            <div style="position:relative;">
+                <input type="password" name="password" class="form-control" placeholder="Masukkan password" required id="adminPass">
+                <span onclick="togglePass('adminPass', this)" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; font-size:1.2rem; user-select:none; color:#6b7280; transition:.2s;">👁</span>
+            </div>
         </div>
         <button type="submit" class="btn btn-yellow" style="width:100%; font-size:16px; padding:14px;">Masuk</button>
     </form>
@@ -19,4 +22,16 @@
         <a href="/" style="color:#fef08a;">← Kembali ke Beranda</a>
     </p>
 </div>
+<script>
+function togglePass(id, el) {
+    const inp = document.getElementById(id);
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        el.textContent = '👁';
+    } else {
+        inp.type = 'password';
+        el.textContent = '👁';
+    }
+}
+</script>
 {% endblock %}

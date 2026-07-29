@@ -32,6 +32,7 @@ body{
     padding:20px;border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,0.15);
 }
 .grid{display:grid;grid-template-columns:2fr 1fr;gap:20px;}
+.grid-single{display:grid;grid-template-columns:1fr;gap:20px;}
 #map{height:600px;border-radius:15px;border:1px solid rgba(255,255,255,0.2);z-index:1;}
 .panel{
     background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.1);
@@ -122,18 +123,21 @@ body.route-editing .leaflet-vertex-icon:active {
         <h1>📍 Peta Interaktif – Atur Route</h1>
     </div>
     <div class="header-actions">
+        {% if is_admin %}
         <button class="btn btn-yellow" onclick="enableAddMode()">➕ Tambah Checkpoint</button>
         <button class="btn btn-outline" onclick="toggleRouteEdit()" id="editRouteBtn">✏️ Edit Route</button>
         <button class="btn btn-outline" onclick="saveAll()">💾 Simpan</button>
         <button class="btn btn-danger" onclick="resetAll()">🗑️ Reset</button>
+        {% endif %}
     </div>
 </div>
 
 <div class="container">
     <div class="card">
-        <div class="grid">
+        <div class="{% if is_admin %}grid{% else %}grid-single{% endif %}">
             <div id="map"></div>
-            <div class="panel" id="panel">
+{% if is_admin %}
+            <div class="panel" id="panel" style="grid-column: 1 / -1;">
                 <h2>🏁 Checkpoints</h2>
                 <p style="font-size:0.8rem;color:rgba(255,255,255,0.6);margin-bottom:10px;">
                     Drag urutkan. <strong>Seret garis route</strong> saat mode edit aktif.
@@ -143,12 +147,14 @@ body.route-editing .leaflet-vertex-icon:active {
                     <li class="empty-state">Belum ada checkpoint. Klik "Tambah Checkpoint" lalu klik peta.</li>
                 </ul>
             </div>
+{% endif %}
         </div>
     </div>
 </div>
 
 <script>
 const EVENT_ID = 1;
+const IS_ADMIN = {% if is_admin %}true{% else %}false{% endif %};
 let map, checkpoints = [], markers = {}, addMode = false, draggedIndex = null, routeEditMode = false, routeGeometry = null;
 
 function initMap(){
@@ -159,6 +165,7 @@ function initMap(){
 
     map.on('click', e => {
         if(!addMode) return;
+        if (!IS_ADMIN) return;
         const name = prompt('Nama checkpoint:', 'Checkpoint ' + (checkpoints.length + 1));
         if(name) addCheckpointAPI(e.latlng.lat, e.latlng.lng, name);
         addMode = false;
@@ -285,18 +292,22 @@ function renderMarkers(){
             html:`<div class="checkpoint-marker">${idx+1}</div>`,
             iconSize:[36,36], iconAnchor:[18,18]
         });
-        const m = L.marker([p.lat,p.lng], {icon, draggable:true}).addTo(map);
-        m.bindPopup(`<b>${p.name}</b><br><small>(${p.lat.toFixed(5)},${p.lng.toFixed(5)})</small>`);
-        m.on('dragend', function(e){
-            const pos = e.target.getLatLng();
-            p.lat=pos.lat; p.lng=pos.lng;
-            updateCheckpointAPI(p.id, {lat:pos.lat, lng:pos.lng});
-            renderRoute();
-        });
-        m.on('click', function(){
-            const n = prompt('Edit nama:', p.name);
-            if(n && n!==p.name){ p.name=n; updateCheckpointAPI(p.id, {name:n}); renderList(); }
-        });
+        const m = L.marker([p.lat,p.lng], {icon, draggable: IS_ADMIN}).addTo(map);
+        if (IS_ADMIN) {
+            m.bindPopup(`<b>${p.name}</b><br><small>(${p.lat.toFixed(5)},${p.lng.toFixed(5)})</small>`);
+            m.on('dragend', function(e){
+                const pos = e.target.getLatLng();
+                p.lat=pos.lat; p.lng=pos.lng;
+                updateCheckpointAPI(p.id, {lat:pos.lat, lng:pos.lng});
+                renderRoute();
+            });
+            m.on('click', function(){
+                const n = prompt('Edit nama:', p.name);
+                if(n && n!==p.name){ p.name=n; updateCheckpointAPI(p.id, {name:n}); renderList(); }
+            });
+        } else {
+            m.bindPopup(`<b>${p.name}</b>`);
+        }
         markers[p.id]=m;
     });
 }
@@ -334,18 +345,20 @@ function renderList(){
     }
     const sorted = [...checkpoints].sort((a,b)=>a.order-b.order);
     list.innerHTML = sorted.map((p,idx)=>`
-        <li class="point-item" data-id="${p.id}" draggable="true" data-index="${idx}">
+        <li class="point-item" data-id="${p.id}" draggable="${IS_ADMIN}" data-index="${idx}">
             <div class="point-info">
-                <span class="drag-handle">⠿</span>
+                ${IS_ADMIN ? '<span class="drag-handle">⠿</span>' : ''}
                 <span class="point-name">${idx+1}. ${p.name}</span>
             </div>
+            ${IS_ADMIN ? `
             <div class="point-actions">
                 <button class="btn btn-sm btn-outline" onclick="editCheckpoint('${p.id}')">✏️</button>
                 <button class="btn btn-sm btn-danger" onclick="deleteCheckpoint('${p.id}')">🗑️</button>
-            </div>
+            </div>` : ''}
         </li>
     `).join('');
-    // drag-drop
+    // drag-drop (only if admin)
+    if (!IS_ADMIN) return;
     const items = list.querySelectorAll('.point-item');
     items.forEach(item => {
         item.addEventListener('dragstart', e => {
