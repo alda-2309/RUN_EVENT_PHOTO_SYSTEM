@@ -125,5 +125,5 @@ def tentang_kami_view(request):
 def events_view(request):
     return render(request, 'dashboard/events.html', {'active_page': 'events'})
 
-def kategori_view(request):
-    return render(request, 'dashboard/kategori.html', {'active_page': 'kategori'})
+# def kategori_view(request):
+#     return render(request, 'dashboard/kategori.html', {'active_page': 'kategori'})

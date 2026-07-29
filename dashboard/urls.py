@@ -33,10 +33,10 @@ urlpatterns = [
         name="events"
     ),
 
-    path(
-        "kategori/",
-        views.kategori_view,
-        name="kategori"
-    ),
+    # path(
+    #     "kategori/",
+    #     views.kategori_view,
+    #     name="kategori"
+    # ),
 
 ]
