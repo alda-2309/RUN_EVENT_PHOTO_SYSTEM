@@ -10,6 +10,8 @@ __pycache__/
 *.db
 .env
 .venv/
+.venv_blaze
+venv_blaze
 venv/
 env/
 ENV/
@@ -17,6 +19,7 @@ ENV/
 .vscode/
 .DS_Store
 Thumbs.db
+file_skripsi
 
 # Python packaging / cache
 *.egg-info/

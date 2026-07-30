@@ -3,25 +3,29 @@
 import os
 import cv2
 import numpy as np
-import mediapipe as mp
 from deepface import DeepFace
 from django.core.files.storage import default_storage
 
 class FaceProcessor:
     """
     Class untuk menangani semua proses face recognition:
-    1. Deteksi wajah (MediaPipe BlazeFace)
+    1. Deteksi wajah (optional MediaPipe)
     2. Ekstraksi embedding (DeepFace/Facenet)
     3. Normalisasi embedding
     """
     
     def __init__(self):
-        self.mp_face_detection = mp.solutions.face_detection
         self.model_name = 'Facenet'
-        self.detector_backend = 'mediapipe'
+        self.detector_backend = 'mtcnn'
         
     def detect_faces(self, image_path):
-        """Deteksi wajah menggunakan MediaPipe BlazeFace"""
+        """Deteksi wajah menggunakan MediaPipe jika tersedia."""
+        try:
+            import mediapipe as mp
+            face_detection_mod = mp.solutions.face_detection
+        except Exception:
+            return []
+
         image = cv2.imread(image_path)
         if image is None:
             return []
@@ -30,7 +34,7 @@ class FaceProcessor:
         h, w = image.shape[:2]
         
         faces = []
-        with self.mp_face_detection.FaceDetection(
+        with face_detection_mod.FaceDetection(
             model_selection=1,
             min_detection_confidence=0.5
         ) as face_detection:

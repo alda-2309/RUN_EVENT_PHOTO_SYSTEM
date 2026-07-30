@@ -1,8 +1,13 @@
 from pymongo import MongoClient
 
-connection_string = "mongodb+srv://tiaranurazm_db_user:hometownchachacha@clustermuti.mlnz2g4.mongodb.net/db_tugasakhir?retryWrites=true&w=majority"
+# Ganti ke local MongoDB (gak pake Atlas)
+connection_string = "mongodb://localhost:27017"
 
-client = MongoClient(connection_string, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=5000)
+client = MongoClient(connection_string, serverSelectionTimeoutMS=5000)
 db = client['db_tugasakhir']
 koleksi_foto = db['photos_photoevent']
 koleksi_wajah = db['photos_faceembedding']
+
+# Collection khusus eksperimen BlazeFace
+koleksi_foto_blaze = db['photos_photoevent_blaze']
+koleksi_wajah_blaze = db['photos_faceembedding_blaze']

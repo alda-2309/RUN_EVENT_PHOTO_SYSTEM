@@ -53,14 +53,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# 4. SETTING DATABASE (Mongodb)
+# 4. SETTING DATABASE (SQLite untuk Django core/auth/session/admin)
+# Data face recognition tetap disimpan via MongoDB (pymongo) di core/mongo_db.py
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'db_tugasakhir',
-        'CLIENT': {
-            'host': 'mongodb+srv://tiaranurazm_db_user:hometownchachacha@clustermuti.mlnz2g4.mongodb.net/db_tugasakhir?retryWrites=true&w=majority',
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -75,10 +73,36 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+USE_REDIS_CACHE = os.getenv('USE_REDIS_CACHE', '0') == '1'
+REDIS_CACHE_URL = os.getenv('REDIS_CACHE_URL', 'redis://127.0.0.1:6379/1')
+
+if USE_REDIS_CACHE:
+    try:
+        import django_redis  # noqa: F401
+        CACHES = {
+            "default": {
+                "BACKEND": "django_redis.cache.RedisCache",
+                "LOCATION": REDIS_CACHE_URL,
+                "OPTIONS": {
+                    "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                }
+            }
+        }
+    except Exception:
+        CACHES = {
+            "default": {
+                "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+                "LOCATION": "unique-snowflake",
+            }
+        }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
+        }
     }
-}

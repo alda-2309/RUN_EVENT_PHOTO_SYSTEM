@@ -1,24 +1,19 @@
 import os
 import re
-import cv2
 import time
 import hashlib
 import numpy as np
 from PIL import Image
 from io import BytesIO
-from bson import ObjectId
 from django.shortcuts import render, redirect 
 from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from deepface import DeepFace
 from django.conf import settings
-from core.mongo_db import koleksi_foto, koleksi_wajah
-
-# Fungsi Helper untuk Normalisasi Vektor AI
-def l2_normalize(x):
-    return x / np.sqrt(np.maximum(np.sum(np.square(x), axis=-1, keepdims=True), 1e-6))
+from core.mongo_db import koleksi_foto, koleksi_wajah, koleksi_foto_blaze, koleksi_wajah_blaze
+from photos.models import PhotoEvent
+from photos.face_utils import FaceProcessor
 
 # ============================================
 # KONSTANTA GLOBAL
@@ -27,11 +22,18 @@ THRESHOLD = 0.50
 ITEMS_PER_PAGE = 12
 CACHE_TIMEOUT = 3600
 
+# Instance global FaceProcessor
+face_processor = FaceProcessor()
+
+# Alias untuk backward compatibility
+l2_normalize = face_processor.normalize_embedding
+
 # ==========================================
 # HELPER: Ambil foto dari pymongo sebagai dict sederhana
 # ==========================================
 class PhotoObj:
     """Wrapper agar object pymongo bisa dipakai seperti Django model di template."""
+
     def __init__(self, doc):
         self.id = doc.get('id')
         self._id = doc.get('_id')
@@ -52,12 +54,15 @@ class PhotoObj:
             return ''
         nama_file = image_name.split('/')[-1]
         nama_file_lower = nama_file.lower()
+        full_name_lower = image_name.lower()
         if 'tiento' in nama_file_lower:
             return f"/media/lomba_lari/tientorun/{nama_file}"
         elif 'colorun' in nama_file_lower or 'color' in nama_file_lower:
             return f"/media/lomba_lari/colorun/{nama_file}"
         elif 'carfree' in nama_file_lower or 'cfd' in nama_file_lower:
             return f"/media/lomba_lari/carfreeday/{nama_file}"
+        elif 'milo race 2026' in full_name_lower:
+            return f"/media/lomba_lari/milo_race_2026/{nama_file}"
         elif 'milo' in nama_file_lower:
             return f"/media/lomba_lari/milo/{nama_file}"
         elif 'merdeka' in nama_file_lower or 'kemerdekaan' in nama_file_lower:
@@ -67,18 +72,20 @@ class PhotoObj:
         return f"/media/{image_name}"
 
 
+
+
 # ==========================================
 # FUNGSI HELPER: RANKING PENCARIAN WAJAH (dipakai upload baru & cari-serupa)
 # ==========================================
-def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
+def _cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_ref, koleksi_wajah_ref, exclude_photo_id=None):
     all_matches = []
     photos_map = {}
 
-    for p in koleksi_foto.find():
+    for p in koleksi_foto_ref.find():
         pid = p.get('id')
         photos_map[pid] = PhotoObj(p)
 
-    for wajah in koleksi_wajah.find():
+    for wajah in koleksi_wajah_ref.find():
         photo_obj = photos_map.get(wajah.get('photo_id'))
         if photo_obj is None or photo_obj.id == exclude_photo_id:
             continue
@@ -86,14 +93,22 @@ def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
         if db_vec.shape[0] != 128:
             continue
         db_vec = l2_normalize(db_vec)
-        cosine_similarity = np.dot(query_vec, db_vec) / (np.linalg.norm(query_vec) * np.linalg.norm(db_vec))
-        dist_cosine = 1 - cosine_similarity
-        similarity_percent = round(float(cosine_similarity) * 100, 1)
+
+        similarity, dist_cosine = face_processor.calculate_similarity(query_vec, db_vec)
+        similarity_percent = round(float(similarity) * 100, 1)
         photo_obj.similarity = similarity_percent
         all_matches.append({'dist': dist_cosine, 'photo': photo_obj})
 
     all_matches.sort(key=lambda x: x['dist'])
     return [m['photo'] for m in all_matches if m['dist'] <= threshold_real]
+
+
+def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
+    return _cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto, koleksi_wajah, exclude_photo_id)
+
+
+def cari_foto_mirip_blaze(query_vec, threshold_real, exclude_photo_id=None):
+    return _cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_blaze, koleksi_wajah_blaze, exclude_photo_id)
 
 
 def set_event_metadata(photo):
@@ -104,6 +119,10 @@ def set_event_metadata(photo):
         photo.event_name = "Tiento Run 2026"
         photo.event_location = "Balai Kota, Bandung"
         photo.event_date = "28 Juni 2026"
+    elif 'milo_race_2026' in folder_nama or 'milo race 2026' in folder_nama:
+        photo.event_name = "Milo Race 2026"
+        photo.event_location = "-"
+        photo.event_date = "-"
     elif 'milo' in folder_nama:
         photo.event_name = "MILO ACTIV Indonesia Race 2025"
         photo.event_location = "Kota Baru Parahyangan, Padalarang"
@@ -124,6 +143,7 @@ def set_event_metadata(photo):
         photo.event_name = "Vokasi UI ECO Run"
         photo.event_location = "Vokasi Universitas Indonesia, Depok"
         photo.event_date = "5 April 2026"
+
 def get_page_range(page_obj, window=1):
     """Menghasilkan daftar nomor halaman di sekitar halaman aktif, misal [2,3,4]."""
     current = page_obj.number
@@ -137,22 +157,31 @@ def get_page_range(page_obj, window=1):
 # 1. FUNGSI PROSES AI BACKGROUND (UNTUK ADMIN.PY)
 # ==========================================
 def proses_ai_dan_simpan(photo_obj):
-    """Proses AI untuk foto yang sudah disimpan via admin. photo_obj adalah dict dari pymongo."""
+    """Proses AI untuk foto yang sudah disimpan via admin.
+    photo_obj bisa berupa Django PhotoEvent Model instance atau dict pymongo.
+    """
     try:
-        img_path = os.path.join(settings.MEDIA_ROOT, photo_obj['image'])
+        # Handle both Django Model instance and pymongo dict
+        if hasattr(photo_obj, 'image'):  # Django Model
+            img_path = photo_obj.image.path
+            photo_id = str(photo_obj.id)
+        else:  # pymongo dict
+            img_path = os.path.join(settings.MEDIA_ROOT, photo_obj['image'])
+            photo_id = str(photo_obj['_id'])
+
         img_pil = Image.open(img_path)
-        
+
+        # Gunakan FaceProcessor yang konsisten
         results = DeepFace.represent(
             img_path=img_path,
-            model_name='Facenet',
-            detector_backend='mtcnn',
+            model_name=face_processor.model_name,
+            detector_backend=face_processor.detector_backend,
             enforce_detection=False
         )
 
         print(f"DEBUG: Jumlah wajah terdeteksi = {len(results)}")
 
         count = 0
-        photo_id = photo_obj['_id']
         for res in results:
             vec = np.array(res["embedding"], dtype=np.float32)
             vec = l2_normalize(vec)
@@ -183,15 +212,14 @@ def proses_ai_dan_simpan(photo_obj):
             count += 1
         return True, count
     except Exception as e:
-        print(f"Error AI pada {photo_obj.get('_id', '?')}: {e}")
+        print(f"Error AI pada {photo_obj}: {e}")
         return False, 0
 
 
 # ==========================================
 # 2. VIEW UTAMA PENCARIAN WAJAH (MURNI AI)
 # ==========================================
-def test_ai(request):
-
+def _handle_search_request(request, koleksi_foto_ref, koleksi_wajah_ref, search_func):
     if request.method == 'POST' and request.FILES.get('foto'):
         file_foto = request.FILES['foto']
 
@@ -266,10 +294,11 @@ def test_ai(request):
                 print(f"Tindakan: Menjalankan ekstraksi fitur wajah DeepFace...")
                 print("-"*60 + "\n")
 
+                        # Gunakan FaceProcessor untuk ekstraksi embedding
             results = DeepFace.represent(
                 img_path=full_path,
-                model_name='Facenet',
-                detector_backend='mtcnn',
+                model_name=face_processor.model_name,
+                detector_backend=face_processor.detector_backend,
                 enforce_detection=False
             )
 
@@ -521,14 +550,96 @@ def ganti_halaman(request):
 # ==========================================
 # 3. FUNGSI PENGALIHAN URL
 # ==========================================
-def index(request): return test_ai(request)
-def landing_page(request): return test_ai(request)
-def home(request): return test_ai(request)
+def test_ai(request):
+    return _handle_search_request(request, koleksi_foto, koleksi_wajah, cari_foto_mirip)
+
+def index(request):
+    return test_ai(request)
+
+def landing_page(request):
+    return test_ai(request)
+
+def home(request):
+    return test_ai(request)
+
 
 
 # ==========================================
 # DEMO: PEMBUKTIAN KONSEP CROPPING MANUAL
 # ==========================================
+def test_ai_blaze(request):
+    """Search khusus BlazeFace (collection terpisah)."""
+    if request.method == 'POST' and request.FILES.get('foto'):
+        file_foto = request.FILES['foto']
+        file_info_string = file_foto.name + str(file_foto.size)
+        file_hash = hashlib.md5(file_info_string.encode('utf-8')).hexdigest()
+        threshold_real = THRESHOLD
+        cache_key = f"blaze_search_{file_hash}_{threshold_real}"
+
+        temp_name = f"temp_blaze_{file_foto.name}"
+        temp_path = default_storage.save(temp_name, file_foto)
+        full_path = os.path.join(default_storage.location, temp_path)
+
+        hasil_foto = []
+        pesan = ""
+        berhasil = False
+        waktu_total = 0
+
+        try:
+            t0 = time.time()
+            results = DeepFace.represent(
+                img_path=full_path,
+                model_name=face_processor.model_name,
+                detector_backend=face_processor.detector_backend,
+                enforce_detection=False,
+            )
+
+            if results and len(results) > 0:
+                selfie_vec = np.array(results[0]["embedding"], dtype=np.float32)
+                selfie_vec = l2_normalize(selfie_vec)
+                best_matches = _cari_foto_mirip_generic(selfie_vec, threshold_real, koleksi_foto_blaze, koleksi_wajah_blaze)
+
+                for photo in best_matches:
+                    set_event_metadata(photo)
+                    _attach_face_crop(photo)
+                    hasil_foto.append(photo)
+
+                waktu_total = round(time.time() - t0, 4)
+
+                if hasil_foto:
+                    paginator = Paginator(hasil_foto, 12)
+                    page_obj = paginator.get_page(1)
+                    pesan = f"Berhasil! Ditemukan {len(hasil_foto)} wajah yang paling mirip (BlazeFace)."
+                    berhasil = True
+                    return render(request, 'photos/test_ai.html', {
+                        'pesan': pesan,
+                        'berhasil': berhasil,
+                        'page_obj': page_obj,
+                        'page_range': get_page_range(page_obj),
+                        'hasil_foto': page_obj.object_list,
+                        'waktu_proses': waktu_total,
+                    })
+                else:
+                    pesan = "Wajah terdeteksi, tetapi tidak ditemukan di data BlazeFace."
+            else:
+                pesan = "Wajah tidak terdeteksi."
+
+        except Exception as e:
+            pesan = f"Terjadi kesalahan sistem: {e}"
+        finally:
+            if os.path.exists(full_path):
+                os.remove(full_path)
+
+        return render(request, 'photos/test_ai.html', {
+            'pesan': pesan,
+            'berhasil': berhasil,
+            'hasil_foto': hasil_foto,
+            'waktu_proses': waktu_total,
+        })
+
+    return render(request, 'photos/test_ai.html', {'mode': 'blaze', 'page_url_base': '/test-ai-blaze/'})
+
+
 def demo_crop_manual(request):
     subjek_terpilih = request.GET.get('subjek')
 
@@ -563,11 +674,11 @@ def demo_crop_manual(request):
             if not os.path.exists(selfie_path):
                 error = f"File selfie tidak ditemukan: {cfg['selfie']}"
             else:
-                # Ekstrak selfie
+                                # Ekstrak selfie
                 selfie_hasil = DeepFace.represent(
                     img_path=selfie_path,
-                    model_name='Facenet',
-                    detector_backend='skip',
+                    model_name=face_processor.model_name,
+                    detector_backend=face_processor.detector_backend,
                     enforce_detection=False
                 )
                 selfie_vec = l2_normalize(np.array(selfie_hasil[0]['embedding'], dtype=np.float32))
@@ -581,8 +692,8 @@ def demo_crop_manual(request):
                     # Ekstrak embedding dari foto CROP
                     r = DeepFace.represent(
                         img_path=foto_path,
-                        model_name='Facenet',
-                        detector_backend='skip',
+                        model_name=face_processor.model_name,
+                        detector_backend=face_processor.detector_backend,
                         enforce_detection=False
                     )
                     vec = l2_normalize(np.array(r[0]['embedding'], dtype=np.float32))

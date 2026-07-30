@@ -360,8 +360,9 @@
 
 {% if page_obj and page_obj.has_other_pages %}
 <div style="display: flex; justify-content: center; gap: 8px; margin-top: 30px; flex-wrap: wrap;">
+        {% with base=page_url_base|default:'/' %}
     {% if page_obj.has_previous %}
-        <a href="/?page={{ page_obj.previous_page_number }}" 
+        <a href="{{ base }}?page={{ page_obj.previous_page_number }}" 
            style="padding: 8px 14px; border-radius: 8px; background: #f1f2f6; color: #2c3e50; text-decoration: none; font-weight: bold;">&laquo; Prev</a>
     {% endif %}
 
@@ -369,15 +370,17 @@
         {% if num == page_obj.number %}
             <span style="padding: 8px 14px; border-radius: 8px; background: #27ae60; color: white; font-weight: bold;">{{ num }}</span>
         {% else %}
-            <a href="/?page={{ num }}" 
+            <a href="{{ base }}?page={{ num }}" 
                style="padding: 8px 14px; border-radius: 8px; background: #f1f2f6; color: #2c3e50; text-decoration: none; font-weight: bold;">{{ num }}</a>
         {% endif %}
     {% endfor %}
 
     {% if page_obj.has_next %}
-        <a href="/?page={{ page_obj.next_page_number }}" 
+        <a href="{{ base }}?page={{ page_obj.next_page_number }}" 
            style="padding: 8px 14px; border-radius: 8px; background: #f1f2f6; color: #2c3e50; text-decoration: none; font-weight: bold;">Next &raquo;</a>
     {% endif %}
+    {% endwith %}
+
 </div>
 {% endif %}
 

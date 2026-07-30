@@ -44,19 +44,16 @@ class Command(BaseCommand):
                 results = DeepFace.represent(
                     img_path=full_path, 
                     model_name='Facenet', 
-                    detector_backend='mediapipe', 
+                    detector_backend='mtcnn', 
                     enforce_detection=False
                 )
                 
-                # 🌟 PATH DINAMIS: Sekarang jalurnya otomatis mengikuti folder event aslinya!
-                # Menyimpan dengan format: media/NamaFolder/nama_file.jpg
-                db_image_path = f"lomba_lari/{event_folder_name}/{file_name}"
-                
-                # 3. Simpan ke Database
-                foto = PhotoEvent.objects.create(
-                    image=db_image_path,
-                    event_name=event_folder_name # Jika model kamu punya field event_name terpisah
-                )
+                                # 🌟 PATH DINAMIS: Upload file ke folder event asli via Django ImageField
+                with open(full_path, 'rb') as f:
+                    foto = PhotoEvent(
+                        event_name=event_folder_name
+                    )
+                    foto.image.save(file_name, ContentFile(f.read()), save=True)
                 
                 # Mengandalkan log debug agar kita tahu status real-time di terminal
                 self.stdout.write(f"DEBUG: AI mulai memproses foto ID {foto.id} di event {event_folder_name}")

@@ -7,7 +7,9 @@ urlpatterns = [
     # Halaman Utama (Proses Deteksi dan Pencarian Wajah)
     path('', views.index, name='index'),
     path('test-ai/', views.test_ai, name='test_ai'),
+    path('test-ai-blaze/', views.test_ai_blaze, name='test_ai_blaze'),
 ]
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

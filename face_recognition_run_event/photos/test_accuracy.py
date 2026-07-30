@@ -6,7 +6,7 @@ import django
 import numpy as np
 
 # Setup Django environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lomba_lari.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 django.setup()
 
 from photos.models import PhotoEvent, FaceEmbedding

@@ -7,8 +7,9 @@ from photos import views as photos_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('photos.urls')),
-    path('cari-serupa/<int:photo_id>/', photos_views.cari_serupa, name='cari_serupa'),
+        path('cari-serupa/<int:photo_id>/', photos_views.cari_serupa, name='cari_serupa'),
     path('ganti-halaman/', photos_views.ganti_halaman, name='ganti_halaman'),
+    path('test-ai-blaze/', photos_views.test_ai_blaze, name='test_ai_blaze'),
     path('demo-crop-manual/', photos_views.demo_crop_manual, name='demo_crop_manual'),
 ]
 
