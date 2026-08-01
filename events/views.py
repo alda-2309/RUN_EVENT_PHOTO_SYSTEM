@@ -54,7 +54,7 @@ def event_add(request):
         event_data = {
             '_id': get_next_id('events'),
             'event_type': request.POST.get('event_type'),
-            'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%dT%H:%M'),
+            'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%d %H:%M'),
             'location': request.POST.get('location'),
         }
         events_collection.insert_one(event_data)

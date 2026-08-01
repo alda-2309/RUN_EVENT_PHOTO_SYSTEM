@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Add Event</title>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+
 <style>
 
 *{
@@ -174,8 +176,10 @@ h1{
             <div class="form-row">
                 <label>Timestamp:</label>
 
-                <input type="datetime-local"
+                <input type="text"
                        name="timestamp"
+                       class="datetimepicker"
+                       placeholder="Pilih tanggal & jam"
                        required>
             </div>
 
@@ -213,6 +217,17 @@ h1{
     </form>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<script>
+    flatpickr('.datetimepicker', {
+        enableTime: true,
+        dateFormat: 'Y-m-d H:i',
+        time_24hr: true,
+        allowInput: true,
+        locale: { firstDayOfWeek: 1 }
+    });
+</script>
 
 </body>
 </html>

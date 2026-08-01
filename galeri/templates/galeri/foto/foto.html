@@ -107,8 +107,9 @@ width:95%;
                 <label>Jenis Event</label>
                 <select name="event">
                     <option value="">-- Pilih Event --</option>
-                    <option>Fun Run 5k</option>
-                    <option>Fun Run 10k</option>
+                    {% for t in event_types %}
+                    <option value="{{ t }}">{{ t }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="form-group">

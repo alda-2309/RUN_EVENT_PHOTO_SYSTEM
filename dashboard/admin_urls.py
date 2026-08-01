@@ -4,7 +4,7 @@ from django.contrib import messages
 from config.db import (
     photos_collection, events_collection, users_collection,
     get_next_id, create_user, authenticate_user, update_last_login,
-    hash_password, verify_password
+    hash_password, verify_password, get_event_types
 )
 from datetime import datetime
 
@@ -111,7 +111,7 @@ def event_add(request):
         event_data = {
             '_id': get_next_id('events'),
             'event_type': request.POST.get('event_type'),
-            'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%dT%H:%M'),
+            'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%d %H:%M'),
             'location': request.POST.get('location'),
         }
         events_collection.insert_one(event_data)
@@ -131,14 +131,17 @@ def event_edit(request, event_id):
             {'_id': int(event_id)},
             {'$set': {
                 'event_type': request.POST.get('event_type'),
-                'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%dT%H:%M'),
+                'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%d %H:%M'),
                 'location': request.POST.get('location'),
             }}
         )
         messages.success(request, '✅ Event berhasil diupdate!')
         return redirect('admin_event_list')
 
-    return render(request, 'admin/event_edit.html', {'event': event})
+    return render(request, 'admin/event_edit.html', {
+        'event': event,
+        'event_types': get_event_types()
+    })
 
 @admin_required
 def event_delete(request, event_id):
@@ -161,6 +164,7 @@ def photo_edit(request, photo_id):
         update_fields = {
             'nama_event': request.POST.get('nama_event', ''),
             'jenis_event': request.POST.get('jenis_event', ''),
+            'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%d %H:%M'),
         }
         # Handle upload gambar baru
         if request.FILES.get('gambar'):
@@ -182,7 +186,7 @@ def photo_edit(request, photo_id):
         messages.success(request, '✅ Foto berhasil diupdate!')
         return redirect('admin_photo_list')
 
-    return render(request, 'admin/photo_edit.html', {'foto': foto})
+    return render(request, 'admin/photo_edit.html', {'foto': foto, 'event_types': get_event_types()})
 
 @admin_required
 def photo_list(request):
@@ -218,7 +222,8 @@ def photo_upload(request):
     else:
         form = FotoForm()
 
-    return render(request, 'admin/photo_upload.html', {'form': form})
+    event_types = get_event_types()
+    return render(request, 'admin/photo_upload.html', {'form': form, 'event_types': event_types})
 
 @admin_required
 def photo_delete(request, photo_id):

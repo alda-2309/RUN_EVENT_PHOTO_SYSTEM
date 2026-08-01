@@ -52,6 +52,12 @@ def serialize_doc(doc) -> dict:
     """Convert MongoDB doc to dict"""
     return doc
 
+# ============================================================
+# HELPER: JENIS EVENT DARI COLLECTION EVENTS
+# ============================================================
+def get_event_types() -> list:
+    """Daftar jenis event unik dari collection 'events' (dari Tambah Event Baru)"""
+    return [t for t in events_collection.distinct('event_type') if t]
 
 # ============================================================
 # AUTH: PASSWORD MANAGEMENT

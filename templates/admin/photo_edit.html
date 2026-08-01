@@ -1,5 +1,17 @@
 {% extends "admin/base_admin.html" %}
 {% block title %}Edit Foto - RunSnap Admin{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<style>
+    .flatpickr-calendar { font-family: 'Poppins', sans-serif; }
+    .flatpickr-day.selected,
+    .flatpickr-day.selected:hover,
+    .flatpickr-time input:hover,
+    .flatpickr-time input:focus { background: #16a34a; border-color: #16a34a; }
+    .flatpickr-day.today { border-color: #fef08a; }
+    .flatpickr-time .flatpickr-am-pm:hover { background: #16a34a; }
+</style>
+{% endblock %}
 {% block content %}
 <a href="{% url 'admin_photo_list' %}" class="back-btn">← Kembali ke Daftar Foto</a>
 <h1 style="font-size:28px; font-weight:700; margin-bottom:25px; text-align:center;">✏️ Edit Foto</h1>
@@ -15,11 +27,14 @@
             <label style="display:block; margin-bottom:6px; font-weight:600;">Jenis Event</label>
             <select name="jenis_event" class="form-control" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ccc; box-sizing:border-box;">
                 <option value="">-- Pilih --</option>
-                <option value="Marathon" {% if foto.jenis_event == 'Marathon' %}selected{% endif %}>Marathon</option>
-                <option value="Trail Run" {% if foto.jenis_event == 'Trail Run' %}selected{% endif %}>Trail Run</option>
-                <option value="Fun Run" {% if foto.jenis_event == 'Fun Run' %}selected{% endif %}>Fun Run</option>
-                <option value="Night Run" {% if foto.jenis_event == 'Night Run' %}selected{% endif %}>Night Run</option>
+                {% for t in event_types %}
+                <option value="{{ t }}" {% if foto.jenis_event == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
             </select>
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+            <label style="display:block; margin-bottom:6px; font-weight:600;">Timestamp</label>
+            <input type="text" name="timestamp" class="form-control datetimepicker" value="{{ foto.timestamp|date:'Y-m-d H:i' }}" placeholder="Pilih tanggal & jam" required style="width:100%; padding:10px; border-radius:10px; border:1px solid #ccc; box-sizing:border-box;">
         </div>
         <div class="form-group" style="margin-bottom:18px;">
             <label style="display:block; margin-bottom:6px; font-weight:600;">Gambar Saat Ini</label>
@@ -36,4 +51,14 @@
         <button type="submit" class="btn btn-yellow" style="padding:10px 24px; width:100%; margin-top:10px; box-sizing:border-box;">💾 Simpan Perubahan</button>
     </form>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<script>
+    flatpickr('.datetimepicker', {
+        enableTime: true,
+        dateFormat: 'Y-m-d H:i',
+        time_24hr: true,
+        allowInput: true,
+        locale: { firstDayOfWeek: 1 }
+    });
+</script>
 {% endblock %}

@@ -1,9 +1,13 @@
 from django.shortcuts import render
-from config.db import photos_collection
+from config.db import photos_collection, get_event_types
 from datetime import datetime
 
 def foto_user(request):
-    return render(request, 'galeri/foto/foto.html', {'active_page': 'search'})
+    event_types = get_event_types()
+    return render(request, 'galeri/foto/foto.html', {
+        'active_page': 'search',
+        'event_types': event_types,
+    })
 
 def hasil(request):
     fotos = photos_collection.find().sort('_id', -1)

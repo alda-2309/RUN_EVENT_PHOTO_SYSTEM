@@ -18,11 +18,55 @@
 }
 .back-btn:hover { background: rgba(255,255,255,0.25); }
 
-.result-header { text-align:center; margin-bottom:40px; }
-.result-header h1 { font-size:36px; font-weight:800; }
-.result-header p { margin-top:12px; color: rgba(255,255,255,0.85); font-size:16px; }
-.result-header .success { color: #fef08a; font-weight:600; }
-.result-header .error { color: #fca5a5; font-weight:600; }
+.search-form {
+    max-width:650px;
+    margin:20px auto 30px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding:30px 35px;
+    border-radius:20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    text-align:center;
+}
+.search-form h2 { color: white; margin-bottom:10px; font-size:26px; }
+.search-form p  { color: rgba(255,255,255,0.85); margin-bottom:18px; }
+.search-form label {
+    display:block; margin-bottom:8px; font-weight:600; color: white; text-align:left;
+}
+.input-wrap { position: relative; }
+.search-form input[type="text"] {
+    width:100%; padding:14px 44px 14px 14px; margin:0 0 12px;
+    border:1px solid #cbd5e1; border-radius:10px; font-size:18px; color:#111827;
+    background: white; box-sizing:border-box; letter-spacing: 1px;
+    font-weight: 600;
+}
+.search-form input[type="text"]:focus {
+    outline: none; border-color: #16a34a;
+    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.25);
+}
+.clear-btn {
+    position: absolute; right: 12px; top: 50%; transform: translateY(calc(-50% - 6px));
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #e5e7eb; color: #374151;
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 14px; line-height: 1;
+    border: none;
+}
+.clear-btn:hover { background: #d1d5db; }
+.clear-btn.visible { display: flex; }
+
+.hint {
+    color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 6px;
+    min-height: 18px; text-align: left;
+}
+.hint.loading { color: #fef08a; }
+.hint.error   { color: #fca5a5; }
+
+.result-header { text-align:center; margin: 10px 0 30px; }
+.result-header h1 { font-size:32px; font-weight:800; color: white; }
+.result-header p { margin-top:8px; color: rgba(255,255,255,0.9); font-size:15px; }
 
 .gallery {
     display:grid;
@@ -36,14 +80,16 @@
     border-radius:16px;
     overflow:hidden;
     transition: .3s;
+    animation: fadeIn .35s ease-out;
 }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .photo-card:hover {
     transform: translateY(-5px);
     border:2px solid #fef08a;
 }
-.photo-card img { width:100%; height:220px; object-fit:cover; }
+.photo-card img { width:100%; height:220px; object-fit:cover; cursor:zoom-in; display:block; }
 .photo-card .info { padding:16px; }
-.photo-card .info h3 { font-size:16px; margin-bottom:8px; }
+.photo-card .info h3 { font-size:16px; margin-bottom:8px; color: white; }
 .photo-card .info p { font-size:13px; color: rgba(255,255,255,0.7); margin-bottom:4px; }
 .bib-badge {
     display:inline-block; padding:4px 12px;
@@ -51,58 +97,84 @@
     border-radius:20px; font-weight:700; font-size:14px; margin-top:8px;
 }
 
-.pagination {
-    display:flex; justify-content:center; gap:8px; margin-top:40px;
-}
-.pagination a {
-    padding:8px 16px; background: rgba(255,255,255,0.15);
-    color: white; border-radius:8px; text-decoration:none; font-weight:600; transition: .3s;
-}
-.pagination a:hover, .pagination a.active {
-    background: #fef08a; color: #14532d;
+.empty-state {
+    text-align: center; padding: 40px 20px;
+    color: rgba(255,255,255,0.6); font-size: 15px;
 }
 
-.search-form {
-    max-width:550px;
-    margin:40px auto;
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding:35px;
-    border-radius:20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    text-align:center;
+/* ===== LIGHTBOX ===== */
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.92);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }
-.search-form h2 { color: white; margin-bottom:12px; font-size:28px; }
-.search-form p { color: rgba(255,255,255,0.85); margin-bottom:20px; }
-.search-form label {
-    display:block; margin-bottom:8px; font-weight:600; color: white; text-align:left;
+.lightbox.open { display: flex; }
+.lightbox-img {
+    max-width: 92vw;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    background: #111827;
+    object-fit: contain;
 }
-.search-form input[type="text"] {
-    width:100%; padding:14px; margin:0 0 20px;
-    border:1px solid #cbd5e1; border-radius:10px; font-size:16px; color:#111827;
-    background: white; box-sizing:border-box;
+.lightbox-info {
+    margin-top: 14px;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    font-size: 14px;
+    max-width: 90vw;
 }
-.search-form input[type="text"]:focus {
-    outline: none; border-color: #16a34a;
-    box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.25);
+.lightbox-info h3 { color: white; font-size: 18px; margin-bottom: 4px; }
+.lightbox-info p { margin: 2px 0; }
+.lightbox-close {
+    position: fixed;
+    top: 20px; right: 28px;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 24px;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: .2s;
+    z-index: 1001;
 }
-.search-form button {
-    width:100%;
-    padding:15px;
-    background: #fef08a;
-    color: #14532d;
-    border:none;
-    border-radius:10px;
-    font-size:17px;
-    font-weight: 700;
-    cursor:pointer;
-    transition: .3s;
+.lightbox-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+.lightbox-nav {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: .2s;
+    z-index: 1001;
 }
-.search-form button:hover {
-    background: #fff59d;
-    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+.lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+.lightbox-nav.prev { left: 20px; }
+.lightbox-nav.next { right: 20px; }
+.lightbox-counter {
+    position: fixed;
+    bottom: 22px;
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+    z-index: 1001;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 16px;
+    border-radius: 20px;
 }
 </style>
 {% endblock %}
@@ -110,57 +182,247 @@
 <div class="container">
     <a href="{% url 'search' %}" class="back-btn">← Kembali ke Pencarian</a>
 
-    {% if hasil_foto %}
-        <div class="result-header">
-            <h1>Hasil Pencarian Bib</h1>
-            <p class="success">{{ pesan }}</p>
+    <div class="search-form">
+        <h2>🏃 Pencarian Nomor Bib</h2>
+        <p>Ketik nomor BIB pelari — hasil muncul otomatis dari database.</p>
+        <div class="input-wrap">
+            <input type="text" id="bib-input" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                   placeholder="Contoh: 83, 4677, 5ADI2" value="{{ bib_number|default:'' }}">
+            <button type="button" id="clear-btn" class="clear-btn" title="Bersihkan">×</button>
         </div>
+        <div class="hint" id="hint">Masukkan nomor BIB (angka dan/atau huruf).</div>
+    </div>
 
-        <div class="gallery">
-            {% for photo in hasil_foto %}
+    <div class="result-header" id="result-header" style="display:none;">
+        <h1>Hasil Pencarian Bib</h1>
+        <p id="result-summary"></p>
+    </div>
+
+    <div class="gallery" id="gallery"></div>
+    <div class="empty-state" id="empty-state" style="display:none;"></div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lb-close" title="Tutup">×</button>
+    <button class="lightbox-nav prev" id="lb-prev" title="Sebelumnya">‹</button>
+    <button class="lightbox-nav next" id="lb-next" title="Berikutnya">›</button>
+    <img class="lightbox-img" id="lb-img" src="" alt="Foto Bib">
+    <div class="lightbox-info">
+        <h3 id="lb-title"></h3>
+        <p id="lb-location"></p>
+        <p id="lb-date"></p>
+        <p id="lb-bib"></p>
+    </div>
+    <div class="lightbox-counter" id="lb-counter"></div>
+</div>
+
+<script>
+(function () {
+    const API_URL = "{% url 'bib_search_api' %}";
+    const input   = document.getElementById('bib-input');
+    const clearBtn = document.getElementById('clear-btn');
+    const hint    = document.getElementById('hint');
+    const resultHeader = document.getElementById('result-header');
+    const resultSummary = document.getElementById('result-summary');
+    const gallery = document.getElementById('gallery');
+    const emptyState = document.getElementById('empty-state');
+
+    let debounceTimer = null;
+    let lastQuery = '';
+    let inflight = null;
+
+    let currentResults = [];
+    let lbIndex = 0;
+
+    // Inline SVG placeholder so we never trigger a 404 to /media/no-image.png
+    // (data: URI is fetched synchronously, no network round trip, no log spam).
+    const PLACEHOLDER_IMG =
+        'data:image/svg+xml;utf8,' + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220">' +
+            '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0" stop-color="#374151"/><stop offset="1" stop-color="#1f2937"/>' +
+            '</linearGradient></defs>' +
+            '<rect width="400" height="220" fill="url(#g)"/>' +
+            '<text x="200" y="118" text-anchor="middle" fill="#9ca3af" ' +
+            'font-family="sans-serif" font-size="20" font-weight="600">Foto tidak tersedia</text>' +
+            '</svg>'
+        );
+
+    function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function setHint(text, cls) {
+        hint.textContent = text || '';
+        hint.className = 'hint' + (cls ? ' ' + cls : '');
+    }
+
+    function showClear() {
+        clearBtn.classList.toggle('visible', input.value.length > 0);
+    }
+
+    function clearResults() {
+        gallery.innerHTML = '';
+        resultHeader.style.display = 'none';
+        emptyState.style.display = 'none';
+        currentResults = [];
+        closeLightbox();
+    }
+
+    function openLightbox(index) {
+        if (!currentResults.length) return;
+        lbIndex = (index + currentResults.length) % currentResults.length;
+        const r = currentResults[lbIndex];
+        const img = document.getElementById('lb-img');
+        img.src = r.image_url;
+        img.onerror = function () {
+            if (this.src !== PLACEHOLDER_IMG) {
+                this.onerror = null;
+                this.src = PLACEHOLDER_IMG;
+            }
+        };
+        document.getElementById('lb-title').textContent = r.event_name || '';
+        document.getElementById('lb-location').textContent = r.event_location ? '📍 ' + r.event_location : '';
+        document.getElementById('lb-date').textContent = r.event_date ? '📅 ' + r.event_date : '';
+        document.getElementById('lb-bib').textContent = r.bib_number ? '🏷️ Bib: ' + r.bib_number : '';
+        document.getElementById('lb-counter').textContent =
+            (lbIndex + 1) + ' / ' + currentResults.length;
+        document.getElementById('lightbox').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function renderResults(data) {
+        const results = data.results || [];
+        currentResults = results;
+        if (data.count === 0) {
+            clearResults();
+            emptyState.style.display = 'block';
+            emptyState.textContent = `Tidak ditemukan foto dengan nomor BIB "${data.query}".`;
+            return;
+        }
+        resultHeader.style.display = 'block';
+        resultSummary.textContent = `Ditemukan ${data.count} foto untuk BIB "${data.query}"` +
+            (data.truncated ? ' (hasil dibatasi 60 teratas)' : '') + '.';
+        emptyState.style.display = 'none';
+
+        gallery.innerHTML = results.map((r, i) => `
             <div class="photo-card">
-                <img src="{{ photo.image_url }}" alt="{{ photo.event_name }}" onerror="this.src='/media/no-image.png'">
+                <img src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.event_name)}"
+                     onclick="openLightbox(${i})"
+                     onerror="if(this.src!='${PLACEHOLDER_IMG}'){this.onerror=null;this.src='${PLACEHOLDER_IMG}'}">
                 <div class="info">
-                    <h3>{{ photo.event_name }}</h3>
-                    <p>📍 {{ photo.event_location }}</p>
-                    <p>📅 {{ photo.event_date }}</p>
-                    {% if photo.bib_number %}
-                        <span class="bib-badge">Bib: {{ photo.bib_number }}</span>
-                    {% endif %}
+                    <h3>${escapeHtml(r.event_name)}</h3>
+                    <p>📍 ${escapeHtml(r.event_location)}</p>
+                    <p>📅 ${escapeHtml(r.event_date)}</p>
+                    ${r.bib_number ? `<span class="bib-badge">Bib: ${escapeHtml(r.bib_number)}</span>` : ''}
                 </div>
             </div>
-            {% endfor %}
-        </div>
+        `).join('');
+    }
 
-        {% if page_obj and page_obj.paginator.num_pages > 1 %}
-        <div class="pagination">
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}&bib={{ bib_number }}">← Prev</a>
-            {% endif %}
-            {% for num in page_range %}
-                <a href="?page={{ num }}&bib={{ bib_number }}" class="{% if num == page_obj.number %}active{% endif %}">{{ num }}</a>
-            {% endfor %}
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}&bib={{ bib_number }}">Next →</a>
-            {% endif %}
-        </div>
-        {% endif %}
+    function runSearch(q) {
+        q = (q || '').trim();
+        if (q === lastQuery) return;
+        lastQuery = q;
 
-    {% else %}
-        <div class="search-form">
-            <h2>🏃 Pencarian Nomor Bib</h2>
-            <p>Masukkan nomor bib peserta untuk menemukan seluruh foto yang tersedia.</p>
+        if (!q) {
+            clearResults();
+            setHint('Masukkan nomor BIB (angka dan/atau huruf).');
+            if (inflight) { inflight.abort(); inflight = null; }
+            return;
+        }
 
-            {% if pesan %}
-                <p style="{% if berhasil %}color:#86efac{% else %}color:#fca5a5{% endif %}; font-weight:600; margin-bottom:20px;">{{ pesan }}</p>
-            {% endif %}
+        if (!/^[A-Za-z0-9]+$/.test(q)) {
+            clearResults();
+            setHint('Nomor BIB hanya boleh huruf dan angka.', 'error');
+            return;
+        }
 
-            <form method="POST">
-                {% csrf_token %}
-                <input type="text" name="bib_number" placeholder="Masukkan nomor bib" value="{{ bib_number|default:'' }}" required>
-                <button type="submit">Cari Foto</button>
-            </form>
-        </div>
-    {% endif %}
-</div>
+        setHint('Mencari di database…', 'loading');
+        if (inflight) inflight.abort();
+        const ctrl = new AbortController();
+        inflight = ctrl;
+
+        fetch(API_URL + '?q=' + encodeURIComponent(q), { signal: ctrl.signal })
+            .then(r => r.json().then(data => ({ ok: r.ok, data })))
+            .then(({ ok, data }) => {
+                if (q !== lastQuery) return; // stale response
+                if (!ok) {
+                    clearResults();
+                    setHint(data.error || 'Nomor BIB tidak valid.', 'error');
+                    return;
+                }
+                renderResults(data);
+                if (data.count > 0) {
+                    setHint(`Selesai. ${data.count} foto cocok.`);
+                } else {
+                    setHint(`Tidak ada hasil untuk "${q}".`, 'error');
+                }
+            })
+            .catch(err => {
+                if (err.name === 'AbortError') return;
+                setHint('Gagal terhubung ke server. Coba lagi.', 'error');
+            })
+            .finally(() => { if (inflight === ctrl) inflight = null; });
+    }
+
+    input.addEventListener('input', () => {
+        showClear();
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => runSearch(input.value), 250);
+    });
+
+    clearBtn.addEventListener('click', () => {
+        input.value = '';
+        showClear();
+        lastQuery = '';
+        clearResults();
+        setHint('Masukkan nomor BIB (angka dan/atau huruf).');
+        input.focus();
+    });
+
+    // Lightbox controls
+    document.getElementById('lb-close').addEventListener('click', closeLightbox);
+    document.getElementById('lb-prev').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openLightbox(lbIndex - 1);
+    });
+    document.getElementById('lb-next').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openLightbox(lbIndex + 1);
+    });
+    document.getElementById('lightbox').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+        const lbOpen = document.getElementById('lightbox').classList.contains('open');
+        if (!lbOpen) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') openLightbox(lbIndex - 1);
+        if (e.key === 'ArrowRight') openLightbox(lbIndex + 1);
+    });
+
+    // Expose for inline onclick
+    window.openLightbox = openLightbox;
+
+    // If page was loaded with ?bib= pre-filled (e.g. from pagination link), run search immediately.
+    const initial = input.value.trim();
+    if (initial) {
+        showClear();
+        runSearch(initial);
+    }
+})();
+</script>
 {% endblock %}

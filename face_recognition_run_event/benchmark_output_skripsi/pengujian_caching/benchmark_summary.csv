@@ -1,0 +1,7 @@
+Skenario,Avg(s),Min(s),Max(s),Median(s),Std(s)
+Tanpa Redis,0.19505,0.135261,0.709895,0.164192,0.075518
+Cache MISS,0.194022,0.142907,0.573771,0.171009,0.059523
+Cache HIT,0.006193,0.000383,0.177946,0.004748,0.013299
+
+Speedup HIT vs NoRedis,31.49
+Speedup MISS vs NoRedis,1.01

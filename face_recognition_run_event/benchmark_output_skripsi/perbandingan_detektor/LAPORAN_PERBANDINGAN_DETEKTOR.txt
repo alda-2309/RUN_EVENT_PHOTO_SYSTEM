@@ -1,0 +1,68 @@
+==================================================================================
+LAPORAN PERBANDINGAN DETEKTOR WAJAH: MTCNN vs BlazeFace
+Model Embedding: DeepFace / FaceNet (128-d)
+Query: 4 Selfie (Alya, Dida, Fian, Ira)
+Dataset MTCNN    : 1211 foto, 4739 embedding
+Dataset BlazeFace: 1211 foto, 1276 embedding
+Tanggal: 2026-08-01
+==================================================================================
+
+A. GROUND TRUTH (photo_id di MongoDB)
+--------------------------------------------------
+  Alya: [28, 29, 30, 31, 32, 33, 110]
+  Dida: [915, 1208, 1209]
+  Fian: [155, 1206, 1207]
+  Ira: [154, 155, 1206, 1207]
+
+B. RANK-BASED METRICS (rata-rata 4 subjek)
+----------------------------------------------------------------------------------
+Metrik              MTCNN          BlazeFace      Selisih   
+----------------------------------------------------------------------------------
+Rank-1 (%)          75.00          75.00          +0.00
+Rank-5 (%)          100.00         75.00          -25.00
+Rank-10 (%)         100.00         75.00          -25.00
+Precision@1 (%)     75.00          75.00          +0.00
+Precision@5 (%)     35.00          20.00          -15.00
+Precision@10 (%)    17.50          10.00          -7.50
+Recall@10 (%)       41.96          28.57          -13.39
+mAP (%)             33.95          32.48          -1.46
+
+C. DETAIL PER SUBJEK
+----------------------------------------------------------------------------------
+Detail per subjek untuk masing-masing detektor tersimpan di subfolder:
+  - perbandingan_detektor\MTCNN/detail_per_subjek.csv
+  - perbandingan_detektor\BlazeFace/detail_per_subjek.csv
+
+D. THRESHOLD METRICS (rata-rata 4 subjek)
+----------------------------------------------------------------------------------
+Threshold   MTCNN F1%     BlazeFace F1%  MTCNN Acc%    BlazeFace Acc% 
+----------------------------------------------------------------------------------
+0.10        0.00          0.00           99.65         99.62          
+0.15        0.00          0.00           99.65         99.62          
+0.20        0.00          0.00           99.65         99.62          
+0.25        7.14          0.00           99.63         99.62          
+0.30        23.30         12.50          99.54         99.60          
+0.35        22.41         21.43          99.11         99.30          
+0.40        29.29         13.84          98.34         98.08          
+0.45        19.71         15.40          96.72         95.52          
+0.50        9.64          8.55           93.44         90.98          
+0.60        3.30          3.25           80.48         73.95          
+----------------------------------------------------------------------------------
+MTCNN     optimal: thr=0.40 (F1=29.29%, Acc=98.34%)
+BlazeFace optimal: thr=0.35 (F1=21.43%, Acc=99.30%)
+
+E. KESIMPULAN
+--------------------------------------------------
+  Rank-1 kedua detektor sama (75.00%).
+  MTCNN unggul mAP (33.95% vs 32.48%).
+  BlazeFace menghasilkan 1276 embedding dari 1211 foto (lebih sedikit dari MTCNN yang menghasilkan 4739).
+
+==================================================================================
+CATATAN
+- MTCNN: DeepFace detector_backend='mtcnn' pada gambar utuh (resize max 800px).
+- BlazeFace: MediaPipe FaceDetection (model_selection=1, min_conf=0.1),
+  crop wajah -> FaceNet dengan detector_backend='skip'.
+- Jarak = cosine distance; match jika jarak <= threshold.
+- Foto tanpa embedding tidak bisa di-match (khususnya pada BlazeFace
+  beberapa ground truth foto tidak terdeteksi wajahnya).
+==================================================================================

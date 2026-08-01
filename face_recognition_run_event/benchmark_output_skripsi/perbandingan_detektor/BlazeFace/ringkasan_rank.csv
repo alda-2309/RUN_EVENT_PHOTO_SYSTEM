@@ -1,0 +1,9 @@
+Metrik,Nilai (%)
+Rank-1,75.00
+Rank-5,75.00
+Rank-10,75.00
+Precision@1,75.00
+Precision@5,20.00
+Precision@10,10.00
+Recall@10,28.57
+mAP,32.48

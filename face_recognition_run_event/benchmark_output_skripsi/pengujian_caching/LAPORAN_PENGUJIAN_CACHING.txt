@@ -1,0 +1,222 @@
+====================================================================
+                 PENGUJIAN KINERJA SISTEM PENCARIAN WAJAH
+          PERBANDINGAN TANPA REDIS/MEMURAI vs DENGAN REDIS/MEMURAI
+====================================================================
+
+1. LATAR BELAKANG
+--------------------------------------------------------------------
+Sistem pencarian foto berbasis face recognition (Face Recognition
+Search) bekerja dengan cara membandingkan embedding wajah yang diambil
+dari foto query terhadap seluruh embedding wajah yang tersimpan di
+database. Proses perbandingan ini dilakukan dengan menghitung jarak
+cosine (cosine distance) antara vektor embedding query dengan setiap
+vektor embedding di database.
+
+Semakin banyak foto yang tersimpan, semakin lama waktu yang dibutuhkan
+untuk melakukan pencarian karena sistem harus menghitung kemiripan
+terhadap SEMUA embedding setiap kali pengguna melakukan pencarian.
+
+Untuk mengatasi masalah tersebut, diterapkan mekanisme CACHING
+menggunakan Redis (pada penelitian ini menggunakan Memurai, yaitu
+implementasi Redis yang kompatibel untuk sistem operasi Windows).
+Hasil pencarian yang sudah pernah dilakukan akan disimpan di cache,
+sehingga apabila pengguna melakukan pencarian dengan query yang sama
+(tidak selalu sama persis, namun pada pengujian ini query yang sama),
+hasilnya dapat langsung diambil dari cache tanpa perlu menghitung ulang
+keseluruhan embedding di database.
+
+Pengujian ini dilakukan untuk mengukur dan membandingkan waktu respon
+sistem dalam tiga skenario:
+  a. Tanpa Redis (No Cache)   : setiap query selalu dihitung dari awal
+  b. Cache MISS               : query belum pernah dicari, hasil belum
+                                ada di cache, sehingga harus dihitung
+                                terlebih dahulu lalu disimpan di cache
+  c. Cache HIT                : query sudah pernah dicari sebelumnya,
+                                hasil langsung diambil dari cache
+
+====================================================================
+2. TUJUAN PENGUJIAN
+--------------------------------------------------------------------
+1. Mengukur waktu rata-rata pencarian wajah TANPA menggunakan Redis.
+2. Mengukur waktu rata-rata pencarian wajah DENGAN Redis pada saat
+   cache tidak terisi (Cache MISS).
+3. Mengukur waktu rata-rata pencarian wajah DENGAN Redis pada saat
+   cache sudah terisi (Cache HIT).
+4. Menghitung faktor percepatan (speedup) yang diperoleh dengan
+   penggunaan Redis dibandingkan tanpa Redis.
+5. Menyediakan data kuantitatif yang dapat digunakan sebagai bahan
+   evaluasi kinerja sistem pada laporan tugas akhir.
+
+====================================================================
+3. LINGKUNGAN PENGUJIAN
+--------------------------------------------------------------------
+3.1 PERANGKAT LUNAK
+  - Sistem Operasi      : Windows
+  - Python              : 3.10
+  - Framework           : Django
+  - Model Face          : FaceNet (DeepFace)
+  - Face Detector       : MTCNN
+  - Database            : MongoDB (mongodb://localhost:27017)
+  - Nama Database       : db_tugasakhir
+  - Cache Server        : Memurai (Redis-compatible) port 6379
+  - Cache Backend       : django-redis (django_redis.cache.RedisCache)
+  - Visualisasi         : Matplotlib
+
+3.2 DATA YANG DIGUNAKAN
+  - Jumlah foto event   : 1.205 foto
+  - Jumlah embedding    : 4.703 embedding wajah
+  - Dimensi embedding   : 128 vektor (Float32)
+  - Threshold jarak     : 0.50 (cosine distance)
+
+3.3 KONFIGURASI PENGUJIAN
+  - Jumlah query vector : 100 query
+  - Jumlah pengulangan  : 5 kali per query
+  - Warm-up             : 1 kali per query (tidak dihitung)
+
+====================================================================
+4. METODOLOGI PENGUJIAN
+--------------------------------------------------------------------
+4.1 PERSIAPAN DATA QUERY
+  - Diambil 100 vektor embedding wajah secara berurutan dari koleksi
+    photos_faceembedding pada MongoDB.
+  - Setiap vektor embedding dinormalisasi menggunakan L2 normalization
+    sebelum digunakan sebagai query.
+
+4.2 ALUR PENGUJIAN
+  Untuk setiap query vector (q = 1 s.d. 100):
+  Langkah 1 (Warm-up):
+    - Menjalankan pencarian tanpa cache sebanyak 1 kali untuk
+      memastikan data dan koneksi sudah siap. Waktu warm-up tidak
+      dihitung dalam hasil.
+
+  Langkah 2 (Pengukuran Tanpa Redis):
+    - Mengukur waktu pencarian dengan cara menghitung cosine distance
+      query terhadap SELURUH embedding di MongoDB secara langsung,
+      tanpa melibatkan cache.
+
+  Langkah 3 (Pengukuran Cache MISS):
+    - Menghapus cache untuk query tersebut.
+    - Mengukur waktu pencarian dengan mekanisme cache: karena cache
+      kosong, sistem menghitung hasil dari MongoDB lalu menyimpannya
+      ke cache (Redis/Memurai).
+
+  Langkah 4 (Pengukuran Cache HIT):
+    - Mengukur waktu pencarian kembali untuk query yang sama. Karena
+      hasil sudah tersimpan di cache dari langkah 3, sistem langsung
+      mengambil hasil dari Redis/Memurai tanpa menghitung ulang.
+
+  Langkah 2 sampai 4 diulang sebanyak 5 kali untuk setiap query agar
+  diperoleh data yang lebih stabil dan representatif.
+
+4.3 METRIK YANG DIUKUR
+  - Waktu rata-rata (average)      : rata-rata dari seluruh pengukuran
+  - Waktu minimum (min)            : waktu tercepat
+  - Waktu maksimum (max)           : waktu terlama
+  - Waktu median                   : nilai tengah dari seluruh data
+  - Standar deviasi (std)          : sebaran data terhadap rata-rata
+  - Faktor percepatan (speedup)    : rasio waktu tanpa Redis dibagi
+                                     waktu dengan Redis (Cache HIT)
+
+  Rumus speedup:
+      Speedup = Waktu Tanpa Redis / Waktu Cache HIT
+
+  Alasan menggunakan Cache HIT sebagai pembanding adalah karena dalam
+  skenario penggunaan nyata, pengguna yang melakukan pencarian dengan
+  query yang sama akan mendapatkan hasil langsung dari cache (HIT).
+
+====================================================================
+5. HASIL PENGUJIAN
+--------------------------------------------------------------------
+Hasil pengujian dengan 100 query x 5 pengulangan adalah sebagai berikut:
+
+  +----------------+----------+----------+----------+---------+---------+
+  | Skenario       |  Rata-rata (s) | Min (s) | Max (s) | Median (s) | Std (s) |
+  +----------------+----------+----------+----------+---------+---------+
+  | Tanpa Redis    |   0.1951 |  0.1353  |  0.7099  |  0.1642 |  0.0755 |
+  | Cache MISS     |   0.1940 |  0.1429  |  0.5738  |  0.1710 |  0.0595 |
+  | Cache HIT      |   0.0062 |  0.0004  |  0.1779  |  0.0047 |  0.0133 |
+  +----------------+----------+----------+----------+---------+---------+
+
+  Faktor percepatan:
+  - Speedup Cache HIT vs Tanpa Redis : 31,49 kali (31.49x)
+  - Speedup Cache MISS vs Tanpa Redis: 1,01 kali (1.01x)
+
+====================================================================
+6. ANALISIS HASIL
+--------------------------------------------------------------------
+6.1 PERBANDINGAN TANPA REDIS DAN CACHE MISS
+  Waktu rata-rata Tanpa Redis (0.1951 detik) hampir sama dengan
+  Cache MISS (0.1940 detik). Hal ini wajar karena pada kedua skenario
+  tersebut, sistem tetap harus melakukan perhitungan cosine distance
+  terhadap seluruh 4.739 embedding di MongoDB. Perbedaan kecil yang
+  muncul pada Cache MISS (sedikit lebih cepat pada pengukuran ini)
+  disebabkan oleh variasi beban sistem; secara praktis keduanya
+  setara karena jalur utamanya sama, yaitu perhitungan penuh terhadap
+  seluruh embedding.
+
+6.2 PERBANDINGAN TANPA REDIS DAN CACHE HIT
+  Waktu rata-rata Cache HIT (0.0062 detik) jauh lebih cepat dibandingkan
+  Tanpa Redis (0.1951 detik). Dengan kata lain, penggunaan Redis
+  memberikan percepatan sebesar 31,49 kali lebih cepat pada saat cache
+  sudah terisi (HIT). Hal ini terjadi karena pada Cache HIT, sistem
+  TIDAK perlu menghitung ulang cosine distance terhadap seluruh
+  embedding, melainkan langsung membaca hasil yang sudah tersimpan di
+  memori Redis/Memurai.
+
+6.3 KESIMPULAN SEMENTARA
+  1. Penggunaan Redis/Memurai sebagai cache hasil pencarian wajah
+     sangat efektif dalam mempercepat waktu respon sistem, dengan
+     percepatan hingga 31,49 kali dibandingkan tanpa cache.
+  2. Overhead yang ditimbulkan oleh proses penyimpanan ke cache
+     (Cache MISS) sangat kecil, sehingga tidak mengganggu kinerja.
+  3. Semakin besar jumlah data (foto/embedding), semakin besar pula
+     potensi penghematan waktu yang diperoleh dengan penggunaan Redis,
+     karena perhitungan yang dihindari pada Cache HIT juga semakin
+     banyak.
+
+====================================================================
+7. DAFTAR FILE HASIL PENGUJIAN
+--------------------------------------------------------------------
+Seluruh hasil pengujian disimpan pada folder:
+  benchmark_output_skripsi/
+
+  - benchmark_detail.csv        : data mentah per query dan per
+                                  pengulangan (query_id, repeat,
+                                  no_cache_sec, cache_miss_sec,
+                                  cache_hit_sec, result_count,
+                                  cache_hit_flag)
+  - benchmark_summary.csv       : ringkasan statistik dan faktor
+                                  percepatan
+  - grafik_bar_perbandingan.png : grafik batang rata-rata waktu tiap
+                                  skenario
+  - grafik_boxplot_distribusi.png : grafik distribusi waktu (boxplot)
+  - grafik_line_per_sample.png  : grafik garis waktu per pengujian
+  - grafik_speedup.png          : grafik faktor percepatan
+  - grafik_ringkasan_lengkap.png: grafik gabungan 4-in-1 untuk
+                                  laporan tugas akhir
+
+====================================================================
+8. CARA MENJALANKAN ULANG PENGUJIAN
+--------------------------------------------------------------------
+1. Pastikan MongoDB lokal berjalan (port 27017) dan berisi data
+   photos_photoevent serta photos_faceembedding.
+2. Pastikan Memurai (atau Redis) berjalan pada port 6379.
+3. Buka terminal pada folder face_recognition_run_event.
+4. Atur environment variable:
+     Windows PowerShell:
+       $env:USE_REDIS_CACHE='1'
+     CMD:
+       set USE_REDIS_CACHE=1
+5. Jalankan perintah:
+     python benchmark_skripsi.py --queries 100 --repeats 5 --warmup 1
+
+   Parameter yang dapat disesuaikan:
+     --queries : jumlah query vector yang diuji (default 50)
+     --repeats : jumlah pengulangan per query (default 5)
+     --warmup  : jumlah warm-up per query (default 1)
+6. Hasil akan disimpan otomatis pada folder
+   benchmark_output_skripsi/pengujian_caching/.
+
+====================================================================
+                        --- END OF REPORT ---
+====================================================================

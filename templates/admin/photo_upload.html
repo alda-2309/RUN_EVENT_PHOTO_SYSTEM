@@ -1,5 +1,17 @@
 {% extends "admin/base_admin.html" %}
 {% block title %}Upload Foto - RunSnap{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<style>
+    .flatpickr-calendar { font-family: 'Poppins', sans-serif; }
+    .flatpickr-day.selected,
+    .flatpickr-day.selected:hover,
+    .flatpickr-time input:hover,
+    .flatpickr-time input:focus { background: #16a34a; border-color: #16a34a; }
+    .flatpickr-day.today { border-color: #fef08a; }
+    .flatpickr-time .flatpickr-am-pm:hover { background: #16a34a; }
+</style>
+{% endblock %}
 {% block content %}
 <a href="{% url 'admin_dashboard' %}" class="back-btn">← Kembali ke Dashboard</a>
 <div class="card" style="max-width:600px; margin:0 auto; padding:35px;">
@@ -20,7 +32,9 @@
                            style="width:100%; padding:14px; border-radius:16px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:white; font-size:14px; outline:none; box-sizing:border-box;">
                 </div>
             {% elif field.field.widget.input_type == 'datetime-local' %}
-                <input type="datetime-local" name="{{ field.name }}" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" required
+                <input type="text" name="{{ field.name }}" id="{{ field.id_for_label }}" value="{{ field.value|default:'' }}" required
+                       class="datetimepicker"
+                       placeholder="Pilih tanggal & jam"
                        style="width:100%; padding:14px; border-radius:16px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:white; font-size:14px; outline:none; box-sizing:border-box; color-scheme:dark;">
             {% elif field.field.widget.input_type == 'select' %}
                 <select name="{{ field.name }}" id="{{ field.id_for_label }}" required
@@ -48,4 +62,14 @@
         </div>
     </form>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<script>
+    flatpickr('.datetimepicker', {
+        enableTime: true,
+        dateFormat: 'Y-m-d H:i',
+        time_24hr: true,
+        allowInput: true,
+        locale: { firstDayOfWeek: 1 }
+    });
+</script>
 {% endblock %}

@@ -2,17 +2,22 @@ import os
 import re
 import time
 import hashlib
+import logging
 import numpy as np
 from PIL import Image
 from io import BytesIO
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from django.core.files.storage import default_storage
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.conf import settings
 from config.db import db as mongo_db
 
+logger = logging.getLogger(__name__)
+
 koleksi_foto = mongo_db['photos_photoevent']
+koleksi_foto_legacy = mongo_db['photos']
 koleksi_wajah = mongo_db['photos_faceembedding']
 
 def _get_deepface():
@@ -326,22 +331,119 @@ def face_search(request):
 # ==========================================
 # VIEW: CARI BIB
 # ==========================================
+def _norm_bib(s):
+    """Normalize BIB input: keep alphanumeric uppercase, strip spaces/separators."""
+    return re.sub(r'[^A-Za-z0-9]+', '', (s or '').upper())
+
+
+def _is_valid_bib_input(s):
+    bib = _norm_bib(s)
+    return bool(bib)
+
+
+def _bib_token_matches(token, target):
+    token = _norm_bib(token)
+    target = _norm_bib(target)
+    if not token or not target:
+        return False
+    if token == target:
+        return True
+    # Support OCR output that may have trailing/leading zero noise.
+    return token.lstrip('0') == target.lstrip('0') or token == target.lstrip('0') or token.lstrip('0') == target
+
+def _bib_search_photos(bib_input):
+    """
+    Core BIB search logic.
+
+    Supports these DB shapes:
+    - '51012'
+    - '051012'
+    - '51,012'
+    - ['51012', '...']
+
+    Matching is digit-only and exact after normalization, with a small tolerance
+    for leading-zero noise from OCR.
+    """
+    bib_input = _norm_bib(bib_input)
+    if not bib_input:
+        return []
+
+    results = []
+    seen_ids = set()
+    logger.info("BIB search start query=%r normalized=%r", bib_input, bib_input)
+
+    for collection_name, collection in (("photos_photoevent", koleksi_foto), ("photos", koleksi_foto_legacy)):
+        try:
+            count = collection.count_documents({'bib_number': {'$nin': [None, '']}})
+        except Exception:
+            count = -1
+        logger.info("BIB search scanning collection=%s candidate_count=%s", collection_name, count)
+
+        for p in collection.find({'bib_number': {'$nin': [None, '']}}):
+            pid = p.get('id') or p.get('_id')
+            raw_bib = p.get('bib_number')
+            logger.info(
+                "BIB check collection=%s pid=%r bib_number=%r type=%s",
+                collection_name, pid, raw_bib, type(raw_bib).__name__
+            )
+
+            if pid in seen_ids:
+                logger.info("BIB skip duplicate pid=%r", pid)
+                continue
+            if raw_bib is None:
+                logger.info("BIB skip pid=%r reason=None bib_number", pid)
+                continue
+
+            candidates = []
+            if isinstance(raw_bib, (list, tuple, set)):
+                candidates = list(raw_bib)
+            else:
+                raw_bib = str(raw_bib).strip()
+                if not raw_bib:
+                    logger.info("BIB skip pid=%r reason=empty-string bib_number", pid)
+                    continue
+                candidates = [t.strip() for t in raw_bib.split(',') if t.strip()]
+
+            normalized_candidates = [_norm_bib(t) for t in candidates]
+            logger.info("BIB candidates pid=%r candidates=%r normalized=%r", pid, candidates, normalized_candidates)
+
+            matched = any(_bib_token_matches(t, bib_input) for t in candidates)
+            logger.info("BIB match pid=%r matched=%s", pid, matched)
+            if matched:
+                seen_ids.add(pid)
+                photo_obj = PhotoObj(p)
+                set_event_metadata(photo_obj)
+                _attach_face_crop(photo_obj)
+                results.append(photo_obj)
+
+    logger.info("BIB search done query=%r results=%d", bib_input, len(results))
+    return results
+
+
+def _bib_photo_to_dict(p):
+    return {
+        'id': p.id,
+        'image_url': p.image_url,
+        'event_name': p.event_name,
+        'event_location': p.event_location,
+        'event_date': p.event_date,
+        'bib_number': p.bib_number,
+        'face_crop_url': p.face_crop_url,
+    }
+
+
 def bib_search(request):
     if request.method == 'POST':
-        bib_number = request.POST.get('bib_number', '').strip()
-        if not bib_number:
+        bib_number = _norm_bib(request.POST.get('bib_number', ''))
+        if not _is_valid_bib_input(bib_number):
             return render(request, 'photos/bib_results.html', {
-                'pesan': 'Masukkan nomor bib.',
+                'pesan': 'Masukkan nomor bib yang valid (angka dan/atau huruf).',
                 'berhasil': False,
+                'bib_number': bib_number,
                 'active_page': 'search',
             })
 
-        hasil_foto = []
-        for p in koleksi_foto.find({'bib_number': {'$regex': bib_number, '$options': 'i'}}):
-            photo_obj = PhotoObj(p)
-            set_event_metadata(photo_obj)
-            _attach_face_crop(photo_obj)
-            hasil_foto.append(photo_obj)
+        hasil_foto = _bib_search_photos(bib_number)
 
         if hasil_foto:
             paginator = Paginator(hasil_foto, ITEMS_PER_PAGE)
@@ -364,3 +466,32 @@ def bib_search(request):
             })
 
     return render(request, 'photos/bib_results.html', {'active_page': 'search'})
+
+
+def bib_search_api(request):
+    """
+    JSON endpoint for live (as-you-type) BIB search.
+    GET /photos/bib-search-api/?q=83
+    -> {"count": N, "query": "83", "results": [{id, image_url, ...}]}
+    """
+    q = (request.GET.get('q') or '').strip()
+    logger.info("bib_search_api q=%r", q)
+    if not q:
+        logger.info("bib_search_api empty query")
+        return JsonResponse({'count': 0, 'query': '', 'results': []})
+    if not _is_valid_bib_input(q):
+        return JsonResponse({'count': 0, 'query': q, 'results': [], 'error': 'BIB harus berupa angka dan/atau huruf.'}, status=400)
+
+    # Hard cap so a single request never returns an absurd number of cards.
+    # 60 is plenty for any realistic BIB (most have 1-5 photos).
+    MAX_RESULTS = 60
+
+    all_photos = _bib_search_photos(q)
+    photos = all_photos[:MAX_RESULTS]
+    logger.info("bib_search_api q=%r total=%d returned=%d truncated=%s", q, len(all_photos), len(photos), len(all_photos) > MAX_RESULTS)
+    return JsonResponse({
+        'count': len(photos),
+        'query': q,
+        'results': [_bib_photo_to_dict(p) for p in photos],
+        'truncated': len(all_photos) > MAX_RESULTS,
+    })

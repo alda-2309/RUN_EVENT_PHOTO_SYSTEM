@@ -12,6 +12,6 @@ EVENT_CHOICES = [
 class EventForm(forms.Form):
     event_type = forms.ChoiceField(choices=EVENT_CHOICES)
     timestamp = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M')
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%d %H:%M')
     )
     location = forms.CharField(max_length=200)

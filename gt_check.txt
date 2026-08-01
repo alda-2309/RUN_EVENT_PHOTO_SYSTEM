@@ -1,0 +1,57 @@
+venv\Scripts\python.exe : 2026-08-01 17:41:33.998565: I tensorflow/core/util/port.cc:113] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point 
+round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+At line:1 char:1
++ venv\Scripts\python.exe face_recognition_run_event\check_gt_mapping.p ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2026-08-01 17:4...ONEDNN_OPTS=0`.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+WARNING:tensorflow:From D:\projek\skripsi_aam\RUN_EVENT_PHOTO_SYSTEM\venv\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use 
+tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+Total foto di Mongo: 1211
+
+=== Alya (A) ===
+  ColorRun_Fest(123).jpg -> photo_id=28 image=lomba_lari/colorun/ColorRun_Fest(123).jpg
+  ColorRun_Fest(124).jpg -> photo_id=29 image=lomba_lari/colorun/ColorRun_Fest(124).jpg
+  ColorRun_Fest(125).jpg -> photo_id=30 image=lomba_lari/colorun/ColorRun_Fest(125).jpg
+  ColorRun_Fest(126).jpg -> photo_id=31 image=lomba_lari/colorun/ColorRun_Fest(126).jpg
+  ColorRun_Fest(127).jpg -> photo_id=32 image=lomba_lari/colorun/ColorRun_Fest(127).jpg
+  ColorRun_Fest(128).jpg -> photo_id=33 image=lomba_lari/colorun/ColorRun_Fest(128).jpg
+  ColorRun_Fest(60).jpg -> photo_id=110 image=lomba_lari/colorun/ColorRun_Fest(60).jpg
+
+=== Dida (C) ===
+  Tiento_Run (baru 1).jpeg -> photo_id=1208 image=lomba_lari/tientorun/Tiento_Run (baru 1).jpeg
+  Tiento_Run (baru 2).jpeg -> photo_id=1209 image=lomba_lari/tientorun/Tiento_Run (baru 2).jpeg
+  Tiento_Run (baru 3).jpeg -> photo_id=1210 image=lomba_lari/tientorun/Tiento_Run (baru 3).jpeg
+  Tiento_Run (baru 4).jpeg -> photo_id=1211 image=lomba_lari/tientorun/Tiento_Run (baru 4).jpeg
+  Tiento_Run(1).jpeg -> photo_id=915 image=lomba_lari/tientorun/Tiento_Run(1).jpeg
+
+=== Fian (D) ===
+  Milo_2.jpeg -> photo_id=155 image=lomba_lari/milo/Milo_2.jpeg
+  milo1_race_2026.jpeg -> photo_id=1206 image=lomba_lari/milo_race_2026/milo1_race_2026.jpeg
+  milo2_race_2026.jpeg -> photo_id=1207 image=lomba_lari/milo_race_2026/milo2_race_2026.jpeg
+
+=== Ira (B) ===
+  Milo_1.jpeg -> photo_id=154 image=lomba_lari/milo/Milo_1.jpeg
+  Milo_2.jpeg -> photo_id=155 image=lomba_lari/milo/Milo_2.jpeg
+  milo1_race_2026.jpeg -> photo_id=1206 image=lomba_lari/milo_race_2026/milo1_race_2026.jpeg
+  milo2_race_2026.jpeg -> photo_id=1207 image=lomba_lari/milo_race_2026/milo2_race_2026.jpeg
+
+
+=== foto_untuk_test ===
+  Foto Selfie Alya.jpg (560178 bytes)
+  Foto Selfie Dida.jpeg (238933 bytes)
+  Foto Selfie Fian.jpeg (187086 bytes)
+  Foto Selfie Ira.jpeg (132639 bytes)
+  Selfie_alya 2.jpeg (2057478 bytes)
+  Selfie_alya.jpg (898702 bytes)
+  Selfie_alya3.jpg (931797 bytes)
+  Selfie_alya4.jpg (1312742 bytes)
+  Selfie_Dida.jpg (11172252 bytes)
+
+Cek foto id yang ada embedding-nya:
+  Alya: ground truth IDs=[28, 29, 30, 31, 32, 33, 110] -> embeddings=[(28, 1), (29, 1), (30, 1), (31, 1), (32, 2), (33, 1), (110, 4)]
+  Ira: ground truth IDs=[1206, 1207, 154, 155] -> embeddings=[(1206, 6), (1207, 2), (154, 4), (155, 12)]
+  Dida: ground truth IDs=[1208, 1209, 1210, 1211, 915] -> embeddings=[(1208, 2), (1209, 6), (1210, 10), (1211, 10), (915, 2)]
+  Fian: ground truth IDs=[1206, 1207, 155] -> embeddings=[(1206, 6), (1207, 2), (155, 12)]
