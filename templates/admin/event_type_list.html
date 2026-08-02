@@ -1,7 +1,7 @@
 {% extends "admin/base_admin.html" %}
 {% block title %}Jenis Event - RunSnap{% endblock %}
 {% block content %}
-<a href="{% url 'admin_event_list' %}" class="back-btn">← Kembali ke Daftar Event</a>
+<a href="{% url 'admin_dashboard' %}" class="back-btn">← Kembali ke Dashboard</a>
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
     <h1 style="font-size:28px; font-weight:700;">🏷️ Kelola Jenis Event</h1>
     <a href="{% url 'admin_event_type_add' %}" class="btn btn-yellow">+ Tambah Jenis Event</a>
