@@ -175,7 +175,7 @@
     <div class="card">
         <img src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?q=80&w=1200&auto=format&fit=crop">
         <div class="card-body">
-            <div class="title">{{ event.event_type }}</div>
+            <div class="title">{{ event.name|default:event.event_type }}</div>
             <div class="line"></div>
             <div class="info"><span>Jenis Event:</span> {{ event.event_type }}</div>
             <div class="info"><span>Timestamp:</span> {{ event.timestamp|date:"d M Y H:i" }}</div>

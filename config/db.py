@@ -29,6 +29,7 @@ users_collection = db['users']
 map_points_collection = db['map_points']
 map_routes_collection = db['map_routes']
 map_point_photos_collection = db['map_point_photos']
+event_types_collection = db['event_types']
 
 # ============================================================
 # COUNTER AUTO-INCREMENT (simple sequential ID)
@@ -54,10 +55,16 @@ def serialize_doc(doc) -> dict:
     return doc
 
 # ============================================================
-# HELPER: JENIS EVENT DARI COLLECTION EVENTS
+# HELPER: JENIS EVENT DARI COLLECTION EVENT_TYPES
 # ============================================================
 def get_event_types() -> list:
-    """Daftar jenis event unik dari collection 'events' (dari Tambah Event Baru)"""
+    """
+    Daftar jenis event dari collection 'event_types' (standalone).
+    Fallback: ambil distinct dari collection 'events' bila masih kosong.
+    """
+    types = [t.get('name') for t in event_types_collection.find().sort('order', 1) if t.get('name')]
+    if types:
+        return types
     return [t for t in events_collection.distinct('event_type') if t]
 
 # ============================================================

@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from config.db import (
     photos_collection, events_collection, users_collection,
+    event_types_collection,
     get_next_id, create_user, authenticate_user, update_last_login,
     hash_password, verify_password, get_event_types
 )
@@ -110,6 +111,7 @@ def event_add(request):
     if request.method == 'POST':
         event_data = {
             '_id': get_next_id('events'),
+            'name': request.POST.get('name', '').strip(),
             'event_type': request.POST.get('event_type'),
             'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%d %H:%M'),
             'location': request.POST.get('location'),
@@ -117,7 +119,7 @@ def event_add(request):
         events_collection.insert_one(event_data)
         messages.success(request, '✅ Event berhasil ditambahkan!')
         return redirect('admin_event_list')
-    return render(request, 'admin/event_add.html')
+    return render(request, 'admin/event_add.html', {'event_types': get_event_types()})
 
 @admin_required
 def event_edit(request, event_id):
@@ -130,6 +132,7 @@ def event_edit(request, event_id):
         events_collection.update_one(
             {'_id': int(event_id)},
             {'$set': {
+                'name': request.POST.get('name', '').strip(),
                 'event_type': request.POST.get('event_type'),
                 'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%d %H:%M'),
                 'location': request.POST.get('location'),
@@ -148,6 +151,69 @@ def event_delete(request, event_id):
     events_collection.delete_one({'_id': int(event_id)})
     messages.success(request, '✅ Event berhasil dihapus!')
     return redirect('admin_event_list')
+
+# ============================================================
+# EVENT TYPES — Jenis Event (standalone table)
+# Struktur: { _id: int, name: str, order: int, created_at: datetime }
+# ============================================================
+
+@admin_required
+def event_type_list(request):
+    types = list(event_types_collection.find().sort('order', 1))
+    for t in types:
+        t['id'] = t['_id']
+    return render(request, 'admin/event_type_list.html', {'types': types})
+
+@admin_required
+def event_type_add(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        if not name:
+            messages.error(request, 'Nama jenis event tidak boleh kosong.')
+        elif event_types_collection.find_one({'name': name}):
+            messages.error(request, f'Jenis event "{name}" sudah ada.')
+        else:
+            last = event_types_collection.find_one(sort=[('order', -1)])
+            event_types_collection.insert_one({
+                '_id': get_next_id('event_types'),
+                'name': name,
+                'order': (last['order'] + 1) if last else 0,
+                'created_at': datetime.utcnow(),
+            })
+            messages.success(request, f'✅ Jenis event "{name}" berhasil ditambahkan!')
+            return redirect('admin_event_type_list')
+    return render(request, 'admin/event_type_add.html')
+
+@admin_required
+def event_type_edit(request, type_id):
+    et = event_types_collection.find_one({'_id': int(type_id)})
+    if not et:
+        messages.error(request, 'Jenis event tidak ditemukan.')
+        return redirect('admin_event_type_list')
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        if not name:
+            messages.error(request, 'Nama jenis event tidak boleh kosong.')
+        elif event_types_collection.find_one({'name': name, '_id': {'$ne': int(type_id)}}):
+            messages.error(request, f'Jenis event "{name}" sudah ada.')
+        else:
+            event_types_collection.update_one(
+                {'_id': int(type_id)},
+                {'$set': {'name': name}}
+            )
+            messages.success(request, '✅ Jenis event berhasil diupdate!')
+            return redirect('admin_event_type_list')
+
+    return render(request, 'admin/event_type_edit.html', {'type': et})
+
+@admin_required
+def event_type_delete(request, type_id):
+    et = event_types_collection.find_one({'_id': int(type_id)})
+    if et:
+        event_types_collection.delete_one({'_id': int(type_id)})
+        messages.success(request, f'✅ Jenis event "{et.get("name", "")}" dihapus!')
+    return redirect('admin_event_type_list')
 
 @admin_required
 def event_detail(request):
@@ -291,6 +357,10 @@ urlpatterns = [
     path('events/edit/<int:event_id>/', event_edit, name='admin_event_edit'),
     path('events/delete/<int:event_id>/', event_delete, name='admin_event_delete'),
     path('events/detail/', event_detail, name='admin_event_detail'),
+    path('event-types/', event_type_list, name='admin_event_type_list'),
+    path('event-types/add/', event_type_add, name='admin_event_type_add'),
+    path('event-types/edit/<int:type_id>/', event_type_edit, name='admin_event_type_edit'),
+    path('event-types/delete/<int:type_id>/', event_type_delete, name='admin_event_type_delete'),
     path('photos/', photo_list, name='admin_photo_list'),
     path('photos/upload/', photo_upload, name='admin_photo_upload'),
     path('photos/edit/<int:photo_id>/', photo_edit, name='admin_photo_edit'),

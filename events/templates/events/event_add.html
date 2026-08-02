@@ -155,20 +155,27 @@ h1{
 
         {% csrf_token %}
 
-        <div class="form-box">
+                <div class="form-box">
+
+            <!-- Nama Event -->
+            <div class="form-row">
+                <label>Nama Event:</label>
+                <input type="text" name="name" placeholder="Contoh: Bandung Marathon 2026" required>
+            </div>
 
             <!-- Jenis Event -->
             <div class="form-row">
                 <label>Jenis Event:</label>
 
                 <select name="event_type">
-
+                    {% for t in event_types %}
+                    <option value="{{ t }}">{{ t }}</option>
+                    {% empty %}
                     <option value="Marathon">Marathon</option>
-                    <option value="Fun Run">Fun Run 5k</option>
-                    <option value="Fun Run">Fun Run 10k</option>
+                    <option value="Fun Run">Fun Run</option>
                     <option value="Trail Run">Trail Run</option>
                     <option value="Night Run">Night Run</option>
-
+                    {% endfor %}
                 </select>
             </div>
 

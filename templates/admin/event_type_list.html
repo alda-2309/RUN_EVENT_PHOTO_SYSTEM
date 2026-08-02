@@ -1,0 +1,36 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Jenis Event - RunSnap{% endblock %}
+{% block content %}
+<a href="{% url 'admin_event_list' %}" class="back-btn">← Kembali ke Daftar Event</a>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+    <h1 style="font-size:28px; font-weight:700;">🏷️ Kelola Jenis Event</h1>
+    <a href="{% url 'admin_event_type_add' %}" class="btn btn-yellow">+ Tambah Jenis Event</a>
+</div>
+
+<p style="color:rgba(255,255,255,0.75); margin-bottom:20px; font-size:14px;">
+    Jenis event tersimpan sebagai table terpisah dan dipakai di form Event & Upload Foto.
+</p>
+
+<div class="card">
+    <div class="card-header">JENIS EVENT ({{ types|length }})</div>
+    <table>
+        <tr>
+            <td style="font-weight:700; color:#fef08a; width:60px;">No</td>
+            <td style="font-weight:700; color:#fef08a;">Nama Jenis Event</td>
+            <td style="font-weight:700; color:#fef08a;">Aksi</td>
+        </tr>
+        {% for t in types %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ t.name }}</td>
+            <td class="actions">
+                <a href="{% url 'admin_event_type_edit' t.id %}">✏️ Edit</a>
+                <a href="{% url 'admin_event_type_delete' t.id %}" onclick="return confirm('Hapus jenis event ini?')">🗑️ Hapus</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="empty">Belum ada jenis event. <a href="{% url 'admin_event_type_add' %}" style="color:#fef08a;">Tambah sekarang</a></td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

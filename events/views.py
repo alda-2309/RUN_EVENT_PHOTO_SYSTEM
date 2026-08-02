@@ -12,7 +12,7 @@ from django.core.files.storage import default_storage
 from django.conf import settings
 from config.db import (
     events_collection, map_points_collection, map_routes_collection,
-    map_point_photos_collection, get_next_id, users_collection,
+    map_point_photos_collection, get_next_id, users_collection, get_event_types,
 )
 
 # ============================================================
@@ -59,6 +59,7 @@ def event_add(request):
     if request.method == 'POST':
         event_data = {
             '_id': get_next_id('events'),
+            'name': request.POST.get('name', '').strip(),
             'event_type': request.POST.get('event_type'),
             'timestamp': datetime.strptime(request.POST.get('timestamp'), '%Y-%m-%d %H:%M'),
             'location': request.POST.get('location'),
@@ -66,7 +67,7 @@ def event_add(request):
         events_collection.insert_one(event_data)
         messages.success(request, '✅ Event berhasil ditambahkan!')
         return redirect('admin_event_list')
-    return render(request, 'events/event_add.html')
+    return render(request, 'events/event_add.html', {'event_types': get_event_types()})
 
 def event_detail(request):
     return render(request, 'events/event_detail.html')

@@ -1,0 +1,19 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Tambah Jenis Event - RunSnap{% endblock %}
+{% block content %}
+<a href="{% url 'admin_event_type_list' %}" class="back-btn">← Kembali ke Jenis Event</a>
+<div class="card" style="max-width:500px; margin:0 auto; padding:30px;">
+    <h2 style="text-align:center; margin-bottom:20px; color:#fef08a;">➕ Tambah Jenis Event</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Nama Jenis Event</label>
+            <input type="text" name="name" class="form-control" placeholder="Contoh: Marathon, Trail Run, Fun Run..." required>
+        </div>
+        <div class="btn-group">
+            <button type="submit" class="btn btn-yellow" style="flex:1;">💾 Simpan</button>
+            <a href="{% url 'admin_event_type_list' %}" class="btn btn-ghost" style="flex:1; text-align:center;">Batal</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
