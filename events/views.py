@@ -7,7 +7,13 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from config.db import events_collection, map_points_collection, map_routes_collection, get_next_id, users_collection
+import os
+from django.core.files.storage import default_storage
+from django.conf import settings
+from config.db import (
+    events_collection, map_points_collection, map_routes_collection,
+    map_point_photos_collection, get_next_id, users_collection,
+)
 
 # ============================================================
 # HELPER — cek admin dari session
@@ -229,6 +235,116 @@ def api_reset_points(request):
         event_id = int(data.get('event_id', 1))
         map_points_collection.delete_many({'event_id': event_id})
         map_routes_collection.delete_many({'event_id': event_id})
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+# ============================================================
+# MAP POINT PHOTOS – FOTO PER CHECKPOINT
+# ============================================================
+# Semua foto tersimpan di collection 'map_point_photos'.
+# Struktur dokumen:
+# {
+#   _id: int (auto increment),
+#   point_id: int,        # _id dari map_points
+#   event_id: int,
+#   caption: str,
+#   image: str,           # path file di MEDIA_ROOT (contoh: 'map_photos/xxx.jpg')
+#   created_at: datetime
+# }
+
+def _serialize_point_photo(p):
+    """Convert MongoDB doc ke JSON-serializable dict"""
+    return {
+        'id': str(p['_id']),
+        'point_id': str(p.get('point_id', '')),
+        'event_id': p.get('event_id', 1),
+        'caption': p.get('caption', ''),
+        'image': p.get('image', ''),
+        'url': settings.MEDIA_URL + p.get('image', '') if p.get('image') else '',
+        'created_at': p.get('created_at').isoformat() if p.get('created_at') else '',
+    }
+
+def api_get_point_photos(request, point_id):
+    """GET /events/api/points/<point_id>/photos/ — list semua foto sebuah checkpoint (public)"""
+    try:
+        photos = list(map_point_photos_collection.find({'point_id': int(point_id)}).sort('_id', -1))
+        return JsonResponse({'photos': [_serialize_point_photo(p) for p in photos]})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@csrf_exempt
+@admin_required_api
+@require_http_methods(['POST'])
+def api_upload_point_photo(request, point_id):
+    """POST /events/api/points/<point_id>/photos/upload/ (multipart)
+    field: caption (optional), images (multiple files)
+    """
+    try:
+        # pastikan pointnya ada
+        point = map_points_collection.find_one({'_id': int(point_id)})
+        if not point:
+            return JsonResponse({'success': False, 'error': 'Checkpoint tidak ditemukan'}, status=404)
+
+        event_id = point.get('event_id', 1)
+        files = request.FILES.getlist('images')
+        if not files:
+            return JsonResponse({'success': False, 'error': 'Tidak ada file gambar dikirim'}, status=400)
+
+        caption = request.POST.get('caption', '')
+        saved = []
+        for f in files:
+            filepath = default_storage.save(f'map_photos/{f.name}', f)
+            doc = {
+                '_id': get_next_id('map_point_photos'),
+                'point_id': int(point_id),
+                'event_id': event_id,
+                'caption': caption,
+                'image': filepath,
+                'created_at': datetime.utcnow(),
+            }
+            map_point_photos_collection.insert_one(doc)
+            saved.append(_serialize_point_photo(doc))
+        return JsonResponse({'success': True, 'photos': saved})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@csrf_exempt
+@admin_required_api
+@require_http_methods(['DELETE'])
+def api_delete_point_photo(request, point_id, photo_id):
+    """DELETE /events/api/points/<point_id>/photos/<photo_id>/ — hapus foto checkpoint"""
+    try:
+        doc = map_point_photos_collection.find_one({
+            '_id': int(photo_id),
+            'point_id': int(point_id),
+        })
+        if not doc:
+            return JsonResponse({'success': False, 'error': 'Foto tidak ditemukan'}, status=404)
+
+        # hapus file di media
+        file_path = os.path.join(settings.MEDIA_ROOT, doc.get('image', ''))
+        if file_path and os.path.exists(file_path):
+            os.remove(file_path)
+
+        map_point_photos_collection.delete_one({'_id': int(photo_id)})
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@csrf_exempt
+@admin_required_api
+@require_http_methods(['DELETE'])
+def api_delete_point_all_photos(request, point_id):
+    """DELETE /events/api/points/<point_id>/photos/ — hapus SEMUA foto sebuah checkpoint"""
+    try:
+        docs = list(map_point_photos_collection.find({'point_id': int(point_id)}))
+        for doc in docs:
+            file_path = os.path.join(settings.MEDIA_ROOT, doc.get('image', ''))
+            if file_path and os.path.exists(file_path):
+                os.remove(file_path)
+        map_point_photos_collection.delete_many({'point_id': int(point_id)})
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)

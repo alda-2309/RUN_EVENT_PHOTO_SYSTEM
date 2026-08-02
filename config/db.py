@@ -28,6 +28,7 @@ galeri_collection = db['galeri']
 users_collection = db['users']
 map_points_collection = db['map_points']
 map_routes_collection = db['map_routes']
+map_point_photos_collection = db['map_point_photos']
 
 # ============================================================
 # COUNTER AUTO-INCREMENT (simple sequential ID)

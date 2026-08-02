@@ -113,6 +113,83 @@ body.route-editing .leaflet-vertex-icon:active {
     #map{height:400px;}
     .panel{max-height:400px;}
 }
+
+/* ============ MODAL FOTO PER CHECKPOINT ============ */
+.modal-overlay{
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;z-index:9999;
+}
+.modal-overlay.active{display:flex;}
+.modal-box{
+    background:#0f2f1a;border:1px solid rgba(255,255,255,0.2);
+    border-radius:20px;width:min(920px, 95vw);max-height:90vh;
+    display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    animation:modalIn .25s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97);}to{opacity:1;transform:none;}}
+.modal-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.15);flex-wrap:wrap;gap:10px;
+}
+.modal-header h2{font-size:1.1rem;color:white;}
+.modal-header .modal-sub{font-size:0.8rem;color:rgba(255,255,255,0.55);margin-top:2px;}
+.modal-close{
+    background:transparent;border:1px solid rgba(255,255,255,0.3);color:white;
+    width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;transition:.2s;
+}
+.modal-close:hover{background:#ef4444;border-color:#ef4444;}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1;}
+.photo-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;
+}
+.photo-card{
+    position:relative;border-radius:12px;overflow:hidden;cursor:pointer;
+    background:rgba(255,255,255,0.08);aspect-ratio:1/1;
+}
+.photo-card img{width:100%;height:100%;object-fit:cover;display:block;transition:.3s;}
+.photo-card:hover img{transform:scale(1.06);}
+.photo-card .photo-del{
+    position:absolute;top:6px;right:6px;z-index:2;
+    background:rgba(239,68,68,0.9);color:white;border:none;border-radius:50%;
+    width:28px;height:28px;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.photo-card .photo-del:hover{background:#dc2626;}
+.modal-empty{
+    text-align:center;padding:40px 20px;color:rgba(255,255,255,0.5);font-size:0.9rem;
+}
+.modal-upload{
+    margin-top:16px;padding:16px;border:2px dashed rgba(255,255,255,0.3);
+    border-radius:12px;text-align:center;
+}
+.modal-upload input[type=file]{color:white;font-size:0.85rem;}
+.modal-upload .upload-hint{font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:6px;}
+
+/* ============ LIGHTBOX ============ */
+.lightbox{
+    position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);
+    display:none;align-items:center;justify-content:center;z-index:10000;flex-direction:column;
+}
+.lightbox.active{display:flex;}
+.lightbox img{max-width:90vw;max-height:80vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.6);}
+.lightbox .lb-caption{color:white;margin-top:14px;font-size:0.9rem;text-align:center;padding:0 20px;}
+.lightbox .lb-nav{
+    position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);
+    color:white;border:none;width:46px;height:46px;border-radius:50%;font-size:1.4rem;cursor:pointer;transition:.2s;
+}
+.lightbox .lb-nav:hover{background:rgba(255,255,255,0.3);}
+.lightbox .lb-prev{left:20px;}
+.lightbox .lb-next{right:20px;}
+.lightbox .lb-close{
+    position:absolute;top:20px;right:20px;background:transparent;border:1px solid rgba(255,255,255,0.4);
+    color:white;width:40px;height:40px;border-radius:50%;font-size:1.2rem;cursor:pointer;
+}
+.lightbox .lb-close:hover{background:#ef4444;border-color:#ef4444;}
+
+.photo-count-badge{
+    display:inline-block;background:#fef08a;color:#14532d;border-radius:999px;
+    padding:1px 8px;font-size:0.7rem;font-weight:700;margin-left:6px;
+}
 </style>
 </head>
 <body>
@@ -137,7 +214,7 @@ body.route-editing .leaflet-vertex-icon:active {
         <div class="{% if is_admin %}grid{% else %}grid-single{% endif %}">
             <div id="map"></div>
 {% if is_admin %}
-            <div class="panel" id="panel" style="grid-column: 1 / -1;">
+            <div class="panel" id="panel">
                 <h2>🏁 Checkpoints</h2>
                 <p style="font-size:0.8rem;color:rgba(255,255,255,0.6);margin-bottom:10px;">
                     Drag urutkan. <strong>Seret garis route</strong> saat mode edit aktif.
@@ -150,6 +227,38 @@ body.route-editing .leaflet-vertex-icon:active {
 {% endif %}
         </div>
     </div>
+</div>
+
+<!-- MODAL FOTO PER CHECKPOINT -->
+<div class="modal-overlay" id="photoModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div>
+                <h2 id="photoModalTitle">📷 Foto Checkpoint</h2>
+                <div class="modal-sub" id="photoModalSub"></div>
+            </div>
+            <button class="modal-close" onclick="closePhotoModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="photoGrid" class="photo-grid"></div>
+            {% if is_admin %}
+            <div class="modal-upload">
+                <input type="file" id="photoUploadInput" accept="image/*" multiple>
+                <button class="btn btn-yellow" onclick="uploadPhotos()" style="margin-top:10px;">⬆️ Upload Foto</button>
+                <div class="upload-hint">Bisa pilih banyak foto sekaligus (Ctrl/Shift + klik). File disimpan di folder map_photos/.</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+    <button class="lb-nav lb-prev" onclick="lbMove(-1)">‹</button>
+    <img id="lightboxImg" src="" alt="">
+    <div class="lb-caption" id="lightboxCaption"></div>
+    <button class="lb-nav lb-next" onclick="lbMove(1)">›</button>
 </div>
 
 <script>
@@ -293,21 +402,20 @@ function renderMarkers(){
             iconSize:[36,36], iconAnchor:[18,18]
         });
         const m = L.marker([p.lat,p.lng], {icon, draggable: IS_ADMIN}).addTo(map);
+        // tooltip nama (hover) — klik membuka modal foto
+        m.bindTooltip(p.name, {direction:'top', offset:[0,-18]});
         if (IS_ADMIN) {
-            m.bindPopup(`<b>${p.name}</b><br><small>(${p.lat.toFixed(5)},${p.lng.toFixed(5)})</small>`);
             m.on('dragend', function(e){
                 const pos = e.target.getLatLng();
                 p.lat=pos.lat; p.lng=pos.lng;
                 updateCheckpointAPI(p.id, {lat:pos.lat, lng:pos.lng});
                 renderRoute();
             });
-            m.on('click', function(){
-                const n = prompt('Edit nama:', p.name);
-                if(n && n!==p.name){ p.name=n; updateCheckpointAPI(p.id, {name:n}); renderList(); }
-            });
-        } else {
-            m.bindPopup(`<b>${p.name}</b>`);
         }
+        // klik marker -> buka modal foto checkpoint ini
+        m.on('click', function(){
+            if (!addMode) openPhotoModal(p);
+        });
         markers[p.id]=m;
     });
 }
@@ -349,14 +457,17 @@ function renderList(){
             <div class="point-info">
                 ${IS_ADMIN ? '<span class="drag-handle">⠿</span>' : ''}
                 <span class="point-name">${idx+1}. ${p.name}</span>
+                <span class="photo-count-badge" id="count-${p.id}" title="Jumlah foto">0</span>
             </div>
             ${IS_ADMIN ? `
             <div class="point-actions">
+                <button class="btn btn-sm btn-outline" onclick="openPhotoModal(findPoint('${p.id}'))">📷</button>
                 <button class="btn btn-sm btn-outline" onclick="editCheckpoint('${p.id}')">✏️</button>
                 <button class="btn btn-sm btn-danger" onclick="deleteCheckpoint('${p.id}')">🗑️</button>
             </div>` : ''}
         </li>
     `).join('');
+    fetchPhotoCounts();
     // drag-drop (only if admin)
     if (!IS_ADMIN) return;
     const items = list.querySelectorAll('.point-item');
@@ -446,6 +557,144 @@ async function resetAll(){
     renderAll();
     alert('✅ Semua checkpoint dan route dihapus.');
 }
+
+// ====================== FOTO PER CHECKPOINT ======================
+let currentPhotoPoint = null;
+let currentPhotos = [];
+let lightboxIndex = 0;
+
+function findPoint(id){
+    return checkpoints.find(x=>x.id===id) || null;
+}
+
+async function fetchPhotoCounts(){
+    for (const p of checkpoints) {
+        const badge = document.getElementById('count-'+p.id);
+        if (!badge) continue;
+        try {
+            const resp = await fetch(`/events/api/points/${p.id}/photos/`);
+            const data = await resp.json();
+            badge.textContent = (data.photos || []).length;
+        } catch(e){}
+    }
+}
+
+async function openPhotoModal(p){
+    if (!p) return;
+    currentPhotoPoint = p;
+    currentPhotos = [];
+    document.getElementById('photoModalTitle').textContent = '📷 ' + p.name;
+    document.getElementById('photoModalSub').textContent =
+        `Checkpoint #${p.order+1} • (${p.lat.toFixed(5)}, ${p.lng.toFixed(5)})`;
+    document.getElementById('photoGrid').innerHTML =
+        '<div class="modal-empty">Memuat foto…</div>';
+    if (IS_ADMIN) document.getElementById('photoUploadInput').value = '';
+
+    document.getElementById('photoModal').classList.add('active');
+    await loadPointPhotos(p.id);
+}
+
+async function loadPointPhotos(pointId){
+    try {
+        const resp = await fetch(`/events/api/points/${pointId}/photos/`);
+        const data = await resp.json();
+        currentPhotos = data.photos || [];
+        renderPhotoGrid();
+    } catch(e){
+        document.getElementById('photoGrid').innerHTML =
+            '<div class="modal-empty">Gagal memuat foto.</div>';
+    }
+}
+
+function renderPhotoGrid(){
+    const grid = document.getElementById('photoGrid');
+    if (!currentPhotos.length){
+        grid.innerHTML = '<div class="modal-empty">Belum ada foto di checkpoint ini.</div>';
+        return;
+    }
+    grid.innerHTML = currentPhotos.map(ph => `
+        <div class="photo-card">
+            ${IS_ADMIN ? `<button class="photo-del" onclick="deletePhoto('${ph.id}')" title="Hapus foto">🗑️</button>` : ''}
+            <img src="${ph.url}" alt="${ph.caption || ''}" loading="lazy"
+                 onclick="openLightbox(${currentPhotos.indexOf(ph)})">
+        </div>
+    `).join('');
+}
+
+async function uploadPhotos(){
+    if (!currentPhotoPoint) return;
+    const input = document.getElementById('photoUploadInput');
+    if (!input.files || !input.files.length){
+        alert('Pilih foto dulu!');
+        return;
+    }
+    const fd = new FormData();
+    for (const f of input.files) fd.append('images', f);
+    fd.append('caption', '');
+    const resp = await fetch(`/events/api/points/${currentPhotoPoint.id}/photos/upload/`, {
+        method:'POST', body: fd
+    });
+    const data = await resp.json();
+    if (data.success){
+        input.value = '';
+        await loadPointPhotos(currentPhotoPoint.id);
+        fetchPhotoCounts();
+        alert(`✅ ${data.photos.length} foto berhasil diupload!`);
+    } else {
+        alert('❌ Gagal upload: ' + (data.error || ''));
+    }
+}
+
+async function deletePhoto(photoId){
+    if (!confirm('Hapus foto ini?')) return;
+    const resp = await fetch(`/events/api/points/${currentPhotoPoint.id}/photos/${photoId}/`, {
+        method:'DELETE'
+    });
+    const data = await resp.json();
+    if (data.success){
+        await loadPointPhotos(currentPhotoPoint.id);
+        fetchPhotoCounts();
+    } else {
+        alert('❌ Gagal hapus: ' + (data.error || ''));
+    }
+}
+
+function closePhotoModal(){
+    document.getElementById('photoModal').classList.remove('active');
+    currentPhotoPoint = null;
+    currentPhotos = [];
+}
+
+// ====================== LIGHTBOX ======================
+function openLightbox(index){
+    if (!currentPhotos.length) return;
+    lightboxIndex = index;
+    updateLightbox();
+    document.getElementById('lightbox').classList.add('active');
+}
+
+function updateLightbox(){
+    const ph = currentPhotos[lightboxIndex];
+    document.getElementById('lightboxImg').src = ph.url;
+    document.getElementById('lightboxCaption').textContent =
+        (ph.caption || '') + (ph.caption ? ' • ' : '') + `(${lightboxIndex+1}/${currentPhotos.length})`;
+}
+
+function lbMove(dir){
+    lightboxIndex = (lightboxIndex + dir + currentPhotos.length) % currentPhotos.length;
+    updateLightbox();
+}
+
+function closeLightbox(){
+    document.getElementById('lightbox').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('active')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lbMove(-1);
+    if (e.key === 'ArrowRight') lbMove(1);
+});
 
 initMap();
 fetchCheckpoints();

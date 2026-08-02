@@ -15,6 +15,12 @@ urlpatterns = [
     path('api/points/add/', views.api_add_point, name='api_add_point'),
     path('api/points/<str:point_id>/', views.api_update_point, name='api_update_point'),
     path('api/points/<str:point_id>/delete/', views.api_delete_point, name='api_delete_point'),
+
+    # Map point photos — foto per checkpoint
+    path('api/points/<str:point_id>/photos/', views.api_get_point_photos, name='api_get_point_photos'),
+    path('api/points/<str:point_id>/photos/upload/', views.api_upload_point_photo, name='api_upload_point_photo'),
+    path('api/points/<str:point_id>/photos/delete-all/', views.api_delete_point_all_photos, name='api_delete_point_all_photos'),
+    path('api/points/<str:point_id>/photos/<str:photo_id>/', views.api_delete_point_photo, name='api_delete_point_photo'),
     path('api/route/', views.api_get_route, name='api_get_route'),
     path('api/route/save/', views.api_save_route, name='api_save_route'),
     path('api/points/reset/', views.api_reset_points, name='api_reset_points'),
