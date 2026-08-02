@@ -50,6 +50,16 @@ server.log
 db.sqlite3_OLD
 
 # =========================
+# MongoDB backup & sync
+# =========================
+# Folder backup data MongoDB (bisa sangat besar, jangan di-commit)
+backup/
+
+# Utility sinkronisasi/backup MongoDB (berisi credential Atlas)
+sync_mongo.py
+backup_mongo.py
+
+# =========================
 # OCR Validator project
 # =========================
 ocr-validator/uploads/

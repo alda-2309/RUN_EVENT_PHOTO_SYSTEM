@@ -18,14 +18,19 @@ try:
     import django
     django.setup()
     from config.db import db
-    print("SUCCESS: Berhasil terhubung ke MongoDB via Django Config")
+    print("SUCCESS: Berhasil terhubung ke MongoDB via Django Config (Atlas)")
 except Exception as e:
-    print("WARNING: Gagal terhubung via Django config, mencoba koneksi local MongoDB...")
+    print("WARNING: Gagal terhubung via Django config, mencoba koneksi Atlas langsung...")
     try:
         from pymongo import MongoClient
-        client = MongoClient("mongodb://localhost:27017", serverSelectionTimeoutMS=5000)
+        ATLAS_URI = (
+            "mongodb+srv://tiaranurazm_db_user:hometownchachacha"
+            "@clustermuti.mlnz2g4.mongodb.net/db_tugasakhir"
+            "?retryWrites=true&w=majority"
+        )
+        client = MongoClient(ATLAS_URI, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=10000)
         db = client['db_tugasakhir']
-        print("SUCCESS: Berhasil terhubung ke local MongoDB")
+        print("SUCCESS: Berhasil terhubung ke MongoDB Atlas (clustermuti)")
     except Exception as err:
         print("ERROR: Gagal terhubung ke MongoDB:", err)
         sys.exit(1)

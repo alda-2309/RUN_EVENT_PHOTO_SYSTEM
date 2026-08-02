@@ -1,9 +1,16 @@
 """
-Script migrasi data photos_photoevent dari MongoDB lokal ke MongoDB Atlas.
-Hanya menambahkan dokumen yang belum ada di Atlas (berdasarkan field 'id').
+Script migrasi/sinkronisasi data photos_photoevent dari MongoDB lokal ke MongoDB Atlas.
+
+CATATAN: Ini hanya UTILITAS. Sejak data disinkronkan dua arah (lihat _sync_mongo.py),
+local dan Atlas sudah identik. Script ini berguna kalau kamu pernah ngerjain data
+di local dan mau narik ke Atlas TANPA menghapus data Atlas yang sudah ada.
+
+Perilaku:
+  - Hanya menambahkan dokumen yang BELUM ada di Atlas (by field 'id' dan '_id')
+  - TIDAK menghapus apapun di Atlas
 """
-import os
 import django
+import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
@@ -15,7 +22,7 @@ from pymongo import MongoClient
 LOCAL_URI = "mongodb://localhost:27017"
 LOCAL_DB  = "db_tugasakhir"
 
-# Atlas URI (sama dengan settings.py)
+# Atlas URI (sama dengan settings.py) — sumber kebenaran
 ATLAS_URI = (
     "mongodb+srv://tiaranurazm_db_user:hometownchachacha"
     "@clustermuti.mlnz2g4.mongodb.net/db_tugasakhir"
@@ -54,7 +61,6 @@ for doc in atlas_col.find({}, {'id': 1}):
     if doc.get('id') is not None:
         atlas_ids.add(doc['id'])
 
-# Also collect _id for docs without 'id' field
 atlas_oids = set()
 for doc in atlas_col.find({}, {'_id': 1}):
     atlas_oids.add(str(doc['_id']))
@@ -65,32 +71,30 @@ missing_docs = []
 for doc in local_col.find():
     doc_id = doc.get('id')
     doc_oid = str(doc['_id'])
-    
+
     if doc_id is not None and doc_id in atlas_ids:
         continue  # already exists
     if doc_oid in atlas_oids:
         continue  # already exists by _id
-    
+
     missing_docs.append(doc)
 
 print(f"Found {len(missing_docs)} documents in LOCAL that are NOT in ATLAS")
 
 # =============================================
-# REPLACE ALL: hapus Atlas, upload semua dari lokal
+# UPLOAD MISSING ONLY (tidak menghapus data Atlas)
 # =============================================
-print(f"\n[DELETE] Deleting all {atlas_count} documents from ATLAS...")
-atlas_col.delete_many({})
-print("   Deleted.")
+if not missing_docs:
+    print("\n[DONE] Tidak ada dokumen yang perlu dimigrasi. Semua data sudah sinkron.")
+    local_client.close()
+    atlas_client.close()
+    exit(0)
 
-# Ambil semua dari lokal
-all_local = list(local_col.find())
-print(f"\n[UPLOAD] Uploading {len(all_local)} documents to ATLAS...")
-
-# Insert in batches of 100 to avoid timeout
+print(f"\n[UPLOAD] Uploading {len(missing_docs)} missing documents to ATLAS...")
 BATCH = 100
 inserted_total = 0
-for i in range(0, len(all_local), BATCH):
-    batch = all_local[i:i+BATCH]
+for i in range(0, len(missing_docs), BATCH):
+    batch = missing_docs[i:i+BATCH]
     result = atlas_col.insert_many(batch)
     inserted_total += len(result.inserted_ids)
     print(f"   Batch {i//BATCH + 1}: inserted {len(result.inserted_ids)} (total: {inserted_total})")

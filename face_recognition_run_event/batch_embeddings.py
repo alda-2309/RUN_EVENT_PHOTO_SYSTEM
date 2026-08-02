@@ -19,7 +19,10 @@ BBOX_DEBUG_DIR = os.path.join(MEDIA_ROOT, 'bbox_debug')
 MAX_RESIZE = 800
 NUM_WORKERS = 4
 
-MONGO_URI = 'mongodb://localhost:27017'
+MONGO_URI = os.environ.get(
+    'MONGO_URI',
+    'mongodb+srv://tiaranurazm_db_user:hometownchachacha@clustermuti.mlnz2g4.mongodb.net/db_tugasakhir?retryWrites=true&w=majority'
+)
 
 EVENT_DIRS = {
     'colorun': os.path.join(MEDIA_ROOT, 'lomba_lari', 'colorun'),
@@ -167,7 +170,7 @@ def build_local_photo_docs(koleksi_foto):
 if __name__ == '__main__':
     print(f"=== BATCH EMBEDDING (MTCNN, {NUM_WORKERS} workers) ===")
 
-    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=30000)
+    client = MongoClient(MONGO_URI, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=30000)
     db = client['db_tugasakhir']
     koleksi_foto = db['photos_photoevent']
     koleksi_wajah = db['photos_faceembedding']

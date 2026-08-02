@@ -37,11 +37,14 @@ if BASE_DIR not in sys.path:
 
 from photos.views import l2_normalize  # noqa: E402
 
-MONGO_URI = 'mongodb://localhost:27017'
+MONGO_URI = os.environ.get(
+    'MONGO_URI',
+    'mongodb+srv://tiaranurazm_db_user:hometownchachacha@clustermuti.mlnz2g4.mongodb.net/db_tugasakhir?retryWrites=true&w=majority'
+)
 DB_NAME = 'db_tugasakhir'
 THRESHOLD = 0.50
 
-client = MongoClient(MONGO_URI)
+client = MongoClient(MONGO_URI, tlsAllowInvalidCertificates=True)
 db = client[DB_NAME]
 koleksi_foto = db['photos_photoevent']
 koleksi_wajah = db['photos_faceembedding']

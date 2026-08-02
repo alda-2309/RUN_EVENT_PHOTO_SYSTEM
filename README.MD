@@ -47,6 +47,8 @@ deactivate
      - embedding 128 dimensi
 
   8. Simpan ke MongoDB
+     - koneksi: MongoDB Atlas clustermuti (sumber kebenaran)
+       - bisa di-override via env var MONGO_URI
      - koleksi foto:
        - photos_photoevent
      - koleksi embedding:
@@ -88,6 +90,14 @@ deactivate
   8. Simpan ke MongoDB terpisah
      - photos_photoevent_blaze
      - photos_faceembedding_blaze
+
+  ---
+
+  CATATAN KONEKSI DB:
+  - Semua proyek (web app `config/` + face recognition `face_recognition_run_event/`)
+    memakai MongoDB Atlas clustermuti sebagai sumber kebenaran.
+  - Sinkronisasi dua arah local <-> Atlas: jalankan `python backup_mongo.py` dulu,
+    lalu `python sync_mongo.py` (lihat face_recognition_run_event/README.md).
 
   ---
 

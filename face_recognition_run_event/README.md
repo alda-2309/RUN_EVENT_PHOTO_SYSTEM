@@ -102,6 +102,37 @@ MongoDB Atlas connection sudah dikonfigurasi di `core/mongo_db.py`. Jika ingin m
 MONGO_URI = 'mongodb+srv://<user>:<password>@<cluster>.mongodb.net/<database>'
 ```
 
+Koneksi default semua script (batch, benchmark, OCR) diarahkan ke **MongoDB Atlas clustermuti**
+sebagai sumber kebenaran. Bisa di-override via env var `MONGO_URI` (misal untuk ngetes local):
+
+```bash
+# pakai local (kalau mau testing)
+set MONGO_URI=mongodb://localhost:27017
+python batch_embeddings.py
+
+# default: Atlas
+python batch_embeddings.py
+```
+
+## Sinkronisasi Data (Local <-> Atlas)
+
+Data di database `db_tugasakhir` disinkronkan dua arah antara local MongoDB dan Atlas clustermuti.
+Script di root proyek (bukan di folder ini):
+
+- `sync_mongo.py` — gabung semua collection foto & embedding dari local + Atlas (union, tidak menghapus
+  data), tulis ke Atlas lalu mirror ke local. Juga menyalin collection web app (events, users, galeri, dll)
+  dari Atlas ke local.
+- `backup_mongo.py` — dump seluruh collection local + Atlas ke `backup/mongo_backup_<timestamp>/` (JSON).
+- `migrate_local_to_atlas.py` — utilitas narik data `photos_photoevent` dari local ke Atlas (hanya yang
+  belum ada, tanpa menghapus).
+
+Jalankan backup dulu sebelum sync:
+
+```bash
+python backup_mongo.py
+python sync_mongo.py
+```
+
 ## Notes
 
 - Foto event harus diletakkan di `media/lomba_lari/<nama_event>/`

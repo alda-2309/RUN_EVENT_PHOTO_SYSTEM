@@ -1,15 +1,20 @@
 from pymongo import MongoClient
 
-uri = "mongodb+srv://sitinurdaa461_db_user:5jlGCI52IdLWMpbI@cluster0.tzak0ro.mongodb.net/?appName=Cluster0"
+# Koneksi utama ke MongoDB Atlas (clustermuti) — sumber kebenaran
+uri = (
+    "mongodb+srv://tiaranurazm_db_user:hometownchachacha"
+    "@clustermuti.mlnz2g4.mongodb.net/db_tugasakhir"
+    "?retryWrites=true&w=majority"
+)
 
 try:
-    client = MongoClient(uri)
+    client = MongoClient(uri, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=10000)
 
     # Test koneksi
     client.admin.command("ping")
 
-    print("✅ Berhasil terhubung ke MongoDB Atlas")
+    print("[OK] Berhasil terhubung ke MongoDB Atlas (clustermuti)")
 
 except Exception as e:
-    print("❌ Gagal terhubung")
+    print("[FAIL] Gagal terhubung")
     print(e)

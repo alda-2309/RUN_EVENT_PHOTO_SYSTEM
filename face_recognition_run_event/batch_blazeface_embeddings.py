@@ -17,7 +17,10 @@ BASE_DIR = os.path.dirname(__file__)
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 CROP_DIR = os.path.join(MEDIA_ROOT, 'blaze_face_crops')
 BBOX_DEBUG_DIR = os.path.join(MEDIA_ROOT, 'blaze_bbox_debug')
-MONGO_URI = 'mongodb://localhost:27017'
+MONGO_URI = os.environ.get(
+    'MONGO_URI',
+    'mongodb+srv://tiaranurazm_db_user:hometownchachacha@clustermuti.mlnz2g4.mongodb.net/db_tugasakhir?retryWrites=true&w=majority'
+)
 NUM_WORKERS = 4
 
 EVENT_DIRS = {
@@ -159,7 +162,7 @@ def process_one(photo_tuple):
 if __name__ == '__main__':
     print('=== BATCH BLAZEFACE EMBEDDING (FaceNet) ===')
 
-    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=30000)
+    client = MongoClient(MONGO_URI, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=30000)
     db = client['db_tugasakhir']
 
     koleksi_foto = db['photos_photoevent_blaze']

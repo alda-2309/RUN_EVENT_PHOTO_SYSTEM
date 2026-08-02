@@ -9,7 +9,8 @@ Petunjuk Penggunaan di Google Colab:
    - Klik menu: Runtime -> Change runtime type
    - Pilih Hardware accelerator: T4 GPU
    - Klik Save
-2. Pastikan tunnel ngrok TCP ke MongoDB lokal Anda aktif (ngrok tcp 27017).
+2. (Opsional) Set MONGO_URI sebagai env var kalau mau arahkan ke DB lain.
+   Default: MongoDB Atlas clustermuti (tidak perlu ngrok/local).
 3. Upload folder "lomba_lari" ke Google Drive Anda.
 4. Jalankan script ini di Google Colab.
 """
@@ -31,7 +32,7 @@ print("Menginstal library pendukung...")
 !apt-get -qq install unrar > /dev/null 2>&1
 
 # =====================================================================
-# STEP 2: Konfigurasi Path Google Drive & MongoDB (via ngrok TCP tunnel)
+# STEP 2: Konfigurasi Path Google Drive & MongoDB (Atlas)
 # =====================================================================
 import re
 import time
@@ -44,17 +45,17 @@ from tqdm import tqdm
 # Contoh jika folder 'lomba_lari' ditaruh langsung di My Drive:
 DRIVE_LOMBA_LARI_DIR = "/content/drive/MyDrive/lomba_lari"
 
-# Connection String ke MongoDB lokal via tunnel ngrok TCP (tanpa auth)
-# Format: mongodb://host:port/db
-MONGO_URI = "mongodb://0.tcp.ap.ngrok.io:21120/db_tugasakhir"
+# Connection String ke MongoDB Atlas (clustermuti) — sumber kebenaran
+# (Tidak perlu ngrok/local lagi; Colab akses Atlas langsung via internet)
+MONGO_URI = "mongodb+srv://tiaranurazm_db_user:hometownchachacha@clustermuti.mlnz2g4.mongodb.net/db_tugasakhir?retryWrites=true&w=majority"
 DB_NAME = "db_tugasakhir"
 
 # Hubungkan ke MongoDB
 try:
-    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    client = MongoClient(MONGO_URI, tlsAllowInvalidCertificates=True, serverSelectionTimeoutMS=10000)
     db = client[DB_NAME]
     koleksi_foto = db['photos_photoevent']
-    print(f"SUCCESS: Berhasil terhubung ke MongoDB: {DB_NAME}")
+    print(f"SUCCESS: Berhasil terhubung ke MongoDB Atlas: {DB_NAME}")
     print(f"Jumlah dokumen saat ini: {koleksi_foto.count_documents({})}")
 except Exception as e:
     print("ERROR: Gagal terhubung ke MongoDB:", e)
