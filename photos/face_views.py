@@ -37,6 +37,8 @@ def l2_normalize(x):
     return x / np.sqrt(np.maximum(np.sum(np.square(x), axis=-1, keepdims=True), 1e-6))
 
 THRESHOLD = 0.50
+# Threshold khusus pipeline BlazeFace (lebih ketat).
+BLAZE_THRESHOLD = 0.35
 ITEMS_PER_PAGE = 12
 CACHE_TIMEOUT = 3600
 
@@ -610,7 +612,7 @@ def test_ai_blaze(request):
         file_foto = request.FILES['foto']
         file_info_string = file_foto.name + str(file_foto.size)
         file_hash = hashlib.md5(file_info_string.encode('utf-8')).hexdigest()
-        threshold_real = THRESHOLD
+        threshold_real = BLAZE_THRESHOLD
         cache_key = f"blaze_search_{file_hash}_{threshold_real}"
         request.session['last_search_cache_key'] = cache_key
 
@@ -726,7 +728,7 @@ def test_ai_blaze(request):
 
 def cari_serupa_blaze(request, photo_id):
     """Cari foto sejenis dari referensi di collection blaze (KF-U05)."""
-    threshold_real = THRESHOLD
+    threshold_real = BLAZE_THRESHOLD
     cache_key = f"cari_serupa_blaze_{photo_id}_{threshold_real}"
 
     t1_mulai = time.time()
