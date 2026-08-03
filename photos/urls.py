@@ -4,8 +4,10 @@ from . import views
 
 
 def lazy_face_search(request):
-    from .face_views import face_search
-    return face_search(request)
+    # URL ini kini memakai pipeline BlazeFace (collection *_blaze),
+    # sesuai keinginan user: /photos/face-search/ berfungsi seperti /test-ai-blaze/.
+    from .face_views import face_search, test_ai_blaze
+    return test_ai_blaze(request)
 
 
 def lazy_bib_search(request):

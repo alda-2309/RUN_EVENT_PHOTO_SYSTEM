@@ -4,7 +4,7 @@ import time
 import hashlib
 import logging
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 from io import BytesIO
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
@@ -19,6 +19,15 @@ logger = logging.getLogger(__name__)
 koleksi_foto = mongo_db['photos_photoevent']
 koleksi_foto_legacy = mongo_db['photos']
 koleksi_wajah = mongo_db['photos_faceembedding']
+
+# ============================================
+# COLLECTION KHUSUS EXPERIMEN BLAZEFACE
+# Embedding di collection ini dihasilkan oleh
+# pipeline BlazeFace (deteksi mediapipe + crop,
+# lalu embedding Facenet dg detector_backend='skip').
+# ============================================
+koleksi_foto_blaze = mongo_db['photos_photoevent_blaze']
+koleksi_wajah_blaze = mongo_db['photos_faceembedding_blaze']
 
 def _get_deepface():
     from deepface import DeepFace
@@ -110,15 +119,15 @@ def _attach_face_crop(photo):
     else:
         photo.face_crop_url = ''
 
-def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
+def cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_ref, koleksi_wajah_ref, exclude_photo_id=None):
     all_matches = []
     photos_map = {}
 
-    for p in koleksi_foto.find():
+    for p in koleksi_foto_ref.find():
         pid = p.get('id')
         photos_map[pid] = PhotoObj(p)
 
-    for wajah in koleksi_wajah.find():
+    for wajah in koleksi_wajah_ref.find():
         photo_obj = photos_map.get(wajah.get('photo_id'))
         if photo_obj is None or photo_obj.id == exclude_photo_id:
             continue
@@ -134,6 +143,14 @@ def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
 
     all_matches.sort(key=lambda x: x['dist'])
     return [m['photo'] for m in all_matches if m['dist'] <= threshold_real]
+
+
+def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
+    return cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto, koleksi_wajah, exclude_photo_id)
+
+
+def cari_foto_mirip_blaze(query_vec, threshold_real, exclude_photo_id=None):
+    return cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_blaze, koleksi_wajah_blaze, exclude_photo_id)
 
 # ==========================================
 # VIEW: FACE RECOGNITION SEARCH
@@ -494,4 +511,283 @@ def bib_search_api(request):
         'query': q,
         'results': [_bib_photo_to_dict(p) for p in photos],
         'truncated': len(all_photos) > MAX_RESULTS,
+    })
+
+
+# ==========================================
+# BLAZEFACE PIPELINE & VIEWS
+#
+# Embedding BlazeFace di collection *_blaze dibuat dengan
+# pipeline EXACT seperti batch_blazeface_embeddings.py:
+#   1. Deteksi wajah dg BlazeFaceProcessor (min_confidence 0.1,
+#      model_selection 1, padding 0.2).
+#   2. Crop wajah, resize max 400px.
+#   3. Embedding dgn DeepFace Facenet detector_backend='skip'.
+# Query selfie HARUS diproses dgn pipeline yg sama supaya
+# embedding bisa dibandingkan secara konsisten.
+# ==========================================
+def _extract_blaze_embedding(img_path):
+    """Deteksi BlazeFace + crop + embedding Facenet (skip). Return (vec, bbox, conf) or (None, None, None)."""
+    try:
+        from photos.blazeface_utils import BlazeFaceProcessor
+    except Exception as e:
+        logger.warning("blazeface_utils import gagal: %s", e)
+        return None, None, None
+
+    import tempfile
+    processor = BlazeFaceProcessor(min_detection_confidence=0.1, model_selection=1)
+    detections = processor.detect_faces(img_path)
+    if not detections:
+        return None, None, None
+
+    orig_img = Image.open(img_path)
+    try:
+        orig_img = ImageOps.exif_transpose(orig_img)
+    except Exception:
+        pass
+    orig_img = orig_img.convert('RGB')
+
+    DeepFace = _get_deepface()
+    for det in detections:
+        bbox = det['bbox']
+        x, y, w, h = bbox['x'], bbox['y'], bbox['w'], bbox['h']
+        if w <= 0 or h <= 0:
+            continue
+        crop = orig_img.crop((x, y, x + w, y + h))
+        max_crop = 400
+        if max(crop.size) > max_crop:
+            ratio = max_crop / max(crop.size)
+            crop = crop.resize((int(crop.width * ratio), int(crop.height * ratio)), Image.LANCZOS)
+
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
+                crop.save(tmp.name, 'JPEG', quality=90)
+                tmp_path = tmp.name
+            emb = DeepFace.represent(
+                img_path=tmp_path,
+                model_name='Facenet',
+                detector_backend='skip',
+                enforce_detection=False,
+            )
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+
+        if not emb:
+            continue
+        vec = np.array(emb[0]['embedding'], dtype=np.float32)
+        vec = l2_normalize(vec)
+        return vec, bbox, det.get('confidence', 0.0)
+
+    return None, None, None
+
+
+def _attach_face_crop_blaze(photo):
+    """Attach face crop URL dari collection blaze."""
+    face_doc = koleksi_wajah_blaze.find_one({'photo_id': photo.id})
+    if face_doc and face_doc.get('face_image'):
+        photo.face_crop_url = f"/media/{face_doc['face_image']}"
+    elif face_doc and face_doc.get('bbox_json'):
+        photo.face_crop_url = photo.image_url
+    else:
+        photo.face_crop_url = ''
+
+
+def test_ai_blaze(request):
+    """
+    Face search khusus pipeline BlazeFace terhadap collection _blaze.
+    Berfungsi seperti halaman /test-ai-blaze/ di proyek mirror,
+    sekarang disajikan di /photos/face-search/.
+    """
+    if request.method == 'POST' and request.FILES.get('foto'):
+        file_foto = request.FILES['foto']
+        file_info_string = file_foto.name + str(file_foto.size)
+        file_hash = hashlib.md5(file_info_string.encode('utf-8')).hexdigest()
+        threshold_real = THRESHOLD
+        cache_key = f"blaze_search_{file_hash}_{threshold_real}"
+        request.session['last_search_cache_key'] = cache_key
+
+        temp_name = f"temp_blaze_{file_foto.name}"
+        temp_path = default_storage.save(temp_name, file_foto)
+        full_path = os.path.join(default_storage.location, temp_path)
+
+        selfie_rel = f"face_crops/blaze_selfie_{file_hash[:8]}.jpg"
+        selfie_abs = os.path.join(settings.MEDIA_ROOT, selfie_rel)
+        os.makedirs(os.path.dirname(selfie_abs), exist_ok=True)
+        import shutil
+        shutil.copy2(full_path, selfie_abs)
+
+        hasil_foto = []
+        pesan = ""
+        berhasil = False
+        waktu_total = 0
+
+        try:
+            t0 = time.time()
+            selfie_vec, _, _ = _extract_blaze_embedding(full_path)
+
+            if selfie_vec is not None:
+                best_matches = cari_foto_mirip_blaze(selfie_vec, threshold_real)
+
+                for photo in best_matches:
+                    set_event_metadata(photo)
+                    _attach_face_crop_blaze(photo)
+                    hasil_foto.append(photo)
+
+                waktu_total = round(time.time() - t0, 4)
+
+                if hasil_foto:
+                    paginator = Paginator(hasil_foto, ITEMS_PER_PAGE)
+                    page_obj = paginator.get_page(1)
+
+                    match_data = [{'id': photo.id, 'similarity': photo.similarity} for photo in hasil_foto]
+                    request.session['last_search_results'] = match_data
+                    request.session['last_search_selfie'] = f"/media/{selfie_rel}"
+
+                    pesan = f"Berhasil! Ditemukan {len(hasil_foto)} wajah yang paling mirip (BlazeFace)."
+                    berhasil = True
+                    return render(request, 'photos/test_ai.html', {
+                        'pesan': pesan,
+                        'berhasil': berhasil,
+                        'page_obj': page_obj,
+                        'page_range': get_page_range(page_obj),
+                        'hasil_foto': page_obj.object_list,
+                        'waktu_proses': waktu_total,
+                        'selfie_url': f"/media/{selfie_rel}",
+                        'mode': 'blaze',
+                        'page_url_base': '/photos/face-search/',
+                    })
+                else:
+                    pesan = "Wajah terdeteksi, tetapi tidak ditemukan di data BlazeFace."
+            else:
+                pesan = "Wajah tidak terdeteksi (BlazeFace)."
+
+        except Exception as e:
+            print(f"Error AI Blaze: {e}")
+            pesan = f"Terjadi kesalahan sistem: {e}"
+        finally:
+            if os.path.exists(full_path):
+                os.remove(full_path)
+
+        return render(request, 'photos/test_ai.html', {
+            'pesan': pesan,
+            'berhasil': berhasil,
+            'hasil_foto': hasil_foto,
+            'waktu_proses': waktu_total,
+            'mode': 'blaze',
+            'page_url_base': '/photos/face-search/',
+        })
+
+    if request.method == 'GET' and request.GET.get('page'):
+        cached = request.session.get('last_search_results')
+        selfie_url = request.session.get('last_search_selfie')
+        if cached and isinstance(cached, list) and len(cached) > 0 and isinstance(cached[0], dict):
+            photo_ids = [item['id'] for item in cached]
+            photos_docs = {p['id']: p for p in koleksi_foto_blaze.find({'id': {'$in': photo_ids}})}
+            hasil_foto = []
+            for item in cached:
+                doc = photos_docs.get(item['id'])
+                if doc:
+                    photo_obj = PhotoObj(doc)
+                    photo_obj.similarity = item['similarity']
+                    set_event_metadata(photo_obj)
+                    _attach_face_crop_blaze(photo_obj)
+                    hasil_foto.append(photo_obj)
+            page_num = int(request.GET.get('page', 1))
+            paginator = Paginator(hasil_foto, ITEMS_PER_PAGE)
+            page_obj = paginator.get_page(page_num)
+            return render(request, 'photos/test_ai.html', {
+                'pesan': f"Menampilkan hasil pencarian ({len(hasil_foto)} wajah mirip).",
+                'berhasil': True,
+                'page_obj': page_obj,
+                'page_range': get_page_range(page_obj),
+                'hasil_foto': page_obj.object_list,
+                'selfie_url': selfie_url,
+                'waktu_proses': 0,
+                'mode': 'blaze',
+                'page_url_base': '/photos/face-search/',
+            })
+
+    request.session.pop('last_search_results', None)
+    request.session.pop('last_search_selfie', None)
+    return render(request, 'photos/test_ai.html', {
+        'mode': 'blaze',
+        'page_url_base': '/photos/face-search/',
+        'active_page': 'search',
+    })
+
+
+def cari_serupa_blaze(request, photo_id):
+    """Cari foto sejenis dari referensi di collection blaze (KF-U05)."""
+    threshold_real = THRESHOLD
+    cache_key = f"cari_serupa_blaze_{photo_id}_{threshold_real}"
+
+    t1_mulai = time.time()
+    cached_data = cache.get(cache_key)
+    t1 = round(time.time() - t1_mulai, 4)
+    t2 = None
+
+    if cached_data:
+        photo_ids = [item['id'] for item in cached_data]
+        photos_docs = {p['id']: p for p in koleksi_foto_blaze.find({'id': {'$in': photo_ids}})}
+        hasil_foto = []
+        for item in cached_data:
+            doc = photos_docs.get(item['id'])
+            if doc:
+                photo_obj = PhotoObj(doc)
+                photo_obj.similarity = item['similarity']
+                set_event_metadata(photo_obj)
+                _attach_face_crop_blaze(photo_obj)
+                hasil_foto.append(photo_obj)
+        waktu_proses = t1
+    else:
+        t2_mulai = time.time()
+        wajah_referensi = koleksi_wajah_blaze.find_one({'photo_id': int(photo_id)})
+        if not wajah_referensi:
+            return render(request, 'photos/test_ai.html', {
+                'pesan': 'Data wajah referensi (BlazeFace) tidak ditemukan.',
+                'berhasil': False,
+                'mode': 'blaze',
+                'page_url_base': '/photos/face-search/',
+            })
+
+        query_vec = np.frombuffer(wajah_referensi.get('embedding_data', b''), dtype=np.float32).copy()
+        query_vec = l2_normalize(query_vec)
+        hasil_foto = cari_foto_mirip_blaze(query_vec, threshold_real=threshold_real, exclude_photo_id=int(photo_id) if isinstance(photo_id, int) else photo_id)
+
+        t2 = round(time.time() - t2_mulai, 4)
+        waktu_proses = round(t1 + t2, 4)
+
+        if hasil_foto:
+            match_data = [{'id': photo.id, 'similarity': photo.similarity} for photo in hasil_foto]
+            cache.set(cache_key, match_data, 12096000)
+
+    for photo in hasil_foto:
+        set_event_metadata(photo)
+        _attach_face_crop_blaze(photo)
+
+    request.session['last_search_cache_key'] = cache_key
+    request.session['last_search_results'] = [{'id': photo.id, 'similarity': photo.similarity} for photo in hasil_foto]
+
+    if not hasil_foto:
+        return render(request, 'photos/test_ai.html', {
+            'pesan': "Tidak ditemukan foto lain yang sejenis (BlazeFace).",
+            'berhasil': False,
+            'mode': 'blaze',
+            'page_url_base': '/photos/face-search/',
+        })
+
+    paginator = Paginator(hasil_foto, ITEMS_PER_PAGE)
+    page_obj = paginator.get_page(1)
+
+    return render(request, 'photos/test_ai.html', {
+        'pesan': f"Berhasil! Ditemukan {len(hasil_foto)} foto sejenis (BlazeFace).",
+        'berhasil': True,
+        'page_obj': page_obj,
+        'page_range': get_page_range(page_obj),
+        'hasil_foto': page_obj.object_list,
+        'waktu_proses': waktu_proses,
+        'mode': 'blaze',
+        'page_url_base': '/photos/face-search/',
     })
