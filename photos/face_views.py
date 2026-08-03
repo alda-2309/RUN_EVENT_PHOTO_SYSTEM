@@ -121,6 +121,30 @@ def _attach_face_crop(photo):
     else:
         photo.face_crop_url = ''
 
+
+def _attach_face_crops_batch(photos, koleksi_wajah_ref):
+    """
+    Ikat face_crop_url ke banyak foto sekaligus dgn SATU query `$in`,
+    menghindari round-trip `find_one` per foto (penyebab lambat saat pagination).
+    """
+    ids = [p.id for p in photos if p.id is not None]
+    if not ids:
+        return
+    crop_map = {}
+    for wajah in koleksi_wajah_ref.find({'photo_id': {'$in': ids}}):
+        pid = wajah.get('photo_id')
+        if pid in crop_map:
+            continue
+        crop_map[pid] = wajah
+    for photo in photos:
+        face_doc = crop_map.get(photo.id)
+        if face_doc and face_doc.get('face_image'):
+            photo.face_crop_url = f"/media/{face_doc['face_image']}"
+        elif face_doc and face_doc.get('bbox_json'):
+            photo.face_crop_url = photo.image_url
+        else:
+            photo.face_crop_url = ''
+
 def cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_ref, koleksi_wajah_ref, exclude_photo_id=None):
     photos_map = {}
     for p in koleksi_foto_ref.find():
@@ -592,7 +616,7 @@ def _extract_blaze_embedding(img_path):
 
 
 def _attach_face_crop_blaze(photo):
-    """Attach face crop URL dari collection blaze."""
+    """Deprecated: pakai _attach_face_crops_batch. Dibiarkan utk backward-compat."""
     face_doc = koleksi_wajah_blaze.find_one({'photo_id': photo.id})
     if face_doc and face_doc.get('face_image'):
         photo.face_crop_url = f"/media/{face_doc['face_image']}"
@@ -640,8 +664,9 @@ def test_ai_blaze(request):
 
                 for photo in best_matches:
                     set_event_metadata(photo)
-                    _attach_face_crop_blaze(photo)
-                    hasil_foto.append(photo)
+                # Batch attach face crop (1 query)
+                _attach_face_crops_batch(best_matches, koleksi_wajah_blaze)
+                hasil_foto = best_matches
 
                 waktu_total = round(time.time() - t0, 4)
 
@@ -700,8 +725,9 @@ def test_ai_blaze(request):
                     photo_obj = PhotoObj(doc)
                     photo_obj.similarity = item['similarity']
                     set_event_metadata(photo_obj)
-                    _attach_face_crop_blaze(photo_obj)
                     hasil_foto.append(photo_obj)
+            # Batch attach face crop (1 query, bukan per-foto)
+            _attach_face_crops_batch(hasil_foto, koleksi_wajah_blaze)
             page_num = int(request.GET.get('page', 1))
             paginator = Paginator(hasil_foto, ITEMS_PER_PAGE)
             page_obj = paginator.get_page(page_num)
@@ -746,8 +772,8 @@ def cari_serupa_blaze(request, photo_id):
                 photo_obj = PhotoObj(doc)
                 photo_obj.similarity = item['similarity']
                 set_event_metadata(photo_obj)
-                _attach_face_crop_blaze(photo_obj)
                 hasil_foto.append(photo_obj)
+        _attach_face_crops_batch(hasil_foto, koleksi_wajah_blaze)
         waktu_proses = t1
     else:
         t2_mulai = time.time()
@@ -773,7 +799,7 @@ def cari_serupa_blaze(request, photo_id):
 
     for photo in hasil_foto:
         set_event_metadata(photo)
-        _attach_face_crop_blaze(photo)
+    _attach_face_crops_batch(hasil_foto, koleksi_wajah_blaze)
 
     request.session['last_search_cache_key'] = cache_key
     request.session['last_search_results'] = [{'id': photo.id, 'similarity': photo.similarity} for photo in hasil_foto]
