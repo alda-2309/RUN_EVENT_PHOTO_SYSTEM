@@ -1,0 +1,42 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Edit Foto Galeri - RunSnap Admin{% endblock %}
+{% block content %}
+<a href="{% url 'admin_galeri_photo_list' %}" class="back-btn">← Kembali ke Galeri Foto</a>
+
+<h1 style="font-size:28px; font-weight:700; margin-bottom:20px;">✏️ Edit Foto Galeri</h1>
+
+<div class="card" style="padding:25px;">
+    <div style="display:flex; gap:25px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:260px;">
+            {% if image_url %}
+                <img src="{{ image_url }}" alt="Foto" style="width:100%; max-height:320px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.2);" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+Tidak+Tersedia'">
+            {% else %}
+                <img src="https://via.placeholder.com/400x300?text=No+Image" style="width:100%; border-radius:16px;">
+            {% endif %}
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+                <span style="background:rgba(255,255,255,0.15); padding:6px 14px; border-radius:20px; font-size:13px;">📁 {{ folder|default:"-" }}</span>
+                <span style="background:rgba(255,255,255,0.15); padding:6px 14px; border-radius:20px; font-size:13px;">#{{ foto_id }}</span>
+            </div>
+        </div>
+
+        <div style="flex:1.4; min-width:280px;">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Nama Event</label>
+                    <input type="text" name="event_name" class="form-control" value="{{ foto.event_name|default:'' }}" placeholder="Nama event...">
+                </div>
+                <div class="form-group">
+                    <label>Nomor Bib</label>
+                    <input type="text" name="bib_number" class="form-control" value="{{ foto.bib_number|default:'' }}" placeholder="Nomor bib peserta (opsional)">
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-yellow">💾 Simpan</button>
+                    <a href="{% url 'admin_galeri_photo_list' %}" class="btn btn-ghost">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

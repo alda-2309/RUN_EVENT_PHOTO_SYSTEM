@@ -42,6 +42,60 @@ BLAZE_THRESHOLD = 0.35
 ITEMS_PER_PAGE = 12
 CACHE_TIMEOUT = 3600
 
+# ==========================================
+# FEATURE TOGGLE: BIB SEARCH FLOW
+# Set True = Event selection first (new flow)
+# Set False = Direct BIB search (original flow)
+# ==========================================
+USE_EVENT_SELECTION_FOR_BIB = True
+
+# ==========================================
+# HELPER FUNCTIONS FOR EVENT/FOLDER
+# ==========================================
+def _folder_event(image_path):
+    """Extract event folder from image path 'lomba_lari/<folder>/<file>'.
+    
+    Example:
+      'lomba_lari/colorun/ColorRun_Fest(1).jpg' -> 'colorun'
+      'lomba_lari/tientorun/Tiento_Run(1).JPG'  -> 'tientorun'
+    """
+    if not image_path:
+        return ''
+    img = image_path.replace('\\', '/')
+    parts = [p for p in img.split('/') if p]
+    if len(parts) >= 3 and parts[0].lower() == 'lomba_lari':
+        return parts[1]
+    return ''
+
+def _folder_label(folder):
+    """Convert folder name to display label.
+    
+    Example: 'colorun' -> 'Color Run', 'milo_race_2026' -> 'Milo Race 2026'
+    """
+    mapping = {
+        'tientorun': 'Tiento Run',
+        'colorun': 'Color Run',
+        'carfreeday': 'Car Free Day',
+        'milo': 'Milo',
+        'milo_race_2026': 'Milo Race 2026',
+        'merdeka': 'Kemerdekaan',
+        'kemerdekaan': 'Kemerdekaan',
+        'ui_ecorun': 'UI ECO Run',
+    }
+    if folder in mapping:
+        return mapping[folder]
+    return folder.replace('_', ' ').title()
+
+def _get_event_list():
+    """Get list of unique event folders from database."""
+    folders = set()
+    for d in koleksi_foto.find({}, {'image': 1}):
+        f = _folder_event(d.get('image'))
+        if f:
+            folders.add(f)
+    sorted_folders = sorted(folders)
+    return [{'folder': f, 'label': _folder_label(f)} for f in sorted_folders]
+
 class PhotoObj:
     def __init__(self, doc):
         self.id = doc.get('id')
@@ -400,9 +454,9 @@ def _bib_token_matches(token, target):
     # Support OCR output that may have trailing/leading zero noise.
     return token.lstrip('0') == target.lstrip('0') or token == target.lstrip('0') or token.lstrip('0') == target
 
-def _bib_search_photos(bib_input):
+def _bib_search_photos(bib_input, event=None):
     """
-    Core BIB search logic.
+    Core BIB search logic with optional event filtering.
 
     Supports these DB shapes:
     - '51012'
@@ -412,6 +466,10 @@ def _bib_search_photos(bib_input):
 
     Matching is digit-only and exact after normalization, with a small tolerance
     for leading-zero noise from OCR.
+    
+    Args:
+        bib_input: BIB number to search for
+        event: Optional event folder name to filter by (e.g. 'colorun', 'tientorun')
     """
     bib_input = _norm_bib(bib_input)
     if not bib_input:
@@ -419,7 +477,7 @@ def _bib_search_photos(bib_input):
 
     results = []
     seen_ids = set()
-    logger.info("BIB search start query=%r normalized=%r", bib_input, bib_input)
+    logger.info("BIB search start query=%r normalized=%r event=%r", bib_input, bib_input, event)
 
     for collection_name, collection in (("photos_photoevent", koleksi_foto), ("photos", koleksi_foto_legacy)):
         try:
@@ -431,6 +489,14 @@ def _bib_search_photos(bib_input):
         for p in collection.find({'bib_number': {'$nin': [None, '']}}):
             pid = p.get('id') or p.get('_id')
             raw_bib = p.get('bib_number')
+            
+            # Filter by event folder if specified
+            if event:
+                img_path = p.get('image', '')
+                photo_folder = _folder_event(img_path)
+                if photo_folder != event:
+                    continue
+            
             logger.info(
                 "BIB check collection=%s pid=%r bib_number=%r type=%s",
                 collection_name, pid, raw_bib, type(raw_bib).__name__
@@ -482,49 +548,125 @@ def _bib_photo_to_dict(p):
 
 
 def bib_search(request):
-    if request.method == 'POST':
-        bib_number = _norm_bib(request.POST.get('bib_number', ''))
-        if not _is_valid_bib_input(bib_number):
-            return render(request, 'photos/bib_results.html', {
-                'pesan': 'Masukkan nomor bib yang valid (angka dan/atau huruf).',
-                'berhasil': False,
-                'bib_number': bib_number,
+    """
+    BIB search with configurable flow (toggle via USE_EVENT_SELECTION_FOR_BIB).
+    - If True: Two-step flow (event selection → BIB input)
+    - If False: Original direct BIB search (no event selection)
+    """
+    
+    if USE_EVENT_SELECTION_FOR_BIB:
+        # ========================================
+        # NEW FLOW: Event selection first
+        # ========================================
+        event = request.GET.get('event', '').strip()
+        
+        # Step 1: No event selected → show event selection page
+        if not event:
+            event_list = _get_event_list()
+            return render(request, 'photos/bib_event_select.html', {
+                'event_list': event_list,
                 'active_page': 'search',
             })
+        
+        # Step 2 & 3: Event selected → show BIB form and handle search
+        event_label = _folder_label(event)
+        
+        if request.method == 'POST':
+            bib_number = _norm_bib(request.POST.get('bib_number', ''))
+            if not _is_valid_bib_input(bib_number):
+                return render(request, 'photos/bib_results.html', {
+                    'pesan': 'Masukkan nomor bib yang valid (angka dan/atau huruf).',
+                    'berhasil': False,
+                    'bib_number': bib_number,
+                    'event': event,
+                    'event_label': event_label,
+                    'active_page': 'search',
+                })
 
-        hasil_foto = _bib_search_photos(bib_number)
+            # Search with event filter
+            hasil_foto = _bib_search_photos(bib_number, event=event)
 
-        if hasil_foto:
-            paginator = Paginator(hasil_foto, ITEMS_PER_PAGE)
-            page_obj = paginator.get_page(1)
-            return render(request, 'photos/bib_results.html', {
-                'pesan': f"Berhasil! Ditemukan {len(hasil_foto)} foto dengan nomor bib '{bib_number}'.",
-                'berhasil': True,
-                'page_obj': page_obj,
-                'page_range': get_page_range(page_obj),
-                'hasil_foto': page_obj.object_list,
-                'bib_number': bib_number,
-                'active_page': 'search',
-            })
-        else:
-            return render(request, 'photos/bib_results.html', {
-                'pesan': f"Tidak ditemukan foto dengan nomor bib '{bib_number}'.",
-                'berhasil': False,
-                'bib_number': bib_number,
-                'active_page': 'search',
-            })
+            if hasil_foto:
+                paginator = Paginator(hasil_foto, ITEMS_PER_PAGE)
+                page_obj = paginator.get_page(1)
+                return render(request, 'photos/bib_results.html', {
+                    'pesan': f"Berhasil! Ditemukan {len(hasil_foto)} foto dengan nomor bib '{bib_number}' di event {event_label}.",
+                    'berhasil': True,
+                    'page_obj': page_obj,
+                    'page_range': get_page_range(page_obj),
+                    'hasil_foto': page_obj.object_list,
+                    'bib_number': bib_number,
+                    'event': event,
+                    'event_label': event_label,
+                    'active_page': 'search',
+                })
+            else:
+                return render(request, 'photos/bib_results.html', {
+                    'pesan': f"Tidak ditemukan foto dengan nomor bib '{bib_number}' di event {event_label}.",
+                    'berhasil': False,
+                    'bib_number': bib_number,
+                    'event': event,
+                    'event_label': event_label,
+                    'active_page': 'search',
+                })
 
-    return render(request, 'photos/bib_results.html', {'active_page': 'search'})
+        # GET with event → show BIB input form
+        return render(request, 'photos/bib_results.html', {
+            'event': event,
+            'event_label': event_label,
+            'active_page': 'search',
+        })
+    
+    else:
+        # ========================================
+        # ORIGINAL FLOW: Direct BIB search
+        # ========================================
+        if request.method == 'POST':
+            bib_number = _norm_bib(request.POST.get('bib_number', ''))
+            if not _is_valid_bib_input(bib_number):
+                return render(request, 'photos/bib_results.html', {
+                    'pesan': 'Masukkan nomor bib yang valid (angka dan/atau huruf).',
+                    'berhasil': False,
+                    'bib_number': bib_number,
+                    'active_page': 'search',
+                })
+
+            # Search without event filter (all events)
+            hasil_foto = _bib_search_photos(bib_number, event=None)
+
+            if hasil_foto:
+                paginator = Paginator(hasil_foto, ITEMS_PER_PAGE)
+                page_obj = paginator.get_page(1)
+                return render(request, 'photos/bib_results.html', {
+                    'pesan': f"Berhasil! Ditemukan {len(hasil_foto)} foto dengan nomor bib '{bib_number}'.",
+                    'berhasil': True,
+                    'page_obj': page_obj,
+                    'page_range': get_page_range(page_obj),
+                    'hasil_foto': page_obj.object_list,
+                    'bib_number': bib_number,
+                    'active_page': 'search',
+                })
+            else:
+                return render(request, 'photos/bib_results.html', {
+                    'pesan': f"Tidak ditemukan foto dengan nomor bib '{bib_number}'.",
+                    'berhasil': False,
+                    'bib_number': bib_number,
+                    'active_page': 'search',
+                })
+
+        # GET → show BIB input form (no event selection)
+        return render(request, 'photos/bib_results.html', {'active_page': 'search'})
 
 
 def bib_search_api(request):
     """
-    JSON endpoint for live (as-you-type) BIB search.
-    GET /photos/bib-search-api/?q=83
+    JSON endpoint for live (as-you-type) BIB search with optional event filtering.
+    GET /photos/bib-search-api/?q=83&event=colorun
     -> {"count": N, "query": "83", "results": [{id, image_url, ...}]}
     """
     q = (request.GET.get('q') or '').strip()
-    logger.info("bib_search_api q=%r", q)
+    event = (request.GET.get('event') or '').strip()
+    logger.info("bib_search_api q=%r event=%r", q, event)
     if not q:
         logger.info("bib_search_api empty query")
         return JsonResponse({'count': 0, 'query': '', 'results': []})
@@ -535,9 +677,9 @@ def bib_search_api(request):
     # 60 is plenty for any realistic BIB (most have 1-5 photos).
     MAX_RESULTS = 60
 
-    all_photos = _bib_search_photos(q)
+    all_photos = _bib_search_photos(q, event=event)
     photos = all_photos[:MAX_RESULTS]
-    logger.info("bib_search_api q=%r total=%d returned=%d truncated=%s", q, len(all_photos), len(photos), len(all_photos) > MAX_RESULTS)
+    logger.info("bib_search_api q=%r event=%r total=%d returned=%d truncated=%s", q, event, len(all_photos), len(photos), len(all_photos) > MAX_RESULTS)
     return JsonResponse({
         'count': len(photos),
         'query': q,

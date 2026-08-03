@@ -180,11 +180,16 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-    <a href="{% url 'search' %}" class="back-btn">← Kembali ke Pencarian</a>
+    <a href="{% url 'bib_search' %}" class="back-btn">← Kembali ke Pilih Event</a>
 
     <div class="search-form">
+        {% if event %}
+        <h2>🏃 {{ event_label }}</h2>
+        <p>Ketik nomor BIB pelari untuk event <strong>{{ event_label }}</strong> — hasil muncul otomatis.</p>
+        {% else %}
         <h2>🏃 Pencarian Nomor Bib</h2>
         <p>Ketik nomor BIB pelari — hasil muncul otomatis dari database.</p>
+        {% endif %}
         <div class="input-wrap">
             <input type="text" id="bib-input" autocomplete="off" autocapitalize="characters" spellcheck="false"
                    placeholder="Contoh: 83, 4677, 5ADI2" value="{{ bib_number|default:'' }}">
@@ -220,6 +225,7 @@
 <script>
 (function () {
     const API_URL = "{% url 'bib_search_api' %}";
+    const EVENT_PARAM = "{{ event|default:'' }}";
     const input   = document.getElementById('bib-input');
     const clearBtn = document.getElementById('clear-btn');
     const hint    = document.getElementById('hint');
@@ -355,7 +361,8 @@
         const ctrl = new AbortController();
         inflight = ctrl;
 
-        fetch(API_URL + '?q=' + encodeURIComponent(q), { signal: ctrl.signal })
+        const apiUrl = API_URL + '?q=' + encodeURIComponent(q) + (EVENT_PARAM ? '&event=' + encodeURIComponent(EVENT_PARAM) : '');
+        fetch(apiUrl, { signal: ctrl.signal })
             .then(r => r.json().then(data => ({ ok: r.ok, data })))
             .then(({ ok, data }) => {
                 if (q !== lastQuery) return; // stale response

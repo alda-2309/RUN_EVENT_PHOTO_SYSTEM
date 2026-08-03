@@ -1,0 +1,72 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Galeri Foto Event - RunSnap Admin{% endblock %}
+{% block content %}
+<a href="{% url 'admin_dashboard' %}" class="back-btn">← Kembali ke Dashboard</a>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+    <h1 style="font-size:28px; font-weight:700;">🖼️ Galeri Foto Event</h1>
+    <span style="background:rgba(255,255,255,0.15); padding:8px 18px; border-radius:30px; font-weight:600;">{{ total }} foto</span>
+</div>
+
+<!-- Filter folder -->
+<div class="card" style="padding:18px 20px; overflow:visible;">
+    <form method="GET" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <select name="folder" class="form-control" style="max-width:240px;">
+            <option value="">-- Semua Folder --</option>
+            {% for f in folder_list %}
+                <option value="{{ f }}" {% if f == folder_selected %}selected{% endif %}>{{ f }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Cari nama event..." style="max-width:280px;">
+        <button type="submit" class="btn btn-yellow">Filter</button>
+        {% if folder_selected or q %}
+            <a href="{% url 'admin_galeri_photo_list' %}" class="btn btn-ghost">Reset</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="gallery">
+    {% for foto in fotos %}
+    <div class="photo-card">
+        {% if foto.image %}
+            <img src="{{ foto.image }}" alt="Foto" loading="lazy" onerror="this.src='https://via.placeholder.com/400x250?text=Foto+Tidak+Tersedia'">
+        {% else %}
+            <img src="https://via.placeholder.com/400x250?text=No+Image">
+        {% endif %}
+        <div class="info">
+            <h3>{{ foto.event_name|default:"-" }}</h3>
+            <p>📁 Folder: {{ foto.folder|default:"-" }}</p>
+            <p>🎽 Bib: {{ foto.bib_number|default:"-" }}</p>
+            <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                <a href="{% url 'admin_galeri_photo_edit' foto.id %}" class="btn btn-yellow" style="display:inline-block; padding:6px 16px; font-size:12px;">✏️ Edit</a>
+                <form method="POST" action="{% url 'admin_galeri_photo_delete' foto.id %}" style="display:inline;" onsubmit="return confirm('Hapus foto ini? Data metadata & file dihapus.');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'admin_galeri_photo_list' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}{% if q %}q={{ q }}&{% endif %}page={{ page_obj.number }}">
+                    <button type="submit" class="btn btn-red" style="display:inline-block; padding:6px 16px; font-size:12px; border:none;">🗑️ Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty">Belum ada foto.</div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj and page_obj.has_other_pages %}
+<div style="display:flex; justify-content:center; gap:8px; margin:25px 0; flex-wrap:wrap;">
+    {% if page_obj.has_previous %}
+        <a href="{% url 'admin_galeri_photo_list' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}{% if q %}q={{ q }}&{% endif %}page={{ page_obj.previous_page_number }}" style="padding:8px 14px; border-radius:8px; background:#f1f2f6; color:#2c3e50; text-decoration:none; font-weight:bold;">&laquo; Prev</a>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+        {% if num == page_obj.number %}
+            <span style="padding:8px 14px; border-radius:8px; background:#27ae60; color:white; font-weight:bold;">{{ num }}</span>
+        {% else %}
+            <a href="{% url 'admin_galeri_photo_list' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}{% if q %}q={{ q }}&{% endif %}page={{ num }}" style="padding:8px 14px; border-radius:8px; background:#f1f2f6; color:#2c3e50; text-decoration:none; font-weight:bold;">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+        <a href="{% url 'admin_galeri_photo_list' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}{% if q %}q={{ q }}&{% endif %}page={{ page_obj.next_page_number }}" style="padding:8px 14px; border-radius:8px; background:#f1f2f6; color:#2c3e50; text-decoration:none; font-weight:bold;">Next &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

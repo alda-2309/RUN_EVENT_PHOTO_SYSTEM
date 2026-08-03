@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Galeri Foto Event{% endblock %}
+{% block title %}Pilih Event - Pencarian BIB{% endblock %}
 {% block extra_style %}
 <style>
 .container { width:1200px; margin:40px auto; padding:0 20px; }
@@ -31,7 +31,6 @@
     color: rgba(255, 255, 255, 0.85);
 }
 
-/* Picker event (chip cards) */
 .event-picker{
     width: 820px;
     max-width: 95%;
@@ -63,30 +62,18 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(254,240,138,0.35);
 }
-.event-chip .count{
-    background: rgba(255,255,255,0.2);
-    border-radius:20px;
-    padding:2px 10px;
-    font-size:13px;
-}
-.event-chip:hover .count{ background: rgba(20,83,45,0.15); }
 
 .hint{
     text-align:center;
     color: rgba(255,255,255,0.9);
     font-weight:600;
-    margin-top:18px;
+    margin-top:30px;
+    font-size:15px;
 }
 
-/* semua event link */
-.all-events{
-    text-align:center;
-    margin-top:6px;
-}
-.all-events a{
-    color:#fef08a;
-    text-decoration:none;
-    font-weight:700;
+@media(max-width:768px){
+    .container { width:100%; padding:20px; }
+    .event-picker { width:100%; }
 }
 </style>
 {% endblock %}
@@ -95,24 +82,22 @@
     <a href="{% url 'search' %}" class="back-btn">← Kembali ke Pencarian</a>
 
     <section class="hero">
-        <h1>Galeri Foto Event</h1>
-        <p>Telusuri foto-foto dari berbagai event lari yang tersedia.</p>
+        <h1>🏃 Pencarian Nomor BIB</h1>
+        <p>Pilih event yang kamu ikuti untuk mencari foto berdasarkan nomor BIB.</p>
     </section>
 
     <div class="event-picker">
-        {% for folder in folder_list %}
-            <a class="event-chip" href="{% url 'hasil' %}?folder={{ folder }}">
-                {{ folder }}
+        {% for event in event_list %}
+            <a class="event-chip" href="{% url 'bib_search' %}?event={{ event.folder }}">
+                {{ event.label }}
             </a>
+        {% empty %}
+            <p style="color:rgba(255,255,255,0.8);">Tidak ada event tersedia.</p>
         {% endfor %}
     </div>
 
-    <p class="empty" style="text-align:center; color:rgba(255,255,255,0.85);">
-        Pilih salah satu event di atas untuk melihat foto-fotonya.
+    <p class="hint">
+        Pilih salah satu event di atas untuk melanjutkan pencarian foto.
     </p>
-
-    <div class="all-events">
-        <a href="{% url 'hasil' %}">Atau lihat semua foto →</a>
-    </div>
 </div>
 {% endblock %}

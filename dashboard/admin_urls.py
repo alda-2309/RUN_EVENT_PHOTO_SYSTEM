@@ -1,13 +1,44 @@
 from django.urls import path
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.core.paginator import Paginator
 from config.db import (
     photos_collection, events_collection, users_collection,
-    event_types_collection,
+    event_types_collection, db,
     get_next_id, create_user, authenticate_user, update_last_login,
     hash_password, verify_password, get_event_types
 )
 from datetime import datetime
+
+# ============================================================
+# GALERI FOTO EVENT — sumber data utama galeri publik
+# Data foto event lari berada di collection 'photos_photoevent'
+# (path image: lomba_lari/<folder>/<file>).
+# ============================================================
+koleksi_galeri = db['photos_photoevent']
+GALERI_PER_PAGE = 24
+
+
+def _folder_event(image_path):
+    """Ambil nama folder event dari path 'lomba_lari/<folder>/<file>'."""
+    if not image_path:
+        return ''
+    img = image_path.replace('\\', '/')
+    parts = [p for p in img.split('/') if p]
+    if len(parts) >= 3 and parts[0].lower() == 'lomba_lari':
+        return parts[1]
+    return ''
+
+
+def _list_folders():
+    """Folder event unik dari data galeri (lomba_lari)."""
+    folders = set()
+    for d in koleksi_galeri.find({}, {'image': 1}):
+        f = _folder_event(d.get('image'))
+        if f:
+            folders.add(f)
+    return sorted(folders)
+
 
 # ============================================================
 # DECORATOR: cek login admin (staff / superuser)
@@ -345,6 +376,97 @@ def change_password(request):
     return render(request, 'admin/change_password.html')
 
 # ============================================================
+# GALERI FOTO EVENT — ADMIN (photos_photoevent)
+# ============================================================
+
+@admin_required
+def galeri_photo_list(request):
+    """Daftar foto galeri event (photos_photoevent), filter by folder."""
+    folder = (request.GET.get('folder') or '').strip()
+    q = (request.GET.get('q') or '').strip()
+
+    query = {}
+    if folder:
+        query['image'] = {'$regex': f'^lomba_lari/{folder}/'}
+    if q:
+        query['event_name'] = {'$regex': q, '$options': 'i'}
+
+    cursor = koleksi_galeri.find(query).sort('id', 1)
+    fotos = []
+    for d in cursor:
+        image_path = d.get('image', '')
+        fotos.append({
+            'id': d.get('id'),
+            'image': f"/media/{image_path.replace(chr(92), '/')}",
+            'folder': _folder_event(image_path),
+            'event_name': d.get('event_name', ''),
+            'bib_number': d.get('bib_number', ''),
+            'ocr_raw_text': d.get('ocr_raw_text', ''),
+        })
+
+    paginator = Paginator(fotos, GALERI_PER_PAGE)
+    page_obj = paginator.get_page(int(request.GET.get('page', 1)))
+
+    return render(request, 'admin/galeri_photo_list.html', {
+        'page_obj': page_obj,
+        'fotos': page_obj.object_list,
+        'folder_list': _list_folders(),
+        'folder_selected': folder,
+        'q': q,
+        'total': paginator.count,
+    })
+
+
+@admin_required
+def galeri_photo_edit(request, photo_id):
+    """Edit metadata foto galeri (event_name, bib_number)."""
+    foto = koleksi_galeri.find_one({'id': int(photo_id)})
+    if not foto:
+        messages.error(request, 'Foto tidak ditemukan.')
+        return redirect('admin_galeri_photo_list')
+
+    if request.method == 'POST':
+        update_fields = {
+            'event_name': request.POST.get('event_name', '').strip(),
+            'bib_number': request.POST.get('bib_number', '').strip(),
+        }
+        koleksi_galeri.update_one(
+            {'id': int(photo_id)},
+            {'$set': update_fields}
+        )
+        messages.success(request, '✅ Foto galeri berhasil diupdate!')
+        return redirect(request.POST.get('next') or 'admin_galeri_photo_list')
+
+    image_path = foto.get('image', '')
+    return render(request, 'admin/galeri_photo_edit.html', {
+        'foto': foto,
+        'foto_id': photo_id,
+        'image_url': f"/media/{image_path.replace(chr(92), '/')}",
+        'folder': _folder_event(image_path),
+    })
+
+
+@admin_required
+def galeri_photo_delete(request, photo_id):
+    """Hapus foto dari collection galeri (metadata + file media bila ada)."""
+    foto = koleksi_galeri.find_one({'id': int(photo_id)})
+    if foto:
+        import os
+        from django.conf import settings
+        image_path = foto.get('image', '')
+        if image_path:
+            file_path = os.path.join(settings.MEDIA_ROOT, image_path.replace('\\', '/'))
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    pass
+        koleksi_galeri.delete_one({'id': int(photo_id)})
+        messages.success(request, '✅ Foto galeri berhasil dihapus!')
+    return redirect(request.POST.get('next') or 'admin_galeri_photo_list')
+
+
+# ============================================================
 # URL PATTERNS
 # ============================================================
 urlpatterns = [
@@ -367,4 +489,8 @@ urlpatterns = [
     path('photos/delete/<int:photo_id>/', photo_delete, name='admin_photo_delete'),
     path('foto/', foto_list, name='admin_foto_list'),
     path('foto/delete/<int:foto_id>/', photo_delete, name='admin_foto_delete'),
+    # Galeri Foto Event (photos_photoevent)
+    path('galeri-foto/', galeri_photo_list, name='admin_galeri_photo_list'),
+    path('galeri-foto/edit/<int:photo_id>/', galeri_photo_edit, name='admin_galeri_photo_edit'),
+    path('galeri-foto/delete/<int:photo_id>/', galeri_photo_delete, name='admin_galeri_photo_delete'),
 ]

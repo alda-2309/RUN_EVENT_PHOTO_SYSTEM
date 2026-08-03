@@ -16,6 +16,9 @@ cara keluar dari venv yang skrg:
 
 deactivate
 
+ganti view bib:
+USE_EVENT_SELECTION_FOR_BIB
+
 1) Pipeline utama: MTCNN + FaceNet
 
   A. Batch indexing / embedding
