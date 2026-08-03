@@ -120,13 +120,17 @@ def _attach_face_crop(photo):
         photo.face_crop_url = ''
 
 def cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_ref, koleksi_wajah_ref, exclude_photo_id=None):
-    all_matches = []
     photos_map = {}
-
     for p in koleksi_foto_ref.find():
         pid = p.get('id')
-        photos_map[pid] = PhotoObj(p)
+        if pid is None:
+            continue
+        obj = PhotoObj(p)
+        obj.similarity = 0
+        obj._dist = float('inf')
+        photos_map[pid] = obj
 
+    # Untuk tiap embedding: hitung skor, simpan skor TERBAIK per foto.
     for wajah in koleksi_wajah_ref.find():
         photo_obj = photos_map.get(wajah.get('photo_id'))
         if photo_obj is None or photo_obj.id == exclude_photo_id:
@@ -137,12 +141,14 @@ def cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_ref, koleksi
         db_vec = l2_normalize(db_vec)
         cosine_similarity = np.dot(query_vec, db_vec) / (np.linalg.norm(query_vec) * np.linalg.norm(db_vec))
         dist_cosine = 1 - cosine_similarity
-        similarity_percent = round(float(cosine_similarity) * 100, 1)
-        photo_obj.similarity = similarity_percent
-        all_matches.append({'dist': dist_cosine, 'photo': photo_obj})
+        if dist_cosine < photo_obj._dist:
+            photo_obj._dist = dist_cosine
+            photo_obj.similarity = round(float(cosine_similarity) * 100, 1)
 
-    all_matches.sort(key=lambda x: x['dist'])
-    return [m['photo'] for m in all_matches if m['dist'] <= threshold_real]
+    # Hanya foto yg lolos threshold, lalu urutkan DRASCENDING similarity (terbesar -> terkecil).
+    hasil = [obj for obj in photos_map.values() if obj._dist <= threshold_real]
+    hasil.sort(key=lambda p: p.similarity, reverse=True)
+    return hasil
 
 
 def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
