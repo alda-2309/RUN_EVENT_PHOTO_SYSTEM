@@ -122,10 +122,18 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # ============================================================
-# CACHE
+# CACHE — Redis (via django-redis). Server: Memurai localhost:6379.
+# Catatan: hasil face-search (BlazeFace / generic) disimpan di sini
+# sehingga pencarian foto yang sama tidak perlu diproses ulang.
 # ============================================================
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/0',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'run_event_photo',
+        'TIMEOUT': 3600,
     }
 }

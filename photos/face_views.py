@@ -678,7 +678,8 @@ def test_ai_blaze(request):
                     request.session['last_search_results'] = match_data
                     request.session['last_search_selfie'] = f"/media/{selfie_rel}"
 
-                    pesan = f"Berhasil! Ditemukan {len(hasil_foto)} wajah yang paling mirip (BlazeFace)."
+                    # Sukses: jumlah sudah ditampilkan di header "Hasil Foto Ditemukan", jadi tak perlu alert.
+                    pesan = ""
                     berhasil = True
                     return render(request, 'photos/test_ai.html', {
                         'pesan': pesan,
@@ -732,7 +733,7 @@ def test_ai_blaze(request):
             paginator = Paginator(hasil_foto, ITEMS_PER_PAGE)
             page_obj = paginator.get_page(page_num)
             return render(request, 'photos/test_ai.html', {
-                'pesan': f"Menampilkan hasil pencarian ({len(hasil_foto)} wajah mirip).",
+                'pesan': '',
                 'berhasil': True,
                 'page_obj': page_obj,
                 'page_range': get_page_range(page_obj),
@@ -816,7 +817,7 @@ def cari_serupa_blaze(request, photo_id):
     page_obj = paginator.get_page(1)
 
     return render(request, 'photos/test_ai.html', {
-        'pesan': f"Berhasil! Ditemukan {len(hasil_foto)} foto sejenis (BlazeFace).",
+        'pesan': '',
         'berhasil': True,
         'page_obj': page_obj,
         'page_range': get_page_range(page_obj),
