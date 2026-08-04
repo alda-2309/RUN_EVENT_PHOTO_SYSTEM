@@ -3,7 +3,7 @@
 {% block title %}Hasil Galeri Foto{% endblock %}
 {% block extra_style %}
 <style>
-.container { width:1200px; margin:40px auto; padding:0 20px; }
+.container { width:100%; margin:40px 0; padding:0 20px; }
 
 .back-btn {
     display:inline-block;
@@ -42,10 +42,9 @@
 }
 
 .gallery{
-    width:92%;
-    margin:auto;
+    width:100%;
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
     gap:22px;
     padding-bottom:40px;
 }
@@ -70,6 +69,7 @@
     object-fit:cover;
     display:block;
     background:#111827;
+    cursor:zoom-in;
 }
 .content{
     padding:16px;
@@ -132,11 +132,115 @@
     background:#27ae60;
     color:white;
 }
+
+/* ===== LIGHTBOX ===== */
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.92);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.lightbox.open { display: flex; }
+.lightbox-img {
+    max-width: 92vw;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    background: #111827;
+    object-fit: contain;
+}
+.lightbox-info {
+    margin-top: 14px;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    font-size: 14px;
+    max-width: 90vw;
+}
+.lightbox-info h3 { color: white; font-size: 18px; margin-bottom: 4px; }
+.lightbox-info p { margin: 2px 0; }
+.lightbox-close {
+    position: fixed;
+    top: 20px; right: 28px;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 24px;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: .2s;
+    z-index: 1001;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+.lightbox-nav {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: .2s;
+    z-index: 1001;
+}
+.lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+.lightbox-nav.prev { left: 20px; }
+.lightbox-nav.next { right: 20px; }
+.lightbox-counter {
+    position: fixed;
+    bottom: 22px;
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+    z-index: 1001;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 16px;
+    border-radius: 20px;
+}
+.lightbox-download {
+    position: fixed;
+    bottom: 80px;
+    color: #fef08a;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    border: 1px solid #fef08a;
+    transition: .2s;
+    z-index: 1001;
+}
+.lightbox-download:hover { background: rgba(254,240,138,0.2); }
 </style>
 {% endblock %}
 {% block content %}
 <div class="container">
     <a href="{% url 'foto' %}" class="back-btn">← Kembali ke Galeri</a>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lb-close" title="Tutup">×</button>
+        <button class="lightbox-nav prev" id="lb-prev" title="Sebelumnya">‹</button>
+        <button class="lightbox-nav next" id="lb-next" title="Berikutnya">›</button>
+        <img class="lightbox-img" id="lb-img" src="" alt="Foto Galeri">
+        <div class="lightbox-info">
+            <h3 id="lb-title"></h3>
+            <p id="lb-folder"></p>
+            <p id="lb-bib"></p>
+        </div>
+        <div class="lightbox-counter" id="lb-counter"></div>
+    </div>
 
     <section class="header">
         <h1>Hasil Galeri Foto</h1>
@@ -156,7 +260,10 @@
         {% for foto in fotos %}
         <div class="card">
             {% if foto.image %}
-                <img src="{{ foto.image }}" loading="lazy" alt="{{ foto.event_name }}">
+                <img src="{{ foto.image }}" loading="lazy" alt="{{ foto.event_name }}" class="gallery-img"
+                     data-title="{{ foto.event_name|default:'Event Lari' }}"
+                     data-folder="{{ foto.folder_label }}"
+                     data-bib="{{ foto.bib_number|default:'' }}">
             {% else %}
                 <img src="https://via.placeholder.com/400x250?text=Foto+Tidak+Tersedia" alt="Foto Tidak Tersedia">
             {% endif %}
@@ -194,4 +301,69 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+(function () {
+    const lightbox = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lb-img');
+    const lbTitle = document.getElementById('lb-title');
+    const lbFolder = document.getElementById('lb-folder');
+    const lbBib = document.getElementById('lb-bib');
+    const lbCounter = document.getElementById('lb-counter');
+
+    let images = [];
+    let currentIndex = 0;
+
+    function collectImages() {
+        images = Array.from(document.querySelectorAll('.gallery-img'));
+    }
+
+    function openLightbox(index) {
+        collectImages();
+        if (!images.length) return;
+        currentIndex = (index + images.length) % images.length;
+        const img = images[currentIndex];
+        lbImg.src = img.src;
+        lbTitle.textContent = img.dataset.title || '';
+        lbFolder.textContent = img.dataset.folder ? '📁 ' + img.dataset.folder : '';
+        lbBib.textContent = img.dataset.bib ? '🏷️ Bib: ' + img.dataset.bib : '';
+        lbCounter.textContent = (currentIndex + 1) + ' / ' + images.length;
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    // Click on any gallery image opens the lightbox
+    document.addEventListener('click', function (e) {
+        const target = e.target.closest('.gallery-img');
+        if (target) {
+            collectImages();
+            openLightbox(images.indexOf(target));
+        }
+    });
+
+    document.getElementById('lb-close').addEventListener('click', closeLightbox);
+    document.getElementById('lb-prev').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openLightbox(currentIndex - 1);
+    });
+    document.getElementById('lb-next').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openLightbox(currentIndex + 1);
+    });
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('open')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') openLightbox(currentIndex - 1);
+        if (e.key === 'ArrowRight') openLightbox(currentIndex + 1);
+    });
+})();
+</script>
 {% endblock %}

@@ -16,7 +16,7 @@ from datetime import datetime
 # (path image: lomba_lari/<folder>/<file>).
 # ============================================================
 koleksi_galeri = db['photos_photoevent']
-GALERI_PER_PAGE = 24
+GALERI_PER_PAGE = 25
 
 
 def _folder_event(image_path):

@@ -9,7 +9,7 @@
     <div style="display:flex; gap:25px; flex-wrap:wrap;">
         <div style="flex:1; min-width:260px;">
             {% if image_url %}
-                <img src="{{ image_url }}" alt="Foto" style="width:100%; max-height:320px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,0.2);" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+Tidak+Tersedia'">
+                <img src="{{ image_url }}" alt="Foto" style="width:100%; max-height:500px; object-fit:contain; border-radius:16px; border:1px solid rgba(255,255,255,0.2); background:#111827;" onerror="this.src='https://via.placeholder.com/400x300?text=Foto+Tidak+Tersedia'">
             {% else %}
                 <img src="https://via.placeholder.com/400x300?text=No+Image" style="width:100%; border-radius:16px;">
             {% endif %}

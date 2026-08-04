@@ -1,5 +1,54 @@
 {% extends "admin/base_admin.html" %}
 {% block title %}Galeri Foto Event - RunSnap Admin{% endblock %}
+{% block extra_style %}
+<style>
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.92);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.lightbox.open { display: flex; }
+.lightbox-img {
+    max-width: 92vw;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    background: #111827;
+    object-fit: contain;
+}
+.lightbox-info {
+    margin-top: 14px;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    font-size: 14px;
+    max-width: 90vw;
+}
+.lightbox-info h3 { color: white; font-size: 18px; margin-bottom: 4px; }
+.lightbox-info p { margin: 2px 0; }
+.lightbox-close {
+    position: fixed;
+    top: 20px; right: 28px;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 24px;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: .2s;
+    z-index: 1001;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+</style>
+{% endblock %}
 {% block content %}
 <a href="{% url 'admin_dashboard' %}" class="back-btn">← Kembali ke Dashboard</a>
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
@@ -28,7 +77,7 @@
     {% for foto in fotos %}
     <div class="photo-card">
         {% if foto.image %}
-            <img src="{{ foto.image }}" alt="Foto" loading="lazy" onerror="this.src='https://via.placeholder.com/400x250?text=Foto+Tidak+Tersedia'">
+            <img src="{{ foto.image }}" alt="Foto" loading="lazy" onerror="this.src='https://via.placeholder.com/400x250?text=Foto+Tidak+Tersedia'" class="gallery-img" data-id="{{ foto.id }}" data-event="{{ foto.event_name|default:'' }}" data-folder="{{ foto.folder|default:'' }}" data-bib="{{ foto.bib_number|default:'' }}">
         {% else %}
             <img src="https://via.placeholder.com/400x250?text=No+Image">
         {% endif %}
@@ -50,6 +99,54 @@
     <div class="empty">Belum ada foto.</div>
     {% endfor %}
 </div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lb-close" title="Tutup">×</button>
+    <img class="lightbox-img" id="lb-img" src="" alt="Preview Foto">
+    <div class="lightbox-info">
+        <h3 id="lb-title"></h3>
+        <p id="lb-folder"></p>
+        <p id="lb-bib"></p>
+    </div>
+</div>
+
+<script>
+(function () {
+    const lightbox = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lb-img');
+    const lbTitle = document.getElementById('lb-title');
+    const lbFolder = document.getElementById('lb-folder');
+    const lbBib = document.getElementById('lb-bib');
+    const lbClose = document.getElementById('lb-close');
+
+    document.querySelectorAll('.gallery-img').forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', () => {
+            lbImg.src = img.src;
+            lbTitle.textContent = img.dataset.event || 'Event Lari';
+            lbFolder.textContent = '📁 Folder: ' + (img.dataset.folder || '-');
+            lbBib.textContent = '🎽 Bib: ' + (img.dataset.bib || '-');
+            lightbox.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        });
+    });
+
+    function closeLightbox() {
+        lightbox.classList.remove('open');
+        document.body.style.overflow = '';
+        lbImg.src = '';
+    }
+
+    lbClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLightbox();
+    });
+})();
+</script>
 
 <!-- Pagination -->
 {% if page_obj and page_obj.has_other_pages %}
