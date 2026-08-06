@@ -481,12 +481,16 @@ def _bib_search_photos(bib_input, event=None):
 
     for collection_name, collection in (("photos_photoevent", koleksi_foto), ("photos", koleksi_foto_legacy)):
         try:
-            count = collection.count_documents({'bib_number': {'$nin': [None, '']}})
+            count = collection.count_documents({})
         except Exception:
             count = -1
         logger.info("BIB search scanning collection=%s candidate_count=%s", collection_name, count)
 
-        for p in collection.find({'bib_number': {'$nin': [None, '']}}):
+        # Scan seluruh dokumen lalu filter di Python. Query
+        # {'bib_number': {'$nin': [None, '']}} TIDAK didukung oleh endpoint
+        # Atlas yang dipakai (mengembalikan 0 hasil), jadi filter via MongoDB
+        # tidak pernah menemukan apa-apa.
+        for p in collection.find({}):
             pid = p.get('id') or p.get('_id')
             raw_bib = p.get('bib_number')
             
@@ -686,6 +690,178 @@ def bib_search_api(request):
         'results': [_bib_photo_to_dict(p) for p in photos],
         'truncated': len(all_photos) > MAX_RESULTS,
     })
+
+
+# ==========================================
+# SCAN BIB DARI FILE (OCR + COCOKAN DB)
+# ==========================================
+_ocr_reader = None
+
+def _get_ocr_reader():
+    """EasyOCR Reader di-cache global (load model sekali)."""
+    global _ocr_reader
+    if _ocr_reader is None:
+        import easyocr
+        _ocr_reader = easyocr.Reader(['en', 'id'], gpu=False, verbose=False)
+    return _ocr_reader
+
+
+def _ocr_extract_bibs(image_path):
+    """Jalankan EasyOCR pada gambar, kembalikan nomor-nomor BIB kandidat.
+
+    Returns:
+        {'text': str, 'bib_numbers': [str, ...]} atau {'error': str}.
+    """
+    try:
+        import easyocr  # noqa: F401
+    except ImportError:
+        return {'error': 'EasyOCR tidak terinstal di server.'}
+
+    try:
+        reader = _get_ocr_reader()
+        result = reader.readtext(
+            image_path,
+            detail=0,
+            paragraph=False,
+            decoder='greedy',
+            beamWidth=1,
+        )
+    except Exception as e:
+        return {'error': f'OCR gagal: {e}'}
+
+    full_text = ' '.join(result) if result else ''
+
+    # Ambil token alfanumerik yang mirip BIB (mengandung minimal 1 angka).
+    tokens = set()
+    for tok in re.findall(r'[A-Za-z0-9]+', full_text):
+        norm = _norm_bib(tok)
+        if not norm:
+            continue
+        if not any(ch.isdigit() for ch in norm):
+            continue
+        if 2 <= len(norm) <= 6:
+            tokens.add(norm)
+
+    return {
+        'text': full_text.strip(),
+        'bib_numbers': sorted(tokens),
+    }
+
+
+def _group_bib_results(detected_bibs, event):
+    """Cocokkan tiap BIB hasil OCR ke DB. Return dict {bib: [PhotoObj]}."""
+    matched = {}
+    truncated_note = ''
+    for bib in detected_bibs:
+        photos = _bib_search_photos(bib, event=event)
+        if not photos:
+            continue
+        if len(photos) > 30:
+            photos = photos[:30]
+            truncated_note = 'Beberapa hasil dibatasi (maks 30 foto per BIB).'
+        matched[bib] = photos
+    return matched, truncated_note
+
+
+def _placeholder_img():
+    """Data-URI SVG pengganti foto yang tidak tersedia (tanpa round-trip network)."""
+    from urllib.parse import quote
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220">'
+        '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
+        '<stop offset="0" stop-color="#374151"/><stop offset="1" stop-color="#1f2937"/>'
+        '</linearGradient></defs>'
+        '<rect width="400" height="220" fill="url(#g)"/>'
+        '<text x="200" y="118" text-anchor="middle" fill="#9ca3af" '
+        'font-family="sans-serif" font-size="20" font-weight="600">Foto tidak tersedia</text>'
+        '</svg>'
+    )
+    return 'data:image/svg+xml;utf8,' + quote(svg)
+
+
+def bib_scan(request):
+    """Scan nomor BIB dari file gambar (OCR), lalu cocokkan ke database.
+
+    GET  /photos/bib-scan/?event=colorun  -> form upload
+    POST file=<gambar>                    -> OCR + pencarian ke DB
+    """
+    event = request.GET.get('event', '').strip()
+    event_label = _folder_label(event) if event else ''
+    context = {
+        'event': event,
+        'event_label': event_label,
+        'active_page': 'search',
+        'placeholder_img': _placeholder_img(),
+    }
+
+    if request.method == 'POST':
+        uploaded = request.FILES.get('file')
+        if not uploaded:
+            context['pesan'] = 'Pilih file gambar terlebih dahulu.'
+            context['berhasil'] = False
+            return render(request, 'photos/bib_scan.html', context)
+
+        ext = os.path.splitext(uploaded.name)[1].lower()
+        allowed = {'.jpg', '.jpeg', '.png', '.bmp', '.webp', '.tiff', '.tif'}
+        if ext not in allowed:
+            context['pesan'] = (
+                'Format file tidak didukung. Gunakan JPG, PNG, BMP, WebP, atau TIFF.'
+            )
+            context['berhasil'] = False
+            return render(request, 'photos/bib_scan.html', context)
+
+        safe_name = re.sub(r'[^A-Za-z0-9_.-]+', '_', uploaded.name)
+        temp_path = default_storage.save(
+            f'temp/bib_scan/{int(time.time())}_{safe_name}', uploaded
+        )
+        full_path = os.path.join(default_storage.location, temp_path)
+
+        try:
+            t0 = time.time()
+            ocr = _ocr_extract_bibs(full_path)
+            context['waktu_proses'] = round(time.time() - t0, 2)
+            context['ocr_text'] = ocr.get('text', '')
+
+            if ocr.get('error'):
+                context['pesan'] = ocr['error']
+                context['berhasil'] = False
+                return render(request, 'photos/bib_scan.html', context)
+
+            detected = ocr.get('bib_numbers') or []
+            context['detected_bibs'] = detected
+
+            if not detected:
+                context['pesan'] = (
+                    'Tidak ada nomor BIB yang terdeteksi dari file. '
+                    'Coba file dengan nomor BIB yang lebih jelas/terbaca.'
+                )
+                context['berhasil'] = False
+                return render(request, 'photos/bib_scan.html', context)
+
+            matched, truncated_note = _group_bib_results(detected, event)
+            context['matched_bibs'] = matched
+            context['truncated_note'] = truncated_note
+            context['berhasil'] = True
+
+            total = sum(len(photos) for photos in matched.values())
+            if total:
+                context['pesan'] = (
+                    f"Berhasil! Ditemukan {total} foto dari "
+                    f"{len(matched)} nomor BIB yang cocok di database."
+                )
+            else:
+                context['pesan'] = (
+                    'Scan selesai, tapi tidak ada foto yang cocok '
+                    'dengan nomor BIB yang terdeteksi di database.'
+                )
+        finally:
+            try:
+                if os.path.exists(full_path):
+                    os.remove(full_path)
+            except Exception:
+                pass
+
+    return render(request, 'photos/bib_scan.html', context)
 
 
 # ==========================================

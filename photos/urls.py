@@ -20,9 +20,15 @@ def lazy_bib_search_api(request):
     return bib_search_api(request)
 
 
+def lazy_bib_scan(request):
+    from .face_views import bib_scan
+    return bib_scan(request)
+
+
 urlpatterns = [
     path('', views.photo_list, name='photo_list'),
     path('face-search/', lazy_face_search, name='face_search'),
     path('bib-search/', lazy_bib_search, name='bib_search'),
     path('bib-search-api/', lazy_bib_search_api, name='bib_search_api'),
+    path('bib-scan/', lazy_bib_scan, name='bib_scan'),
 ]

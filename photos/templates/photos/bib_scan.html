@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Scan Bib dari File - RunSnap{% endblock %}
+{% block extra_style %}
+<style>
+.container { width:1200px; margin:40px auto; padding:0 20px; }
+
+.back-btn {
+    display:inline-block;
+    margin-bottom:30px;
+    padding:10px 24px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:600;
+    transition: .3s;
+}
+.back-btn:hover { background: rgba(255,255,255,0.25); }
+
+.scan-form {
+    max-width:650px;
+    margin:20px auto 30px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding:30px 35px;
+    border-radius:20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    text-align:center;
+}
+.scan-form h2 { color: white; margin-bottom:10px; font-size:26px; }
+.scan-form p  { color: rgba(255,255,255,0.85); margin-bottom:18px; }
+
+.file-drop {
+    display:block;
+    width:100%;
+    padding:40px 20px;
+    border:2px dashed rgba(255,255,255,0.4);
+    border-radius:14px;
+    color: rgba(255,255,255,0.9);
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    box-sizing:border-box;
+    transition:.25s;
+    margin-bottom:16px;
+}
+.file-drop:hover, .file-drop.drag {
+    border-color:#fef08a;
+    background: rgba(254,240,138,0.08);
+    color: white;
+}
+.scan-form input[type="file"] { display:none; }
+
+.submit-btn {
+    width:100%;
+    padding:14px;
+    background:#fef08a;
+    color:#14532d;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:800;
+    cursor:pointer;
+    transition:.3s;
+}
+.submit-btn:hover { background:#fff59d; box-shadow:0 4px 15px rgba(254,240,138,0.4); }
+.submit-btn:disabled { opacity:.5; cursor:not-allowed; box-shadow:none; }
+
+.hint { color: rgba(255,255,255,0.7); font-size:13px; margin-top:10px; min-height:18px; }
+.hint.error { color:#fca5a5; }
+
+.result-header { text-align:center; margin: 10px 0 30px; }
+.result-header h1 { font-size:32px; font-weight:800; color: white; }
+.result-header p { margin-top:8px; color: rgba(255,255,255,0.9); font-size:15px; }
+
+.bib-chip {
+    display:inline-block; padding:4px 12px; margin:2px 4px;
+    background:#fef08a; color:#14532d;
+    border-radius:20px; font-weight:700; font-size:14px;
+}
+
+.bib-group { margin-bottom:40px; }
+.group-title { font-size:22px; font-weight:800; color: white; margin-bottom:16px; }
+
+.gallery {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap:24px;
+}
+.photo-card {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius:16px;
+    overflow:hidden;
+    transition: .3s;
+    animation: fadeIn .35s ease-out;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.photo-card:hover {
+    transform: translateY(-5px);
+    border:2px solid #fef08a;
+}
+.photo-card img { width:100%; height:220px; object-fit:cover; cursor:zoom-in; display:block; }
+.photo-card .info { padding:16px; }
+.photo-card .info h3 { font-size:16px; margin-bottom:8px; color: white; }
+.photo-card .info p { font-size:13px; color: rgba(255,255,255,0.7); margin-bottom:4px; }
+.bib-badge {
+    display:inline-block; padding:4px 12px;
+    background: #fef08a; color: #14532d;
+    border-radius:20px; font-weight:700; font-size:14px; margin-top:8px;
+}
+.download-btn {
+    display:inline-block; margin-left:8px; padding:10px 18px;
+    background: #fef08a; color: #14532d; text-decoration:none;
+    border-radius:10px; font-weight:700; font-size:13px;
+    transition: .3s; cursor: pointer; border: none;
+    vertical-align: middle;
+}
+.download-btn:hover {
+    background: #fff59d;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+}
+
+.empty-state {
+    text-align: center; padding: 40px 20px;
+    color: rgba(255,255,255,0.6); font-size: 15px;
+}
+.empty-state.error { color:#fca5a5; }
+
+/* ===== LIGHTBOX ===== */
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.92);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.lightbox.open { display: flex; }
+.lightbox-img {
+    max-width: 92vw;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    background: #111827;
+    object-fit: contain;
+}
+.lightbox-info {
+    margin-top: 14px;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    font-size: 14px;
+    max-width: 90vw;
+}
+.lightbox-info h3 { color: white; font-size: 18px; margin-bottom: 4px; }
+.lightbox-info p { margin: 2px 0; }
+.lightbox-close {
+    position: fixed;
+    top: 20px; right: 28px;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 24px;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: .2s;
+    z-index: 1001;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+
+.ocr-text {
+    max-width:650px; margin:10px auto 30px; text-align:center;
+    color: rgba(255,255,255,0.55); font-size:13px;
+    word-break: break-word;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <a href="{% url 'bib_search' %}{% if event %}?event={{ event }}{% endif %}" class="back-btn">← Kembali</a>
+
+    <div class="scan-form">
+        {% if event %}
+        <h2>🖼️ Scan BIB dari File</h2>
+        <p>Upload foto berisi nomor BIB untuk event <strong>{{ event_label }}</strong>. Sistem akan membaca nomornya lalu mencocokkan ke database.</p>
+        {% else %}
+        <h2>🖼️ Scan BIB dari File</h2>
+        <p>Upload foto bukti lomba / bib sendiri. Sistem akan membaca nomor BIB (OCR) lalu mencocokkannya ke database seluruh event.</p>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data" id="scan-form">
+            {% csrf_token %}
+            <input type="file" name="file" id="file-input"
+                   accept=".jpg,.jpeg,.png,.bmp,.webp,.tiff,.tif,image/*" required>
+            <label for="file-input" class="file-drop" id="file-drop">
+                📷 <span id="file-label">Pilih atau seret file gambar…</span>
+            </label>
+            <button type="submit" class="submit-btn" id="submit-btn">🔍 Scan &amp; Cari di Database</button>
+        </form>
+        <div class="hint" id="hint">Format: JPG, PNG, BMP, WebP, atau TIFF.</div>
+    </div>
+
+    {% if pesan or berhasil %}
+    <div class="result-header">
+        <h1>Hasil Scan</h1>
+        <p>{{ pesan }}</p>
+        {% if waktu_proses %}<p>Waktu pemrosesan OCR: {{ waktu_proses }} detik.</p>{% endif %}
+        {% if detected_bibs %}
+        <p>Nomor BIB terdeteksi:
+            {% for bib in detected_bibs %}<span class="bib-chip">{{ bib }}</span>{% endfor %}
+        </p>
+        {% endif %}
+        {% if truncated_note %}<p style="color:#fef08a;">{{ truncated_note }}</p>{% endif %}
+    </div>
+
+    {% if matched_bibs %}
+        {% for bib, photos in matched_bibs.items %}
+        <div class="bib-group">
+            <h2 class="group-title">🎽 BIB {{ bib }} — {{ photos|length }} foto</h2>
+            <div class="gallery">
+                {% for photo in photos %}
+                <div class="photo-card">
+                    <img src="{{ photo.image_url }}" alt="{{ photo.event_name }}"
+                         onclick="openSingle(this)"
+                         onerror="if(this.src!='{{ placeholder_img }}'){this.onerror=null;this.src='{{ placeholder_img }}'}">
+                    <div class="info">
+                        <h3>{{ photo.event_name }}</h3>
+                        <p>📍 {{ photo.event_location }}</p>
+                        <p>📅 {{ photo.event_date }}</p>
+                        {% if photo.bib_number %}
+                        <span class="bib-badge">Bib: {{ photo.bib_number }}</span>
+                        <a href="{{ photo.image_url }}" class="download-btn" download title="Download Foto">Download</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% elif berhasil %}
+        <div class="empty-state">Tidak ada foto yang cocok dengan nomor BIB yang terdeteksi di database.</div>
+    {% elif pesan %}
+        <div class="empty-state error">{{ pesan }}</div>
+    {% endif %}
+    {% endif %}
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lb-close" title="Tutup">×</button>
+    <img class="lightbox-img" id="lb-img" src="" alt="Foto Bib">
+    <div class="lightbox-info">
+        <h3 id="lb-title"></h3>
+        <p id="lb-location"></p>
+        <p id="lb-date"></p>
+        <p id="lb-bib"></p>
+    </div>
+</div>
+
+<script>
+(function () {
+    const PLACEHOLDER_IMG = "{{ placeholder_img|escapejs }}";
+
+    const fileInput = document.getElementById('file-input');
+    const fileDrop  = document.getElementById('file-drop');
+    const fileLabel = document.getElementById('file-label');
+    const hint      = document.getElementById('hint');
+    const submitBtn = document.getElementById('submit-btn');
+    const form      = document.getElementById('scan-form');
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+            fileLabel.textContent = '✓ ' + fileInput.files[0].name;
+            hint.textContent = '';
+            hint.className = 'hint';
+        }
+    });
+
+    ['dragenter', 'dragover'].forEach(ev => fileDrop.addEventListener(ev, (e) => {
+        e.preventDefault();
+        fileDrop.classList.add('drag');
+    }));
+    ['dragleave', 'drop'].forEach(ev => fileDrop.addEventListener(ev, (e) => {
+        e.preventDefault();
+        fileDrop.classList.remove('drag');
+    }));
+    fileDrop.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files.length) {
+            fileInput.files = dt.files;
+            fileLabel.textContent = '✓ ' + dt.files[0].name;
+            hint.textContent = '';
+            hint.className = 'hint';
+        }
+    });
+
+    form.addEventListener('submit', () => {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Memindai file… (bisa butuh beberapa detik)';
+        hint.textContent = 'Membaca nomor BIB dengan OCR…';
+        hint.className = 'hint';
+    });
+
+    // ===== Lightbox =====
+    const lightbox = document.getElementById('lightbox');
+    const lbImg    = document.getElementById('lb-img');
+
+    window.openSingle = function (imgEl) {
+        const card = imgEl.closest('.photo-card');
+        const title = card.querySelector('.info h3');
+        const infoP = card.querySelectorAll('.info p');
+        lbImg.src = imgEl.src;
+        lbImg.onerror = function () {
+            if (this.src !== PLACEHOLDER_IMG) {
+                this.onerror = null;
+                this.src = PLACEHOLDER_IMG;
+            }
+        };
+        document.getElementById('lb-title').textContent = title ? title.textContent : '';
+        document.getElementById('lb-location').textContent = infoP[0] ? infoP[0].textContent : '';
+        document.getElementById('lb-date').textContent = infoP[1] ? infoP[1].textContent : '';
+        const badge = card.querySelector('.bib-badge');
+        document.getElementById('lb-bib').textContent = badge ? badge.textContent : '';
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    };
+
+    function closeLightbox() {
+        lightbox.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('lb-close').addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+    });
+})();
+</script>
+{% endblock %}

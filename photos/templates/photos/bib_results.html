@@ -64,6 +64,24 @@
 .hint.loading { color: #fef08a; }
 .hint.error   { color: #fca5a5; }
 
+.scan-link {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 22px;
+    background:#fef08a;
+    color:#14532d;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:800;
+    font-size:14px;
+    transition:.25s;
+}
+.scan-link:hover {
+    background:#fff59d;
+    box-shadow: 0 4px 15px rgba(254,240,138,0.4);
+}
+
 .result-header { text-align:center; margin: 10px 0 30px; }
 .result-header h1 { font-size:32px; font-weight:800; color: white; }
 .result-header p { margin-top:8px; color: rgba(255,255,255,0.9); font-size:15px; }
@@ -207,6 +225,10 @@
             <button type="button" id="clear-btn" class="clear-btn" title="Bersihkan">×</button>
         </div>
         <div class="hint" id="hint">Masukkan nomor BIB (angka dan/atau huruf).</div>
+        <div style="margin-top:14px; text-align:center;">
+            <a href="{% url 'bib_scan' %}{% if event %}?event={{ event }}{% endif %}"
+               class="scan-link" title="Scan BIB dari file gambar">📷 Scan BIB dari File</a>
+        </div>
     </div>
 
     <div class="result-header" id="result-header" style="display:none;">
