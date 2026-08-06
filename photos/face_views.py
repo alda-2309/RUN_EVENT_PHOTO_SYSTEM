@@ -86,13 +86,35 @@ def _folder_label(folder):
         return mapping[folder]
     return folder.replace('_', ' ').title()
 
+def _folder_has_images(folder):
+    """Check whether event folder has at least one image file on disk."""
+    if not folder:
+        return False
+    folder_path = os.path.join(settings.MEDIA_ROOT, 'lomba_lari', folder)
+    if not os.path.isdir(folder_path):
+        return False
+    try:
+        return any(f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp', '.webp'))
+                   for f in os.listdir(folder_path))
+    except OSError:
+        return False
+
 def _get_event_list():
-    """Get list of unique event folders from database."""
+    """Get list of unique event folders from database.
+
+    Gabungan folder dari koleksi normal (photos_photoevent) dan koleksi
+    BlazeFace (photos_photoevent_blaze), sehingga event dari proyek root
+    maupun proyek face_recognition_run_event ikut terdaftar.
+
+    Hanya folder yang benar-benar memiliki file gambar (folder tidak kosong)
+    yang ikut ditampilkan agar event tanpa foto tidak muncul di daftar.
+    """
     folders = set()
-    for d in koleksi_foto.find({}, {'image': 1}):
-        f = _folder_event(d.get('image'))
-        if f:
-            folders.add(f)
+    for koleksi in (koleksi_foto, koleksi_foto_blaze):
+        for d in koleksi.find({}, {'image': 1}):
+            f = _folder_event(d.get('image'))
+            if f and _folder_has_images(f):
+                folders.add(f)
     sorted_folders = sorted(folders)
     return [{'folder': f, 'label': _folder_label(f)} for f in sorted_folders]
 
@@ -199,12 +221,17 @@ def _attach_face_crops_batch(photos, koleksi_wajah_ref):
         else:
             photo.face_crop_url = ''
 
-def cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_ref, koleksi_wajah_ref, exclude_photo_id=None):
+def cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_ref, koleksi_wajah_ref, exclude_photo_id=None, event=None):
     photos_map = {}
     for p in koleksi_foto_ref.find():
         pid = p.get('id')
         if pid is None:
             continue
+        # Filter berdasarkan nama event (folder dari path image).
+        if event:
+            img_path = p.get('image', '')
+            if _folder_event(img_path) != event:
+                continue
         obj = PhotoObj(p)
         obj.similarity = 0
         obj._dist = float('inf')
@@ -235,8 +262,8 @@ def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
     return cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto, koleksi_wajah, exclude_photo_id)
 
 
-def cari_foto_mirip_blaze(query_vec, threshold_real, exclude_photo_id=None):
-    return cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_blaze, koleksi_wajah_blaze, exclude_photo_id)
+def cari_foto_mirip_blaze(query_vec, threshold_real, exclude_photo_id=None, event=None):
+    return cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_blaze, koleksi_wajah_blaze, exclude_photo_id, event)
 
 # ==========================================
 # VIEW: FACE RECOGNITION SEARCH
@@ -551,6 +578,23 @@ def _bib_photo_to_dict(p):
     }
 
 
+def _get_default_bib_photos(event='', limit=25):
+    """Ambil sejumlah foto untuk grid awal (sebelum nomor BIB dicari)."""
+    query = {}
+    if event:
+        query['image'] = {'$regex': f'lomba_lari/{event}/'}
+    photos = []
+    for p in koleksi_foto.find(query):
+        if len(photos) >= limit:
+            break
+        f = _folder_event(p.get('image'))
+        if f and _folder_has_images(f):
+            obj = PhotoObj(p)
+            set_event_metadata(obj)
+            photos.append(_bib_photo_to_dict(obj))
+    return photos
+
+
 def bib_search(request):
     """
     BIB search with configurable flow (toggle via USE_EVENT_SELECTION_FOR_BIB).
@@ -618,6 +662,7 @@ def bib_search(request):
         return render(request, 'photos/bib_results.html', {
             'event': event,
             'event_label': event_label,
+            'default_photos': _get_default_bib_photos(event=event),
             'active_page': 'search',
         })
     
@@ -659,7 +704,10 @@ def bib_search(request):
                 })
 
         # GET → show BIB input form (no event selection)
-        return render(request, 'photos/bib_results.html', {'active_page': 'search'})
+        return render(request, 'photos/bib_results.html', {
+            'default_photos': _get_default_bib_photos(),
+            'active_page': 'search',
+        })
 
 
 def bib_search_api(request):
@@ -1072,9 +1120,16 @@ def test_ai_blaze(request):
 
 
 def cari_serupa_blaze(request, photo_id):
-    """Cari foto sejenis dari referensi di collection blaze (KF-U05)."""
+    """Cari foto sejenis dari referensi di collection blaze (KF-U05).
+
+    Mendukung filter berdasarkan nama event (folder) via query param `event`.
+    Event yang muncul diambil dari koleksi normal + blaze (kedua proyek).
+    """
+    event = (request.GET.get('event') or '').strip()
     threshold_real = BLAZE_THRESHOLD
-    cache_key = f"cari_serupa_blaze_{photo_id}_{threshold_real}"
+    cache_key = f"cari_serupa_blaze_{photo_id}_{event}_{threshold_real}"
+    event_list = _get_event_list()
+    event_label = _folder_label(event) if event else ''
 
     t1_mulai = time.time()
     cached_data = cache.get(cache_key)
@@ -1103,11 +1158,20 @@ def cari_serupa_blaze(request, photo_id):
                 'berhasil': False,
                 'mode': 'blaze',
                 'page_url_base': '/photos/face-search/',
+                'event_list': event_list,
+                'selected_event': event,
+                'event_label': event_label,
+                'photo_id': photo_id,
             })
 
         query_vec = np.frombuffer(wajah_referensi.get('embedding_data', b''), dtype=np.float32).copy()
         query_vec = l2_normalize(query_vec)
-        hasil_foto = cari_foto_mirip_blaze(query_vec, threshold_real=threshold_real, exclude_photo_id=int(photo_id) if isinstance(photo_id, int) else photo_id)
+        hasil_foto = cari_foto_mirip_blaze(
+            query_vec,
+            threshold_real=threshold_real,
+            exclude_photo_id=int(photo_id) if isinstance(photo_id, int) else photo_id,
+            event=event,
+        )
 
         t2 = round(time.time() - t2_mulai, 4)
         waktu_proses = round(t1 + t2, 4)
@@ -1124,11 +1188,19 @@ def cari_serupa_blaze(request, photo_id):
     request.session['last_search_results'] = [{'id': photo.id, 'similarity': photo.similarity} for photo in hasil_foto]
 
     if not hasil_foto:
+        if event:
+            pesan = f"Tidak ditemukan foto sejenis pada event {event_label}."
+        else:
+            pesan = "Tidak ditemukan foto lain yang sejenis (BlazeFace)."
         return render(request, 'photos/test_ai.html', {
-            'pesan': "Tidak ditemukan foto lain yang sejenis (BlazeFace).",
+            'pesan': pesan,
             'berhasil': False,
             'mode': 'blaze',
             'page_url_base': '/photos/face-search/',
+            'event_list': event_list,
+            'selected_event': event,
+            'event_label': event_label,
+            'photo_id': photo_id,
         })
 
     paginator = Paginator(hasil_foto, ITEMS_PER_PAGE)
@@ -1143,4 +1215,8 @@ def cari_serupa_blaze(request, photo_id):
         'waktu_proses': waktu_proses,
         'mode': 'blaze',
         'page_url_base': '/photos/face-search/',
+        'event_list': event_list,
+        'selected_event': event,
+        'event_label': event_label,
+        'photo_id': photo_id,
     })

@@ -41,10 +41,49 @@
     font-weight:600;
 }
 
+/* Filter bar */
+.filter-bar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    justify-content:center;
+    margin:10px auto 30px;
+}
+.filter-bar select,
+.filter-bar input[type=date]{
+    padding:10px 16px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.14);
+    color: white;
+    font-weight:600;
+    font-size:14px;
+    outline:none;
+}
+.filter-bar select option{
+    color:#14532d;
+    background:#fff;
+}
+.filter-bar .btn{
+    padding:10px 22px;
+    border:none;
+    border-radius:12px;
+    background:#fef08a;
+    color:#14532d;
+    font-weight:700;
+    cursor:pointer;
+    font-size:14px;
+}
+.filter-bar .btn-ghost{
+    background:transparent;
+    color:white;
+    border:1px solid rgba(255,255,255,0.4);
+}
+
 .gallery{
     width:100%;
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+    grid-template-columns:repeat(5, 1fr);
     gap:22px;
     padding-bottom:40px;
 }
@@ -246,15 +285,39 @@
         <h1>Hasil Galeri Foto</h1>
         <p>
             {% if folder_selected %}
-                Event: <strong>{{ folder_label }}</strong>
+                Event: <strong>{{ folder_selected }}</strong>
             {% else %}
                 Semua Event
+            {% endif %}
+            {% if jenis_selected %}
+                · Jenis: <strong>{{ jenis_selected }}</strong>
+            {% endif %}
+            {% if tanggal %}
+                · Tanggal: <strong>{{ tanggal }}</strong>
             {% endif %}
         </p>
         <div class="count-badge">
             {{ total }} foto ditemukan
         </div>
     </section>
+
+    <form method="GET" action="{% url 'hasil' %}" class="filter-bar">
+        <select name="folder">
+            <option value="">Semua Event</option>
+            {% for f in folder_list %}
+                <option value="{{ f }}" {% if f == folder_selected %}selected{% endif %}>{{ f }}</option>
+            {% endfor %}
+        </select>
+        <select name="jenis">
+            <option value="">Semua Jenis Event</option>
+            {% for j in jenis_list %}
+                <option value="{{ j }}" {% if j == jenis_selected %}selected{% endif %}>{{ j }}</option>
+            {% endfor %}
+        </select>
+        <input type="date" name="tanggal" value="{{ tanggal }}">
+        <button type="submit" class="btn">🔍 Filter</button>
+        <a href="{% url 'hasil' %}" class="btn btn-ghost">Reset</a>
+    </form>
 
     <div class="gallery">
         {% for foto in fotos %}
@@ -270,6 +333,12 @@
             <div class="content">
                 <h3>{{ foto.event_name|default:"Event Lari" }}</h3>
                 <p><strong>Folder:</strong> {{ foto.folder_label }}</p>
+                {% if foto.jenis_event %}
+                <p><strong>Jenis:</strong> {{ foto.jenis_event }}</p>
+                {% endif %}
+                {% if foto.timestamp %}
+                <p><strong>Waktu:</strong> {{ foto.timestamp|date:"d M Y H:i" }}</p>
+                {% endif %}
                 {% if foto.bib_number %}
                 <p><strong>Bib:</strong> {{ foto.bib_number }}</p>
                 {% endif %}
@@ -284,19 +353,19 @@
     {% if page_obj and page_obj.has_other_pages %}
     <div class="pagination">
         {% if page_obj.has_previous %}
-            <a href="{% url 'hasil' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
+            <a href="{% url 'hasil' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}{% if jenis_selected %}jenis={{ jenis_selected }}&{% endif %}{% if tanggal %}tanggal={{ tanggal }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
         {% endif %}
 
         {% for num in page_obj.paginator.page_range %}
             {% if num == page_obj.number %}
                 <span class="current">{{ num }}</span>
             {% else %}
-                <a href="{% url 'hasil' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}page={{ num }}">{{ num }}</a>
+                <a href="{% url 'hasil' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}{% if jenis_selected %}jenis={{ jenis_selected }}&{% endif %}{% if tanggal %}tanggal={{ tanggal }}&{% endif %}page={{ num }}">{{ num }}</a>
             {% endif %}
         {% endfor %}
 
         {% if page_obj.has_next %}
-            <a href="{% url 'hasil' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}page={{ page_obj.next_page_number }}">Next &raquo;</a>
+            <a href="{% url 'hasil' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}{% if jenis_selected %}jenis={{ jenis_selected }}&{% endif %}{% if tanggal %}tanggal={{ tanggal }}&{% endif %}page={{ page_obj.next_page_number }}">Next &raquo;</a>
         {% endif %}
     </div>
     {% endif %}

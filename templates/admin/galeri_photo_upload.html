@@ -1,0 +1,86 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Upload Foto Event - RunSnap Admin{% endblock %}
+{% block content %}
+<a href="{% url 'admin_galeri_photo_list' %}" class="back-btn">← Kembali ke Galeri</a>
+<div class="card" style="max-width:640px; margin:0 auto; padding:35px;">
+    <h2 style="text-align:center; margin-bottom:10px; color:#fef08a; font-size:24px;">📤 Upload Foto Event</h2>
+    <p style="text-align:center; color:rgba(255,255,255,0.75); font-size:13px; margin-bottom:25px;">
+        Foto langsung dideteksi otomatis: nomor BIB (OCR) & wajah (embedding), lalu dimasukkan ke database.
+    </p>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>Event (Folder Tujuan)</label>
+            <select name="folder" class="form-control" required>
+                <option value="">-- Pilih Event --</option>
+                {% for f in folder_list %}
+                    <option value="{{ f }}" {% if folder_selected == f %}selected{% endif %}>{{ f }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Nama Event (opsional, otomatis terisi dari folder)</label>
+            <input type="text" name="event_name" class="form-control" value="{{ result.event_name|default:'' }}" placeholder="Kosongkan untuk memakai nama default event">
+        </div>
+
+        <div class="form-group">
+            <label>File Gambar</label>
+            <input type="file" name="gambar" accept="image/*" required
+                   style="width:100%; padding:14px; border-radius:16px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:white; font-size:14px; outline:none; box-sizing:border-box;">
+        </div>
+
+        <div class="btn-group" style="margin-top:25px;">
+            <button type="submit" class="btn btn-yellow" style="flex:1; font-size:15px; padding:14px;" id="btnUpload">
+                🔍 Upload & Deteksi
+            </button>
+            <a href="{% url 'admin_galeri_photo_list' %}" class="btn btn-ghost" style="flex:1; text-align:center; padding:14px;">Batal</a>
+        </div>
+    </form>
+</div>
+
+{% if result %}
+<div class="card" style="max-width:640px; margin:0 auto; padding:30px;">
+    <h3 style="color:#fef08a; margin-bottom:18px;">✅ Hasil Deteksi Otomatis</h3>
+
+    <div style="text-align:center; margin-bottom:18px;">
+        <img src="{{ result.image_url }}" alt="Preview Foto" style="max-width:100%; max-height:280px; border-radius:14px; border:2px solid rgba(255,255,255,0.3);">
+    </div>
+
+    <table>
+        <tr><td style="font-weight:700;">ID Foto</td><td>{{ result.photo_id }}</td></tr>
+        <tr><td style="font-weight:700;">Event</td><td>{{ result.event_name }}</td></tr>
+        <tr><td style="font-weight:700;">Folder</td><td>{{ result.folder }}</td></tr>
+        <tr>
+            <td style="font-weight:700;">Nomor BIB Terdeteksi</td>
+            <td>
+                {% if result.bib_numbers %}
+                    {% for bib in result.bib_numbers %}
+                        <span style="background:rgba(254,240,138,0.2); border:1px solid #fef08a; color:#fef08a; padding:3px 12px; border-radius:20px; font-weight:700; margin:2px; display:inline-block;">{{ bib }}</span>
+                    {% endfor %}
+                {% else %}
+                    <span style="color:rgba(255,255,255,0.6);">Tidak ada BIB terdeteksi</span>
+                {% endif %}
+            </td>
+        </tr>
+        <tr><td style="font-weight:700;">Wajah Terdeteksi (BlazeFace)</td><td>{{ result.blaze_face|default:0 }}</td></tr>
+        <tr><td style="font-weight:700;">Wajah Terdeteksi (MTCNN)</td><td>{{ result.mtcnn_face|default:0 }}</td></tr>
+    </table>
+
+    {% if result.ocr_text %}
+    <div style="margin-top:16px; padding:14px; background:rgba(255,255,255,0.08); border-radius:12px; font-size:12px; color:rgba(255,255,255,0.7);">
+        <b>OCR Raw Text:</b><br>{{ result.ocr_text }}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<script>
+document.getElementById('btnUpload').addEventListener('click', function () {
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mendeteksi BIB & Wajah... (bisa butuh beberapa detik)';
+    this.style.pointerEvents = 'none';
+    this.style.opacity = '0.7';
+});
+</script>
+{% endblock %}

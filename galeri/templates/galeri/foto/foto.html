@@ -3,7 +3,7 @@
 {% block title %}Galeri Foto Event{% endblock %}
 {% block extra_style %}
 <style>
-.container { width:1200px; margin:40px auto; padding:0 20px; }
+.container { width:100%; margin:40px 0; padding:0 20px; }
 
 .back-btn {
     display:inline-block;
@@ -31,62 +31,221 @@
     color: rgba(255, 255, 255, 0.85);
 }
 
-/* Picker event (chip cards) */
-.event-picker{
-    width: 820px;
-    max-width: 95%;
-    margin: 20px auto 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    justify-content: center;
+/* Filter bar */
+.filter-bar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    justify-content:center;
+    margin:10px auto 30px;
 }
-.event-chip{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:13px 22px;
+.filter-bar select,
+.filter-bar input[type=date]{
+    padding:10px 16px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.3);
     background: rgba(255,255,255,0.14);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 14px;
     color: white;
-    text-decoration:none;
     font-weight:600;
-    font-size:15px;
-    transition:.25s;
+    font-size:14px;
+    outline:none;
 }
-.event-chip:hover{
-    background: #fef08a;
-    color: #14532d;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(254,240,138,0.35);
+.filter-bar select option{
+    color:#14532d;
+    background:#fff;
 }
-.event-chip .count{
-    background: rgba(255,255,255,0.2);
-    border-radius:20px;
-    padding:2px 10px;
+.filter-bar .btn{
+    padding:10px 22px;
+    border:none;
+    border-radius:12px;
+    background:#fef08a;
+    color:#14532d;
+    font-weight:700;
+    cursor:pointer;
+    font-size:14px;
+}
+.filter-bar .btn-ghost{
+    background:transparent;
+    color:white;
+    border:1px solid rgba(255,255,255,0.4);
+}
+
+.count-badge{
+    display:inline-block;
+    margin:0 auto 30px;
+    padding:8px 18px;
+    background: rgba(255,255,255,0.15);
+    border-radius:30px;
+    color:white;
+    font-weight:600;
+    text-align:center;
+}
+
+.gallery{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:22px;
+    padding-bottom:40px;
+}
+.card{
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius:16px;
+    overflow:hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    transition:.3s;
+}
+.card:hover{
+    transform:translateY(-5px);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.card img{
+    width:100%;
+    height:200px;
+    object-fit:cover;
+    display:block;
+    background:#111827;
+    cursor:zoom-in;
+}
+.content{
+    padding:16px;
+}
+.content h3{
+    margin-bottom:8px;
+    color: white;
+    font-size:16px;
+}
+.content p{
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom:6px;
     font-size:13px;
 }
-.event-chip:hover .count{ background: rgba(20,83,45,0.15); }
-
-.hint{
-    text-align:center;
-    color: rgba(255,255,255,0.9);
-    font-weight:600;
-    margin-top:18px;
-}
-
-/* semua event link */
-.all-events{
-    text-align:center;
-    margin-top:6px;
-}
-.all-events a{
-    color:#fef08a;
+.button{
+    display:inline-block;
+    margin-top:12px;
+    padding:10px 18px;
+    background: #fef08a;
+    color: #14532d;
     text-decoration:none;
+    border-radius:10px;
     font-weight:700;
+    font-size:13px;
+    transition: .3s;
+}
+.button:hover{
+    background: #fff59d;
+    box-shadow: 0 4px 15px rgba(254, 240, 138, 0.4);
+}
+.empty{
+    text-align:center;
+    font-size:22px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top:100px;
+}
+
+/* Pagination */
+.pagination{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin:20px auto 40px;
+    flex-wrap:wrap;
+}
+.pagination a, .pagination span{
+    padding:9px 15px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.14);
+    color:white;
+    text-decoration:none;
+    font-weight:600;
+    transition:.2s;
+}
+.pagination a:hover{
+    background: #fef08a;
+    color:#14532d;
+}
+.pagination .current{
+    background:#27ae60;
+    color:white;
+}
+
+/* ===== LIGHTBOX ===== */
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.92);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.lightbox.open { display: flex; }
+.lightbox-img {
+    max-width: 92vw;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    background: #111827;
+    object-fit: contain;
+}
+.lightbox-info {
+    margin-top: 14px;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    font-size: 14px;
+    max-width: 90vw;
+}
+.lightbox-info h3 { color: white; font-size: 18px; margin-bottom: 4px; }
+.lightbox-info p { margin: 2px 0; }
+.lightbox-close {
+    position: fixed;
+    top: 20px; right: 28px;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 24px;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: .2s;
+    z-index: 1001;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+.lightbox-nav {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: .2s;
+    z-index: 1001;
+}
+.lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+.lightbox-nav.prev { left: 20px; }
+.lightbox-nav.next { right: 20px; }
+.lightbox-counter {
+    position: fixed;
+    bottom: 22px;
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+    z-index: 1001;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 16px;
+    border-radius: 20px;
 }
 </style>
 {% endblock %}
@@ -94,25 +253,160 @@
 <div class="container">
     <a href="{% url 'search' %}" class="back-btn">← Kembali ke Pencarian</a>
 
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lb-close" title="Tutup">×</button>
+        <button class="lightbox-nav prev" id="lb-prev" title="Sebelumnya">‹</button>
+        <button class="lightbox-nav next" id="lb-next" title="Berikutnya">›</button>
+        <img class="lightbox-img" id="lb-img" src="" alt="Foto Galeri">
+        <div class="lightbox-info">
+            <h3 id="lb-title"></h3>
+            <p id="lb-folder"></p>
+            <p id="lb-bib"></p>
+        </div>
+        <div class="lightbox-counter" id="lb-counter"></div>
+    </div>
+
     <section class="hero">
         <h1>Galeri Foto Event</h1>
-        <p>Telusuri foto-foto dari berbagai event lari yang tersedia.</p>
+        <p>Telusuri semua foto dari berbagai event lari yang tersedia.</p>
     </section>
 
-    <div class="event-picker">
-        {% for folder in folder_list %}
-            <a class="event-chip" href="{% url 'hasil' %}?folder={{ folder }}">
-                {{ folder }}
-            </a>
+    <form method="GET" action="{% url 'hasil' %}" class="filter-bar">
+        <select name="folder">
+            <option value="">Semua Event</option>
+            {% for f in folder_list %}
+                <option value="{{ f }}" {% if f == folder_selected %}selected{% endif %}>{{ f }}</option>
+            {% endfor %}
+        </select>
+        <select name="jenis">
+            <option value="">Semua Jenis Event</option>
+            {% for j in jenis_list %}
+                <option value="{{ j }}" {% if j == jenis_selected %}selected{% endif %}>{{ j }}</option>
+            {% endfor %}
+        </select>
+        <input type="date" name="tanggal" value="{{ tanggal }}">
+        <button type="submit" class="btn">🔍 Filter</button>
+        <a href="{% url 'hasil' %}" class="btn btn-ghost">Reset</a>
+    </form>
+
+    <div class="count-badge" style="display:block; text-align:center;">
+        {{ total }} foto ditemukan
+    </div>
+
+    <div class="gallery">
+        {% for foto in fotos %}
+        <div class="card">
+            {% if foto.image %}
+                <img src="{{ foto.image }}" loading="lazy" alt="{{ foto.event_name }}" class="gallery-img"
+                     data-title="{{ foto.event_name|default:'Event Lari' }}"
+                     data-folder="{{ foto.folder_label }}"
+                     data-bib="{{ foto.bib_number|default:'' }}">
+            {% else %}
+                <img src="https://via.placeholder.com/400x250?text=Foto+Tidak+Tersedia" alt="Foto Tidak Tersedia">
+            {% endif %}
+            <div class="content">
+                <h3>{{ foto.event_name|default:"Event Lari" }}</h3>
+                <p><strong>Folder:</strong> {{ foto.folder_label }}</p>
+                {% if foto.jenis_event %}
+                <p><strong>Jenis:</strong> {{ foto.jenis_event }}</p>
+                {% endif %}
+                {% if foto.timestamp %}
+                <p><strong>Waktu:</strong> {{ foto.timestamp|date:"d M Y H:i" }}</p>
+                {% endif %}
+                {% if foto.bib_number %}
+                <p><strong>Bib:</strong> {{ foto.bib_number }}</p>
+                {% endif %}
+                <a href="{{ foto.image }}" download class="button">Download</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty">Tidak ada foto yang ditemukan.</div>
         {% endfor %}
     </div>
 
-    <p class="empty" style="text-align:center; color:rgba(255,255,255,0.85);">
-        Pilih salah satu event di atas untuk melihat foto-fotonya.
-    </p>
+    {% if page_obj and page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="{% url 'hasil' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}{% if jenis_selected %}jenis={{ jenis_selected }}&{% endif %}{% if tanggal %}tanggal={{ tanggal }}&{% endif %}page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
+        {% endif %}
 
-    <div class="all-events">
-        <a href="{% url 'hasil' %}">Atau lihat semua foto →</a>
+        {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+                <span class="current">{{ num }}</span>
+            {% else %}
+                <a href="{% url 'hasil' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}{% if jenis_selected %}jenis={{ jenis_selected }}&{% endif %}{% if tanggal %}tanggal={{ tanggal }}&{% endif %}page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a href="{% url 'hasil' %}?{% if folder_selected %}folder={{ folder_selected }}&{% endif %}{% if jenis_selected %}jenis={{ jenis_selected }}&{% endif %}{% if tanggal %}tanggal={{ tanggal }}&{% endif %}page={{ page_obj.next_page_number }}">Next &raquo;</a>
+        {% endif %}
     </div>
+    {% endif %}
 </div>
+
+<script>
+(function () {
+    const lightbox = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lb-img');
+    const lbTitle = document.getElementById('lb-title');
+    const lbFolder = document.getElementById('lb-folder');
+    const lbBib = document.getElementById('lb-bib');
+    const lbCounter = document.getElementById('lb-counter');
+
+    let images = [];
+    let currentIndex = 0;
+
+    function collectImages() {
+        images = Array.from(document.querySelectorAll('.gallery-img'));
+    }
+
+    function openLightbox(index) {
+        collectImages();
+        if (!images.length) return;
+        currentIndex = (index + images.length) % images.length;
+        const img = images[currentIndex];
+        lbImg.src = img.src;
+        lbTitle.textContent = img.dataset.title || '';
+        lbFolder.textContent = img.dataset.folder ? '📁 ' + img.dataset.folder : '';
+        lbBib.textContent = img.dataset.bib ? '🏷️ Bib: ' + img.dataset.bib : '';
+        lbCounter.textContent = (currentIndex + 1) + ' / ' + images.length;
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('click', function (e) {
+        const target = e.target.closest('.gallery-img');
+        if (target) {
+            collectImages();
+            openLightbox(images.indexOf(target));
+        }
+    });
+
+    document.getElementById('lb-close').addEventListener('click', closeLightbox);
+    document.getElementById('lb-prev').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openLightbox(currentIndex - 1);
+    });
+    document.getElementById('lb-next').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openLightbox(currentIndex + 1);
+    });
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('open')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') openLightbox(currentIndex - 1);
+        if (e.key === 'ArrowRight') openLightbox(currentIndex + 1);
+    });
+})();
+</script>
 {% endblock %}

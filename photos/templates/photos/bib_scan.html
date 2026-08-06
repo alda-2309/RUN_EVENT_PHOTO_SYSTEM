@@ -3,7 +3,7 @@
 {% block title %}Scan Bib dari File - RunSnap{% endblock %}
 {% block extra_style %}
 <style>
-.container { width:1200px; margin:40px auto; padding:0 20px; }
+.container { width:100%; margin:40px auto; padding:0 20px; box-sizing:border-box; }
 
 .back-btn {
     display:inline-block;
@@ -248,8 +248,6 @@
         {% endfor %}
     {% elif berhasil %}
         <div class="empty-state">Tidak ada foto yang cocok dengan nomor BIB yang terdeteksi di database.</div>
-    {% elif pesan %}
-        <div class="empty-state error">{{ pesan }}</div>
     {% endif %}
     {% endif %}
 </div>
@@ -305,9 +303,15 @@
 
     form.addEventListener('submit', () => {
         submitBtn.disabled = true;
-        submitBtn.textContent = '⏳ Memindai file… (bisa butuh beberapa detik)';
         hint.textContent = 'Membaca nomor BIB dengan OCR…';
         hint.className = 'hint';
+        const start = Date.now();
+        submitBtn.textContent = '⏳ Memindai file… 0 detik';
+        window.__bibTimer = window.setInterval(() => {
+            const dt = Math.floor((Date.now() - start) / 1000);
+            submitBtn.textContent = '⏳ Memindai file… ' + dt + ' detik';
+            hint.textContent = 'Membaca nomor BIB dengan OCR… (' + dt + ' detik)';
+        }, 1000);
     });
 
     // ===== Lightbox =====

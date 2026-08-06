@@ -29,6 +29,66 @@ face_processor = FaceProcessor()
 l2_normalize = face_processor.normalize_embedding
 
 # ==========================================
+# HELPER: FOLDER / NAMA EVENT
+# ==========================================
+def _folder_event(image_path):
+    """Ambil nama folder event dari path 'lomba_lari/<folder>/<file>'."""
+    if not image_path:
+        return ''
+    img = image_path.replace('\\', '/')
+    parts = [p for p in img.split('/') if p]
+    if len(parts) >= 3 and parts[0].lower() == 'lomba_lari':
+        return parts[1]
+    return ''
+
+def _folder_label(folder):
+    """Label event yang ramah dari nama folder."""
+    mapping = {
+        'tientorun': 'Tiento Run',
+        'colorun': 'Color Run',
+        'carfreeday': 'Car Free Day',
+        'milo': 'Milo',
+        'milo_race_2026': 'Milo Race 2026',
+        'merdeka': 'Kemerdekaan',
+        'kemerdekaan': 'Kemerdekaan',
+        'ui_ecorun': 'UI ECO Run',
+    }
+    if folder in mapping:
+        return mapping[folder]
+    return folder.replace('_', ' ').title()
+
+def _folder_has_images(folder):
+    """Check whether event folder has at least one image file on disk."""
+    if not folder:
+        return False
+    folder_path = os.path.join(settings.MEDIA_ROOT, 'lomba_lari', folder)
+    if not os.path.isdir(folder_path):
+        return False
+    try:
+        return any(f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp', '.webp'))
+                   for f in os.listdir(folder_path))
+    except OSError:
+        return False
+
+def _get_event_list():
+    """Daftar event (folder) dari koleksi normal + blaze.
+
+    Mencakup event dari proyek face_recognition_run_event dan proyek root,
+    karena keduanya menulis ke database yang sama.
+
+    Hanya folder yang benar-benar memiliki file gambar (folder tidak kosong)
+    yang ikut ditampilkan agar event tanpa foto tidak muncul di daftar.
+    """
+    folders = set()
+    for koleksi in (koleksi_foto, koleksi_foto_blaze):
+        for d in koleksi.find({}, {'image': 1}):
+            f = _folder_event(d.get('image'))
+            if f and _folder_has_images(f):
+                folders.add(f)
+    sorted_folders = sorted(folders)
+    return [{'folder': f, 'label': _folder_label(f)} for f in sorted_folders]
+
+# ==========================================
 # HELPER: Ambil foto dari pymongo sebagai dict sederhana
 # ==========================================
 class PhotoObj:
@@ -77,12 +137,17 @@ class PhotoObj:
 # ==========================================
 # FUNGSI HELPER: RANKING PENCARIAN WAJAH (dipakai upload baru & cari-serupa)
 # ==========================================
-def _cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_ref, koleksi_wajah_ref, exclude_photo_id=None):
+def _cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_ref, koleksi_wajah_ref, exclude_photo_id=None, event=None):
     all_matches = []
     photos_map = {}
 
     for p in koleksi_foto_ref.find():
         pid = p.get('id')
+        # Filter berdasarkan nama event (folder dari path image).
+        if event:
+            img_path = p.get('image', '')
+            if _folder_event(img_path) != event:
+                continue
         photos_map[pid] = PhotoObj(p)
 
     for wajah in koleksi_wajah_ref.find():
@@ -103,12 +168,12 @@ def _cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_ref, koleks
     return [m['photo'] for m in all_matches if m['dist'] <= threshold_real]
 
 
-def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None):
-    return _cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto, koleksi_wajah, exclude_photo_id)
+def cari_foto_mirip(query_vec, threshold_real, exclude_photo_id=None, event=None):
+    return _cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto, koleksi_wajah, exclude_photo_id, event)
 
 
-def cari_foto_mirip_blaze(query_vec, threshold_real, exclude_photo_id=None):
-    return _cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_blaze, koleksi_wajah_blaze, exclude_photo_id)
+def cari_foto_mirip_blaze(query_vec, threshold_real, exclude_photo_id=None, event=None):
+    return _cari_foto_mirip_generic(query_vec, threshold_real, koleksi_foto_blaze, koleksi_wajah_blaze, exclude_photo_id, event)
 
 
 def set_event_metadata(photo):
@@ -442,8 +507,16 @@ def _attach_face_crop(photo):
 
 
 def cari_serupa(request, photo_id):
+    """Cari foto sejenis (KF-U05).
+
+    Mendukung filter berdasarkan nama event (folder) via query param `event`.
+    Daftar event diambil dari koleksi normal + blaze (kedua proyek).
+    """
+    event = (request.GET.get('event') or '').strip()
     threshold_real = THRESHOLD
-    cache_key = f"cari_serupa_{photo_id}_{threshold_real}"
+    cache_key = f"cari_serupa_{photo_id}_{event}_{threshold_real}"
+    event_list = _get_event_list()
+    event_label = _folder_label(event) if event else ''
 
     t1_mulai = time.time()
     cached_data = cache.get(cache_key)
@@ -468,12 +541,16 @@ def cari_serupa(request, photo_id):
         if not wajah_referensi:
             return render(request, 'photos/test_ai.html', {
                 'pesan': 'Data wajah referensi tidak ditemukan.',
-                'berhasil': False
+                'berhasil': False,
+                'event_list': event_list,
+                'selected_event': event,
+                'event_label': event_label,
+                'photo_id': photo_id,
             })
 
         query_vec = np.frombuffer(wajah_referensi.get('embedding_data', b''), dtype=np.float32).copy()
         query_vec = l2_normalize(query_vec)
-        hasil_foto = cari_foto_mirip(query_vec, threshold_real=threshold_real, exclude_photo_id=photo_id)
+        hasil_foto = cari_foto_mirip(query_vec, threshold_real=threshold_real, exclude_photo_id=photo_id, event=event)
 
         t2 = round(time.time() - t2_mulai, 4)
         waktu_proses = round(t1 + t2, 4)
@@ -489,9 +566,17 @@ def cari_serupa(request, photo_id):
     request.session['last_search_cache_key'] = cache_key
 
     if not hasil_foto:
+        if event:
+            pesan = f"Tidak ditemukan foto sejenis pada event {event_label}."
+        else:
+            pesan = "Tidak ditemukan foto lain yang sejenis."
         return render(request, 'photos/test_ai.html', {
-            'pesan': "Tidak ditemukan foto lain yang sejenis.",
-            'berhasil': False
+            'pesan': pesan,
+            'berhasil': False,
+            'event_list': event_list,
+            'selected_event': event,
+            'event_label': event_label,
+            'photo_id': photo_id,
         })
 
     paginator = Paginator(hasil_foto, 12)
@@ -506,6 +591,10 @@ def cari_serupa(request, photo_id):
         'waktu_proses': waktu_proses,
         't1': t1,
         't2': t2,
+        'event_list': event_list,
+        'selected_event': event,
+        'event_label': event_label,
+        'photo_id': photo_id,
     })
 
 

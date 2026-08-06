@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
+from datetime import datetime, timedelta
 from config.db import db
 
 # Sumber data utama foto event lari (hasil sinkronisasi lomba_lari + metadata)
 PHOTO_COLLECTION = 'photos_photoevent'
-ITEMS_PER_PAGE = 24
+ITEMS_PER_PAGE = 25
 
 koleksi_foto_event = db[PHOTO_COLLECTION]
 
@@ -67,24 +68,34 @@ def _list_folders():
     return sorted(folders)
 
 
-def foto_user(request):
-    """Halaman gallery browsing foto event lari."""
-    folder_list = _list_folders()
-    return render(request, 'galeri/foto/foto.html', {
-        'active_page': 'search',
-        'folder_list': folder_list,
-    })
+def _list_jenis_event():
+    """Kumpulan jenis event unik dari data galeri."""
+    return sorted(x for x in koleksi_foto_event.distinct('jenis_event') if x)
 
 
-def hasil(request):
-    """Hasil gallery browsing: filter by folder event + pagination."""
+def _build_query(request):
+    """Bangun query Mongo dari filter GET (folder, jenis event, timestamp)."""
     folder = (request.GET.get('folder') or '').strip()
+    jenis = (request.GET.get('jenis') or '').strip()
+    tanggal = (request.GET.get('tanggal') or '').strip()
 
     query = {}
     if folder:
         # filter via regex pada path image 'lomba_lari/<folder>/...'
-        query = {'image': {'$regex': f'^lomba_lari/{folder}/'}}
+        query['image'] = {'$regex': '^lomba_lari/%s/' % folder}
+    if jenis:
+        query['jenis_event'] = jenis
+    if tanggal:
+        try:
+            d = datetime.strptime(tanggal, '%Y-%m-%d')
+            query['timestamp'] = {'$gte': d, '$lt': d + timedelta(days=1)}
+        except ValueError:
+            pass
+    return query, folder, jenis, tanggal
 
+
+def _get_fotos(query):
+    """Ambil daftar foto dari collection sesuai query, urut by id."""
     cursor = koleksi_foto_event.find(query).sort('id', 1)
     fotos = []
     for d in cursor:
@@ -96,18 +107,40 @@ def hasil(request):
             'folder': f,
             'folder_label': _folder_label(f),
             'event_name': d.get('event_name', ''),
+            'jenis_event': d.get('jenis_event', ''),
+            'timestamp': d.get('timestamp'),
             'bib_number': d.get('bib_number', ''),
             'uploaded_at': d.get('uploaded_at'),
         })
+    return fotos
+
+
+def _build_context(request, template):
+    """Context galeri: semua foto (tanpa wajib pilih folder) + filter."""
+    query, folder, jenis, tanggal = _build_query(request)
+    fotos = _get_fotos(query)
 
     paginator = Paginator(fotos, ITEMS_PER_PAGE)
     page_obj = paginator.get_page(int(request.GET.get('page', 1)))
 
-    return render(request, 'galeri/foto/hasil.html', {
+    return render(request, template, {
         'active_page': 'search',
         'page_obj': page_obj,
         'fotos': page_obj.object_list,
+        'folder_list': _list_folders(),
+        'jenis_list': _list_jenis_event(),
         'folder_selected': folder,
-        'folder_label': _folder_label(folder) if folder else '',
+        'jenis_selected': jenis,
+        'tanggal': tanggal,
         'total': paginator.count,
     })
+
+
+def foto_user(request):
+    """Halaman gallery foto event — langsung tampilkan semua foto."""
+    return _build_context(request, 'galeri/foto/foto.html')
+
+
+def hasil(request):
+    """Hasil gallery browsing: filter folder/jenis event/timestamp + pagination."""
+    return _build_context(request, 'galeri/foto/hasil.html')

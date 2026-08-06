@@ -17,15 +17,29 @@
         }
 
         .container { 
-            max-width: 1300px; 
-            margin: auto; 
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 40px; 
-            border-radius: 20px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08); 
-        } 
+              width: 100%; 
+              margin: auto; 
+              background: rgba(255, 255, 255, 0.25);
+              backdrop-filter: blur(12px);
+              -webkit-backdrop-filter: blur(12px);
+              padding: 40px; 
+              border-radius: 20px; 
+              box-shadow: 0 15px 35px rgba(0,0,0,0.08); 
+              box-sizing: border-box;
+          } 
+
+          .back-btn {
+              display:inline-block;
+              margin-bottom:30px;
+              padding:10px 24px;
+              background: rgba(255,255,255,0.15);
+              color: white;
+              border-radius:12px;
+              text-decoration:none;
+              font-weight:600;
+              transition: .3s;
+          }
+          .back-btn:hover { background: rgba(255,255,255,0.25); }
 
         h1 { 
             color: white; 
@@ -297,11 +311,12 @@
 </head>
 <body>
     <div class="container">
+        <a href="{% url 'face_search' %}" class="back-btn" onclick="history.back(); return false;">← Kembali ke Pencarian</a>
         <h1 style="font-size: 3.2rem; text-align: center; font-weight: 700; color: white;">Pencarian Deteksi Wajah</h1>
         <p class="subtitle">Unggah foto selfie Anda untuk menemukan foto di galeri event.</p>
 
         <div class="search-box">
-            <form method="post" enctype="multipart/form-data" id="aiForm">
+            <form method="post" enctype="multipart/form-data" id="aiForm" action="{% if page_url_base %}{{ page_url_base }}{% endif %}">
                 {% csrf_token %}
                 <input type="file" name="foto" accept="image/*" required>
                 <button type="submit" class="btn-ai" id="submitBtn">
@@ -309,6 +324,30 @@
                 </button>
             </form>
         </div>
+
+        {# Filter Berdasarkan Nama Event (fitur Cari Sejenis) #}
+        {% if event_list %}
+        <div class="search-box" style="padding:20px 30px;">
+            <form method="get" action="/cari-serupa/{{ photo_id }}/" id="eventFilterForm" style="display:flex; align-items:center; gap:15px; flex-wrap:wrap; justify-content:center;">
+                <label for="eventFilterSelect" style="font-weight:600; color:white; font-size:15px;">
+                    <i class="fas fa-filter" style="margin-right:6px;"></i> Filter Berdasarkan Nama Event:
+                </label>
+                <select id="eventFilterSelect" name="event" onchange="this.form.submit()"
+                        style="padding:11px 16px; border-radius:10px; border:none; font-size:14px; font-weight:500; background:#ffffff; color:#1a1a1a; cursor:pointer;">
+                    <option value="">-- Semua Event --</option>
+                    {% for ev in event_list %}
+                        <option value="{{ ev.folder }}" {% if ev.folder == selected_event %}selected{% endif %}>{{ ev.label }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-ai" style="padding:11px 22px; font-size:14px;">Terapkan</button>
+            </form>
+            {% if selected_event %}
+            <p style="color:rgba(255,255,255,0.9); font-size:13px; margin-top:10px; font-weight:500;">
+                Menampilkan hasil hanya dari event <b>{{ event_label }}</b>.
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
 
         {# Bagian Waktu Proses - Diubah Kontainernya Agar Bisa Dikontrol Realtime #}
         <div id="waktuProsesContainer" class="{% if not waktu_proses and not pesan %}d-none{% endif %}" style="color: white; font-size: 14px; text-align: center; margin-top: 5px; margin-bottom: 25px; font-weight: 500;">

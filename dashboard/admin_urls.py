@@ -40,6 +40,24 @@ def _list_folders():
     return sorted(folders)
 
 
+# Nama event tampilan untuk tiap folder (sinkron dengan data di DB).
+EVENT_NAME_MAP = {
+    'colorun': 'Bandung Color Run Festival 2026',
+    'kemerdekaan': 'Independence Day Fun Run 2026',
+    'merdeka': 'Independence Day Fun Run 2026',
+    'milo': 'MILO ACTIV Indonesia Race 2025',
+    'milo_race_2026': 'Milo Race 2026',
+    'tientorun': 'Tiento Run 2026',
+    'carfreeday': 'Car Free Day Fun',
+    'ui_ecorun': 'Vokasi UI ECO Run',
+}
+
+
+def _folder_label(folder):
+    """Label event ramah dari nama folder."""
+    return EVENT_NAME_MAP.get(folder, folder.replace('_', ' ').title())
+
+
 # ============================================================
 # DECORATOR: cek login admin (staff / superuser)
 # ============================================================
@@ -466,6 +484,194 @@ def galeri_photo_delete(request, photo_id):
     return redirect(request.POST.get('next') or 'admin_galeri_photo_list')
 
 
+@admin_required
+def galeri_photo_upload(request):
+    """Upload foto galeri event + deteksi otomatis.
+
+    Alur:
+      1. Simpan file ke media/lomba_lari/<event>/ (nama di-rename bila bentrok).
+      2. Deteksi nomor BIB via OCR (EasyOCR) -> kolom bib_number.
+      3. Deteksi wajah + ekstraksi embedding:
+         - BlazeFace (photos_faceembedding_blaze)
+         - MTCNN/generic (photos_faceembedding)
+      4. Insert metadata ke photos_photoevent & photos_photoevent_blaze.
+    """
+    import os
+    import re
+    from django.conf import settings
+    from photos.face_views import _ocr_extract_bibs, _extract_blaze_embedding, l2_normalize
+
+    folder_list = _list_folders()
+    context = {'folder_list': folder_list}
+
+    if request.method == 'POST':
+        folder = (request.POST.get('folder') or '').strip()
+        event_name = (request.POST.get('event_name') or '').strip()
+        uploaded = request.FILES.get('gambar')
+
+        if not uploaded:
+            messages.error(request, 'Pilih file gambar terlebih dahulu.')
+            return render(request, 'admin/galeri_photo_upload.html', context)
+
+        ext = os.path.splitext(uploaded.name)[1].lower()
+        allowed = {'.jpg', '.jpeg', '.png', '.bmp', '.webp', '.tiff', '.tif'}
+        if ext not in allowed:
+            messages.error(request, 'Format file tidak didukung. Gunakan JPG, PNG, BMP, WebP, atau TIFF.')
+            return render(request, 'admin/galeri_photo_upload.html', context)
+
+        if not folder or not os.path.isdir(os.path.join(settings.MEDIA_ROOT, 'lomba_lari', folder)):
+            messages.error(request, 'Pilih event (folder) tujuan yang valid.')
+            return render(request, 'admin/galeri_photo_upload.html', context)
+
+        if not event_name:
+            event_name = EVENT_NAME_MAP.get(folder, _folder_label(folder))
+
+        # ============ 1. SIMPAN FILE ============
+        safe_name = re.sub(r'[^A-Za-z0-9_.-]+', '_', uploaded.name)
+        target_dir = os.path.join(settings.MEDIA_ROOT, 'lomba_lari', folder)
+        final_name = safe_name
+        target_path = os.path.join(target_dir, final_name)
+        base_name, dot_ext = os.path.splitext(final_name)
+        counter = 1
+        while os.path.exists(target_path):
+            final_name = f'{base_name}_{counter}{dot_ext}'
+            target_path = os.path.join(target_dir, final_name)
+            counter += 1
+
+        with open(target_path, 'wb+') as fh:
+            for chunk in uploaded.chunks():
+                fh.write(chunk)
+
+        image_rel = f'lomba_lari/{folder}/{final_name}'
+
+        # ============ 2. ID BARU (max id + 1) + SINKRON COUNTER ============
+        ids = []
+        for col in (koleksi_galeri, db['photos_photoevent_blaze']):
+            ids.extend(d.get('id') for d in col.find({}, {'id': 1}) if d.get('id') is not None)
+        next_id = (max(ids) + 1) if ids else 1
+        db['counters'].update_one(
+            {'_id': 'photos_photoevent'},
+            {'$set': {'seq': next_id}},
+            upsert=True,
+        )
+
+        result = {
+            'photo_id': next_id,
+            'image_url': f'/media/{image_rel}',
+            'event_name': event_name,
+            'folder': folder,
+        }
+
+        # ============ 3. DETEKSI NOMOR BIB (OCR) ============
+        try:
+            ocr = _ocr_extract_bibs(target_path)
+            bib_list = sorted(ocr.get('bib_numbers') or [])
+            result['bib_numbers'] = bib_list
+            result['ocr_text'] = (ocr.get('text') or '')
+        except Exception as e:
+            bib_list = []
+            result['bib_numbers'] = []
+            result['ocr_text'] = ''
+            print(f"[ADMIN UPLOAD] OCR error: {e}")
+        bib_str = ', '.join(bib_list)
+
+        # ============ 4. EMBEDDING WAJAH (BlazeFace) ============
+        blaze_count = 0
+        try:
+            vec, bbox, conf = _extract_blaze_embedding(target_path)
+            if vec is not None and bbox:
+                from PIL import Image, ImageOps
+                crop_dir = os.path.join(settings.MEDIA_ROOT, 'blaze_face_crops')
+                os.makedirs(crop_dir, exist_ok=True)
+                crop_name = f'blaze_{next_id}_0.jpg'
+                img = Image.open(target_path)
+                try:
+                    img = ImageOps.exif_transpose(img)
+                except Exception:
+                    pass
+                img = img.convert('RGB')
+                x, y, w, h = bbox['x'], bbox['y'], bbox['w'], bbox['h']
+                crop = img.crop((x, y, x + w, y + h))
+                max_crop = 400
+                if max(crop.size) > max_crop:
+                    ratio = max_crop / max(crop.size)
+                    crop = crop.resize((int(crop.width * ratio), int(crop.height * ratio)), Image.LANCZOS)
+                crop.save(os.path.join(crop_dir, crop_name), 'JPEG', quality=90)
+                db['photos_faceembedding_blaze'].insert_one({
+                    'photo_id': next_id,
+                    'image': image_rel,
+                    'event_name': event_name,
+                    'detector': 'blazeface',
+                    'bbox_json': bbox,
+                    'embedding_data': vec.tobytes(),
+                    'face_image': f'blaze_face_crops/{crop_name}',
+                    'confidence': conf or 0.0,
+                })
+                blaze_count = 1
+        except Exception as e:
+            print(f"[ADMIN UPLOAD] BlazeFace error: {e}")
+        result['blaze_face'] = blaze_count
+
+        # ============ 5. EMBEDDING WAJAH (MTCNN/generic) ============
+        generic_count = 0
+        try:
+            import cv2
+            from PIL import Image
+            from photos.face_utils import FaceProcessor
+            fp = FaceProcessor()
+            faces = fp.detect_faces(target_path)
+            crop_dir = os.path.join(settings.MEDIA_ROOT, 'face_crops')
+            os.makedirs(crop_dir, exist_ok=True)
+            for idx, face in enumerate(faces):
+                emb = fp.extract_embedding(face['face'])
+                if emb is None:
+                    continue
+                emb = l2_normalize(emb)
+                crop_name = f'face_{next_id}_{idx}.jpg'
+                pil_img = Image.fromarray(cv2.cvtColor(face['face'], cv2.COLOR_BGR2RGB))
+                pil_img.save(os.path.join(crop_dir, crop_name), 'JPEG', quality=90)
+                db['photos_faceembedding'].insert_one({
+                    'photo_id': next_id,
+                    'bbox_json': face['bbox'],
+                    'embedding_data': emb.tobytes(),
+                    'face_image': f'face_crops/{crop_name}',
+                })
+                generic_count += 1
+        except Exception as e:
+            print(f"[ADMIN UPLOAD] MTCNN error: {e}")
+        result['mtcnn_face'] = generic_count
+
+        # ============ 6. INSERT METADATA FOTO ============
+        from datetime import datetime
+        now = datetime.utcnow()
+        koleksi_galeri.insert_one({
+            'id': next_id,
+            'event_name': event_name,
+            'image': image_rel,
+            'bib_number': bib_str,
+            'ocr_raw_text': result['ocr_text'],
+            'ocr_updated_at': now,
+            'uploaded_at': now,
+        })
+        db['photos_photoevent_blaze'].insert_one({
+            'id': next_id,
+            'event_name': event_name,
+            'image': image_rel,
+            'bib_number': bib_str,
+            'uploaded_at': now,
+        })
+
+        messages.success(
+            request,
+            f'✅ Foto berhasil diupload ke event "{_folder_label(folder)}" (ID {next_id}). '
+            f'BIB terdeteksi: {len(bib_list)} | Wajah: BlazeFace {blaze_count}, MTCNN {generic_count}.'
+        )
+        context['result'] = result
+        return render(request, 'admin/galeri_photo_upload.html', context)
+
+    return render(request, 'admin/galeri_photo_upload.html', context)
+
+
 # ============================================================
 # URL PATTERNS
 # ============================================================
@@ -491,6 +697,7 @@ urlpatterns = [
     path('foto/delete/<int:foto_id>/', photo_delete, name='admin_foto_delete'),
     # Galeri Foto Event (photos_photoevent)
     path('galeri-foto/', galeri_photo_list, name='admin_galeri_photo_list'),
+    path('galeri-foto/upload/', galeri_photo_upload, name='admin_galeri_photo_upload'),
     path('galeri-foto/edit/<int:photo_id>/', galeri_photo_edit, name='admin_galeri_photo_edit'),
     path('galeri-foto/delete/<int:photo_id>/', galeri_photo_delete, name='admin_galeri_photo_delete'),
 ]

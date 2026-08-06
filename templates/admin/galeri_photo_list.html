@@ -53,7 +53,10 @@
 <a href="{% url 'admin_dashboard' %}" class="back-btn">← Kembali ke Dashboard</a>
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
     <h1 style="font-size:28px; font-weight:700;">🖼️ Galeri Foto Event</h1>
-    <span style="background:rgba(255,255,255,0.15); padding:8px 18px; border-radius:30px; font-weight:600;">{{ total }} foto</span>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <span style="background:rgba(255,255,255,0.15); padding:8px 18px; border-radius:30px; font-weight:600;">{{ total }} foto</span>
+        <a href="{% url 'admin_galeri_photo_upload' %}" class="btn btn-yellow" style="font-size:13px; padding:10px 18px;">+ Upload Foto</a>
+    </div>
 </div>
 
 <!-- Filter folder -->

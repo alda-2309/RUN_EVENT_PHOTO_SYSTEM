@@ -3,7 +3,7 @@
 {% block title %}Pencarian Bib - RunSnap{% endblock %}
 {% block extra_style %}
 <style>
-.container { width:1200px; margin:40px auto; padding:0 20px; }
+.container { width:100%; margin:40px auto; padding:0 20px; box-sizing:border-box; }
 
 .back-btn {
     display:inline-block;
@@ -88,7 +88,7 @@
 
 .gallery {
     display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap:24px;
 }
 .photo-card {
@@ -236,9 +236,16 @@
         <p id="result-summary"></p>
     </div>
 
+    <div class="result-header" id="default-header" style="display:none;">
+        <h1>Foto Terbaru</h1>
+        <p>Ketik nomor BIB di atas untuk mencari fotomu.</p>
+    </div>
+
     <div class="gallery" id="gallery"></div>
     <div class="empty-state" id="empty-state" style="display:none;"></div>
 </div>
+
+{{ default_photos|json_script:"default-photos" }}
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox">
@@ -263,9 +270,13 @@
     const clearBtn = document.getElementById('clear-btn');
     const hint    = document.getElementById('hint');
     const resultHeader = document.getElementById('result-header');
+    const defaultHeader = document.getElementById('default-header');
     const resultSummary = document.getElementById('result-summary');
     const gallery = document.getElementById('gallery');
     const emptyState = document.getElementById('empty-state');
+
+    const defaultPhotosEl = document.getElementById('default-photos');
+    const DEFAULT_PHOTOS = defaultPhotosEl ? JSON.parse(defaultPhotosEl.textContent || '[]') : [];
 
     let debounceTimer = null;
     let lastQuery = '';
@@ -310,9 +321,34 @@
     function clearResults() {
         gallery.innerHTML = '';
         resultHeader.style.display = 'none';
+        defaultHeader.style.display = 'none';
         emptyState.style.display = 'none';
         currentResults = [];
         closeLightbox();
+    }
+
+    function renderDefaultPhotos() {
+        if (!DEFAULT_PHOTOS.length) {
+            clearResults();
+            return;
+        }
+        currentResults = DEFAULT_PHOTOS;
+        resultHeader.style.display = 'none';
+        emptyState.style.display = 'none';
+        defaultHeader.style.display = 'block';
+        gallery.innerHTML = DEFAULT_PHOTOS.map((r, i) => `
+            <div class="photo-card">
+                <img src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.event_name)}"
+                     onclick="openLightbox(${i})"
+                     onerror="if(this.src!='${PLACEHOLDER_IMG}'){this.onerror=null;this.src='${PLACEHOLDER_IMG}'}">
+                <div class="info">
+                    <h3>${escapeHtml(r.event_name)}</h3>
+                    <p>📍 ${escapeHtml(r.event_location)}</p>
+                    <p>📅 ${escapeHtml(r.event_date)}</p>
+                    ${r.bib_number ? `<span class="bib-badge">Bib: ${escapeHtml(r.bib_number)}</span>` : ''}
+                </div>
+            </div>
+        `).join('');
     }
 
     function openLightbox(index) {
@@ -377,7 +413,7 @@
         lastQuery = q;
 
         if (!q) {
-            clearResults();
+            renderDefaultPhotos();
             setHint('Masukkan nomor BIB (angka dan/atau huruf).');
             if (inflight) { inflight.abort(); inflight = null; }
             return;
@@ -428,7 +464,7 @@
         input.value = '';
         showClear();
         lastQuery = '';
-        clearResults();
+        renderDefaultPhotos();
         setHint('Masukkan nomor BIB (angka dan/atau huruf).');
         input.focus();
     });
@@ -473,6 +509,8 @@
     if (initial) {
         showClear();
         runSearch(initial);
+    } else {
+        renderDefaultPhotos();
     }
 })();
 </script>
