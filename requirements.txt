@@ -20,6 +20,7 @@ Django==5.2.16
 django-extensions==4.1
 django-redis==7.0.0
 dnspython==2.8.0
+easyocr==1.7.2
 filelock==3.32.0
 fire==0.7.1
 Flask==3.1.3
