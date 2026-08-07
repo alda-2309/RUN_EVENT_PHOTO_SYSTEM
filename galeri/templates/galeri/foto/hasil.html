@@ -2,6 +2,7 @@
 {% load static %}
 {% block title %}Hasil Galeri Foto{% endblock %}
 {% block extra_style %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
 <style>
 .container { width:100%; margin:40px 0; padding:0 20px; }
 
@@ -50,7 +51,9 @@
     margin:10px auto 30px;
 }
 .filter-bar select,
-.filter-bar input[type=date]{
+.filter-bar input[type=date],
+.filter-bar input[type=datetime-local],
+.filter-bar .datepicker{
     padding:10px 16px;
     border-radius:12px;
     border:1px solid rgba(255,255,255,0.3);
@@ -293,7 +296,7 @@
                 · Jenis: <strong>{{ jenis_selected }}</strong>
             {% endif %}
             {% if tanggal %}
-                · Tanggal: <strong>{{ tanggal }}</strong>
+                · Waktu: <strong>{{ tanggal }}</strong>
             {% endif %}
         </p>
         <div class="count-badge">
@@ -314,7 +317,7 @@
                 <option value="{{ j }}" {% if j == jenis_selected %}selected{% endif %}>{{ j }}</option>
             {% endfor %}
         </select>
-        <input type="date" name="tanggal" value="{{ tanggal }}">
+        <input type="text" name="tanggal" class="datepicker" value="{{ tanggal }}" placeholder="Pilih tanggal & jam">
         <button type="submit" class="btn">🔍 Filter</button>
         <a href="{% url 'hasil' %}" class="btn btn-ghost">Reset</a>
     </form>
@@ -434,5 +437,18 @@
         if (e.key === 'ArrowRight') openLightbox(currentIndex + 1);
     });
 })();
+</script>
+{% endblock %}
+
+{% block extra_script %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<script>
+    flatpickr('.datepicker', {
+        enableTime: true,
+        dateFormat: 'Y-m-d H:i',
+        time_24hr: true,
+        allowInput: true,
+        locale: { firstDayOfWeek: 1 }
+    });
 </script>
 {% endblock %}

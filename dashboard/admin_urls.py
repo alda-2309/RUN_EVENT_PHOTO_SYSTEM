@@ -111,27 +111,25 @@ def logout_view(request):
 
 @admin_required
 def dashboard(request):
-    total_photos = photos_collection.count_documents({})
+    total_photos = koleksi_galeri.count_documents({})
     total_events = events_collection.count_documents({})
 
     events = list(events_collection.find())
-    marathon_count = sum(1 for e in events if e.get('event_type') == 'Marathon')
-    trail_count = sum(1 for e in events if e.get('event_type') == 'Trail Run')
-    funrun_count = sum(1 for e in events if 'Fun Run' in e.get('event_type', ''))
-    night_run_count = sum(1 for e in events if e.get('event_type') == 'Night Run')
+    # Statistik per jenis event (event_type = jenis_event dari photos_photoevent)
+    event_type_counts = {}
+    for e in events:
+        et = e.get('event_type') or 'Lainnya'
+        event_type_counts[et] = event_type_counts.get(et, 0) + 1
 
-    latest_uploads = list(photos_collection.find().sort('_id', -1).limit(5))
+    latest_uploads = list(koleksi_galeri.find().sort('id', -1).limit(5))
     for photo in latest_uploads:
-        photo['event_name'] = photo.get('nama_event', 'Unknown')
+        photo['event_name'] = photo.get('event_name', 'Unknown')
         photo['id'] = photo['_id']
 
     context = {
         'total_photos': total_photos,
         'total_events': total_events,
-        'marathon_count': marathon_count,
-        'trail_count': trail_count,
-        'funrun_count': funrun_count,
-        'night_run_count': night_run_count,
+        'event_type_counts': event_type_counts,
         'latest_uploads': latest_uploads,
     }
     return render(request, 'dashboard/dashboard.html', context)
@@ -501,13 +499,30 @@ def galeri_photo_upload(request):
     from django.conf import settings
     from photos.face_views import _ocr_extract_bibs, _extract_blaze_embedding, l2_normalize
 
-    folder_list = _list_folders()
-    context = {'folder_list': folder_list}
+    # Event berasal dari collection 'events' (sinkron dengan photos_photoevent)
+    events = list(events_collection.find().sort('timestamp', 1))
+    for ev in events:
+        ev['id'] = ev['_id']
+    context = {'events': events}
 
     if request.method == 'POST':
-        folder = (request.POST.get('folder') or '').strip()
-        event_name = (request.POST.get('event_name') or '').strip()
+        event_id = (request.POST.get('event_id') or '').strip()
         uploaded = request.FILES.get('gambar')
+
+        event = None
+        if event_id:
+            try:
+                event = events_collection.find_one({'_id': int(event_id)})
+            except (ValueError, TypeError):
+                event = None
+        if not event:
+            messages.error(request, 'Pilih event terlebih dahulu.')
+            return render(request, 'admin/galeri_photo_upload.html', context)
+
+        folder = (event.get('folder') or '').strip()
+        event_name = (event.get('name') or '').strip()
+        jenis_event = (event.get('event_type') or '').strip()
+        event_timestamp = event.get('timestamp')
 
         if not uploaded:
             messages.error(request, 'Pilih file gambar terlebih dahulu.')
@@ -520,11 +535,8 @@ def galeri_photo_upload(request):
             return render(request, 'admin/galeri_photo_upload.html', context)
 
         if not folder or not os.path.isdir(os.path.join(settings.MEDIA_ROOT, 'lomba_lari', folder)):
-            messages.error(request, 'Pilih event (folder) tujuan yang valid.')
+            messages.error(request, f'Folder event "{folder}" tidak ditemukan di media. Periksa folder event.')
             return render(request, 'admin/galeri_photo_upload.html', context)
-
-        if not event_name:
-            event_name = EVENT_NAME_MAP.get(folder, _folder_label(folder))
 
         # ============ 1. SIMPAN FILE ============
         safe_name = re.sub(r'[^A-Za-z0-9_.-]+', '_', uploaded.name)
@@ -559,6 +571,7 @@ def galeri_photo_upload(request):
             'photo_id': next_id,
             'image_url': f'/media/{image_rel}',
             'event_name': event_name,
+            'jenis_event': jenis_event,
             'folder': folder,
         }
 
@@ -647,6 +660,8 @@ def galeri_photo_upload(request):
         koleksi_galeri.insert_one({
             'id': next_id,
             'event_name': event_name,
+            'jenis_event': jenis_event,
+            'timestamp': event_timestamp,
             'image': image_rel,
             'bib_number': bib_str,
             'ocr_raw_text': result['ocr_text'],
@@ -656,6 +671,8 @@ def galeri_photo_upload(request):
         db['photos_photoevent_blaze'].insert_one({
             'id': next_id,
             'event_name': event_name,
+            'jenis_event': jenis_event,
+            'timestamp': event_timestamp,
             'image': image_rel,
             'bib_number': bib_str,
             'uploaded_at': now,
@@ -663,8 +680,9 @@ def galeri_photo_upload(request):
 
         messages.success(
             request,
-            f'✅ Foto berhasil diupload ke event "{_folder_label(folder)}" (ID {next_id}). '
-            f'BIB terdeteksi: {len(bib_list)} | Wajah: BlazeFace {blaze_count}, MTCNN {generic_count}.'
+            f'✅ Foto berhasil diupload ke event "{event_name}" (ID {next_id}). '
+            f'Jenis: {jenis_event} | BIB terdeteksi: {len(bib_list)} | '
+            f'Wajah: BlazeFace {blaze_count}, MTCNN {generic_count}.'
         )
         context['result'] = result
         return render(request, 'admin/galeri_photo_upload.html', context)

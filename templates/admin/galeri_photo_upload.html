@@ -11,18 +11,16 @@
         {% csrf_token %}
 
         <div class="form-group">
-            <label>Event (Folder Tujuan)</label>
-            <select name="folder" class="form-control" required>
+            <label>Event</label>
+            <select name="event_id" class="form-control" required>
                 <option value="">-- Pilih Event --</option>
-                {% for f in folder_list %}
-                    <option value="{{ f }}" {% if folder_selected == f %}selected{% endif %}>{{ f }}</option>
+                {% for ev in events %}
+                    <option value="{{ ev.id }}">{{ ev.name }}</option>
                 {% endfor %}
             </select>
-        </div>
-
-        <div class="form-group">
-            <label>Nama Event (opsional, otomatis terisi dari folder)</label>
-            <input type="text" name="event_name" class="form-control" value="{{ result.event_name|default:'' }}" placeholder="Kosongkan untuk memakai nama default event">
+            <p style="margin-top:6px; font-size:12px; color:rgba(255,255,255,0.65);">
+                Jenis event & timestamp otomatis mengikuti event yang dipilih.
+            </p>
         </div>
 
         <div class="form-group">
@@ -51,6 +49,7 @@
     <table>
         <tr><td style="font-weight:700;">ID Foto</td><td>{{ result.photo_id }}</td></tr>
         <tr><td style="font-weight:700;">Event</td><td>{{ result.event_name }}</td></tr>
+        <tr><td style="font-weight:700;">Jenis Event</td><td>{{ result.jenis_event|default:"-" }}</td></tr>
         <tr><td style="font-weight:700;">Folder</td><td>{{ result.folder }}</td></tr>
         <tr>
             <td style="font-weight:700;">Nomor BIB Terdeteksi</td>

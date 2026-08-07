@@ -1,0 +1,372 @@
+B1 dan B2:
+
+TEKS DI SKRIPSI=
+Lingkungan implementasi sistem ini menggunakan perangkat keras berupa komputer dengan prosesor Intel Core i5, RAM 8 GB, dan
+penyimpanan SSD 256 GB. Dari sisi perangkat lunak, sistem dikembangkan menggunakan Visual Studio Code sebagai text editor,
+bahasa pemrograman Python dengan framework Django untuk pengembangan backend dan frontend, serta Bootstrap untuk mendukung
+tampilan yang responsif. MySQL digunakan sebagai database management system untuk menyimpan data pengguna, event, dan foto.
+
+TEKS REVISI=
+Lingkungan implementasi sistem ini menggunakan perangkat keras berupa laptop Lenovo dengan prosesor 13th Gen Intel(R) Core(TM) i3-1315U (1.20 GHz), RAM 16 GB, dan sistem operasi Windows 11 64-bit. Dari sisi perangkat lunak, sistem dikembangkan menggunakan Visual Studio Code sebagai text editor, bahasa pemrograman Python dengan framework Django untuk pengembangan backend dan frontend, serta CSS custom untuk mendukung tampilan yang responsif. MongoDB digunakan sebagai database management system untuk menyimpan data pengguna, event, dan foto.
+
+[PENJELASAN]
+- RAM 16 GB dipakai (sesuai Tabel 3.4 yang benar). Hardware lengkap: Lenovo, i3-1315U 1.20 GHz, 16 GB, Win 11 64-bit.
+- "Bootstrap" dihapus -> frontend memakai CSS custom (tidak ada Bootstrap di kode).
+- "MySQL" dihapus -> sistem memakai MongoDB (MongoDB Atlas).
+
+B3:
+
+TEKS DI SKRIPSI=
+Alur sistem diawali dengan proses login oleh Admin, di mana jika login berhasil, Admin akan masuk ke Dashboard untuk mengelola
+data event serta mengunggah foto dokumentasi yang kemudian tersimpan ke dalam database SQLite dan Photo Storage.
+Selanjutnya, peserta yang mengakses website dapat memilih menu pencarian dengan empat pilihan metode,
+yaitu pencarian berdasarkan Jenis Event & Timestamp, Nomor BIB, Wajah, maupun Rute/Map Interaktif.
+Setelah jenis pencarian dipilih, sistem akan memproses data; jika foto ditemukan, sistem akan menampilkan galeri foto
+sehingga peserta dapat mengunduhnya, sedangkan jika data tidak ditemukan, sistem akan menampilkan pesan "Foto Tidak Ditemukan"
+hingga seluruh alur berakhir di titik Selesai.
+
+TEKS REVISI=
+Alur sistem diawali dengan proses login oleh Admin, di mana jika login berhasil, Admin akan masuk ke Dashboard untuk mengelola data event serta mengunggah foto dokumentasi yang kemudian tersimpan ke dalam database MongoDB dan Photo Storage. Selanjutnya, peserta yang mengakses website dapat memilih menu pencarian dengan tiga pilihan metode, yaitu pencarian berdasarkan Jenis Event & Timestamp, Nomor BIB, dan Wajah (Face Recognition). Setelah jenis pencarian dipilih, sistem akan memproses data; jika foto ditemukan, sistem akan menampilkan galeri foto sehingga peserta dapat mengunduhnya, sedangkan jika data tidak ditemukan, sistem akan menampilkan pesan "Foto Tidak Ditemukan" hingga seluruh alur berakhir di titik Selesai.
+
+[PENJELASAN]
+- "database SQLite" -> "database MongoDB" (SQLite hanya contract Django internal, data bisnis di MongoDB).
+- "empat pilihan metode ... maupun Rute/Map Interaktif" -> "tiga pilihan metode ... dan Wajah (Face Recognition)".
+  Halaman Cari Foto aktual hanya punya 3 kartu: Galeri Event (Event & Timestamp), Nomor Bib, Face Recognition.
+  Peta interaktif ada di menu Events, bukan di menu Cari Foto.
+
+  [note penting!] harus perbaiki gambar 3.3 flowchart (user yang memperbaiki) dan gambar 3.2 arsitektur sistem, gambar 4.3
+
+
+
+
+B4:
+
+DATA PADA MONGODB=
+{
+  "_id": {
+    "$oid": "6a6ea3a5907be1a4f68e8588"
+  },
+  "id": 3,
+  "event_name": "Bandung Color Run Festival 2026",
+  "image": "lomba_lari/colorun/ColorRun_Fest(100).jpg",
+  "bib_number": "1556, 2026, 7560",
+  "uploaded_at": null,
+  "ocr_raw_text": "2026 LDLOR 1556 E FSTI 7560 FESTIAL",
+  "ocr_updated_at": 1785505932.9585552,
+  "jenis_event": "color run 5k",
+  "timestamp": {
+    "$date": "2026-06-28T06:00:00.000Z"
+  }
+}
+
+timestampnya dan jenis event tuh ada bro, cuman dia kepakainya sebagai filter, di fitur galery event, bahasan inti judul sih tetep ada timestampny dan jenis eventnya 
+
+jadi gimana ya perubahannya? dari dokumennya, apa aja yang diubah dari dokumennya?
+
+[STATUS VALIDASI B4 - REVISI FINAL]
+- Timestamp & jenis_event ADA di data (contoh id=3 -> jenis_event "color run 5k",
+  timestamp "2026-06-28T06:00:00.000Z") dan dipakai sebagai FILTER di Galeri Event
+  (galeri/views.py _build_query). Inti judul TETAP VALID.
+- TIMESTAMP DIISI MANUAL (bukan dari EXIF) - sudah dikonfirmasi.
+- KESIMPULAN: TIDAK PERLU ROMBAK BESAR. Landasan teori EXIF (§2.2, §2.2.1, §2.2.2) adalah
+  teori umum/metadata standar -> BISA DIBIARKAN. Yang wajib diubah cuma 2 titik kecil:
+
+PERUBAHAN WAJIB (B4):
+1) BATASAN MASALAH - klaim "EXIF diperlukan untuk pencarian timestamp" -> ganti.
+
+   TEKS DI SKRIPSI=
+   Foto yang digunakan pada penelitian dibatasi pada format JPEG (.jpg/.jpeg) karena format tersebut mendukung penyimpanan metadata EXIF yang diperlukan dalam proses pencarian berdasarkan timestamp.
+
+   TEKS REVISI=
+   Foto yang digunakan pada penelitian dibatasi pada format JPEG (.jpg/.jpeg) karena format tersebut umum digunakan dalam dokumentasi event lari. Informasi jenis event dan waktu pelaksanaan (timestamp) disimpan sebagai metadata pada setiap foto di dalam basis data, kemudian dimanfaatkan sebagai acuan dalam proses pencarian foto.
+
+2) GAMBAR 3.2 ARSITEKTUR SISTEM - label "pencarian event/EXIF" -> ganti
+   TEKS DI SKRIPSI (teks dalam diagram)=
+   ... layanan logic khusus, seperti pencarian event/EXIF, pencarian nomor BIB, hingga face recognition ...
+
+   TEKS REVISI (teks dalam diagram)=
+   ... layanan logic khusus, seperti pencarian event (jenis event & timestamp), pencarian nomor BIB, hingga face recognition ...
+
+PERUBAHAN OPSIONAL (biar makin konsisten, bukan wajib — karena timestamp diisi MANUAL
+per event, bukan dibaca dari EXIF):
+
+3) SUBBAB 2.1.2 "PENCARIAN BERDASARKAN TIMESTAMP" - kalimat yang bilang "saat berada di
+   titik start, checkpoint, atau finish" terlalu spesifik (kesannya waktu per-foto).
+
+   TEKS DI SKRIPSI=
+   Pencarian berdasarkan timestamp adalah metode temu kembali data yang menjadikan informasi waktu sebagai dasar utama dalam proses pencarian. Timestamp merupakan metadata yang memuat waktu pembuatan, perubahan, atau perekaman suatu file. Dalam sistem dokumentasi foto digital, timestamp berfungsi sebagai penanda waktu yang membantu mengelompokkan dan menelusuri foto berdasarkan momen pengambilannya. Dengan adanya timestamp, sistem dapat melakukan penyaringan dan pengurutan data secara kronologis sehingga pencarian menjadi lebih cepat, akurat, dan efisien. Pada dokumentasi foto event lari, timestamp memudahkan peserta menemukan foto pada waktu tertentu, misalnya saat berada di titik start, checkpoint, atau finish. Karena itu, timestamp menjadi metadata penting dalam pengelolaan arsip foto digital maupun pencarian berbasis waktu.
+
+   TEKS REVISI=
+   Pencarian berdasarkan timestamp adalah metode temu kembali data yang menjadikan informasi waktu sebagai dasar utama dalam proses pencarian. Timestamp merupakan metadata yang memuat waktu pembuatan, perubahan, atau perekaman suatu file. Dalam sistem dokumentasi foto digital, timestamp berfungsi sebagai penanda waktu yang membantu mengelompokkan dan menelusuri foto berdasarkan momen pengambilannya. Dengan adanya timestamp, sistem dapat melakukan penyaringan dan pengurutan data secara kronologis sehingga pencarian menjadi lebih cepat, akurat, dan efisien. Pada dokumentasi foto event lari, timestamp yang mencatat waktu pelaksanaan event memudahkan peserta menemukan foto berdasarkan jenis event dan tanggal/waktu event yang dipilih. Karena itu, timestamp menjadi metadata penting dalam pengelolaan arsip foto digital maupun pencarian berbasis waktu.
+
+   (paragraf setelahnya dengan kutipan Han dan Lee serta ADDIN CSL_CITATION TETAP DIBIARKAN
+   sesuai aslinya — itu teori umum, hanya sesuaikan kalimat yang diawali "Pada dokumentasi...")
+
+4) SUBBAB 2.2 penutup - kalimat "berdasarkan waktu pengambilan".
+
+   TEKS DI SKRIPSI=
+   Keberadaan metadata sangat penting dalam pengelolaan dan pencarian gambar karena sistem dapat mengenali gambar berdasarkan atribut tertentu tanpa perlu menganalisis isi visualnya secara langsung. Dalam sistem dokumentasi foto event lari, timestamp pada metadata dapat dimanfaatkan untuk mengelompokkan dan menemukan foto berdasarkan waktu pengambilan sehingga pencarian menjadi lebih cepat, teratur, dan akurat.
+
+   TEKS REVISI=
+   Keberadaan metadata sangat penting dalam pengelolaan dan pencarian gambar karena sistem dapat mengenali gambar berdasarkan atribut tertentu tanpa perlu menganalisis isi visualnya secara langsung. Dalam sistem dokumentasi foto event lari, timestamp pada metadata dapat dimanfaatkan untuk mengelompokkan dan menemukan foto berdasarkan waktu pelaksanaan event sehingga pencarian menjadi lebih cepat, teratur, dan akurat.
+
+   (lanjutannya soal Fransiskus dan Noviyanti + ADDIN CSL_CITATION TETAP seperti aslinya)
+
+5) SUBBAB 3.2.6 "Pengambilan Sampel Data" - "memiliki metadata lengkap" berlebihan.
+
+   TEKS DI SKRIPSI=
+   Pengambilan Sampel Data: Pengambilan sampel data dilakukan menggunakan teknik purposive sampling, yaitu memilih data foto yang sesuai dengan kebutuhan penelitian. Sampel yang digunakan berupa foto-foto dokumentasi event lari berformat JPEG (.jpg/.jpeg) yang memiliki metadata lengkap, seperti informasi waktu pengambilan (timestamp) dan jenis event. Data tersebut digunakan sebagai data uji dalam proses implementasi dan pengujian sistem pencarian berdasarkan metadata.
+
+   TEKS REVISI=
+   Pengambilan Sampel Data: Pengambilan sampel data dilakukan menggunakan teknik purposive sampling, yaitu memilih data foto yang sesuai dengan kebutuhan penelitian. Sampel yang digunakan berupa foto-foto dokumentasi event lari berformat JPEG (.jpg/.jpeg) yang telah dilengkapi metadata jenis event dan waktu pelaksanaan (timestamp). Data tersebut digunakan sebagai data uji dalam proses implementasi dan pengujian sistem pencarian berdasarkan metadata.
+
+Detail UI filter pakai input TANGGAL (date), bukan "jam:menit" -> dibahas di B5.
+
+
+B5:
+
+4.2.3	HALAMAN EVENT & TIMESTAMP -> HALAMAN GALERI EVENT
+(judul subbab & screenshot halaman di skripsi disesuaikan dengan UI aktual)
+
+UI AKTUAL (galeri/foto/foto.html + galeri/views.py):
+- Form pakai method GET ke halaman "hasil", bukan "Cari Foto".
+- 3 kontrol filter: dropdown "Semua Event" (nama folder), dropdown "Semua Jenis Event",
+  dan input tanggal <input type="date" name="tanggal">.
+- Tombolnya bernama "Filter" + tombol "Reset".
+- TIDAK ADA input "jam:menit".
+- Kalau filter kosong -> sistem TIDAK munculkan peringatan, tapi menampilkan SEMUA foto
+  (query Mongo {} -> _get_fotos). (galeri/views.py _build_query)
+
+TEKS DI SKRIPSI=
+Pada halaman Event & Timestamp, peserta dapat mencari foto dengan memilih event lari yang telah diikuti melalui dropdown Jenis Event yang berisi daftar event yang tersedia, kemudian menentukan waktu pengambilan foto pada kolom Timestamp dengan format jam:menit. Setelah kedua kriteria dipilih, peserta menekan tombol Cari Foto untuk menampilkan seluruh foto yang sesuai dengan event dan rentang waktu yang ditentukan.
+
+TEKS REVISI=
+Pada halaman Galeri Event, peserta dapat mencari foto dengan memilih event lari yang telah diikuti melalui dropdown Event yang berisi daftar event yang tersedia, memilih kategori lari melalui dropdown Jenis Event, serta menentukan tanggal pelaksanaan melalui input tanggal. Setelah kriteria dipilih, peserta menekan tombol Filter untuk menampilkan seluruh foto yang sesuai dengan event, jenis event, dan tanggal yang ditentukan. Jika tidak ada kriteria yang dipilih, halaman menampilkan seluruh foto galeri yang tersedia.
+
+[PENJELASAN]
+- Judul & isi "Event & Timestamp" -> "Galeri Event" (sesuai menu/navbar aktual).
+- "kolom Timestamp dengan format jam:menit" -> "input tanggal" (type=date). Tidak ada UI jam:menit.
+- "dropdown Jenis Event" -> ada 2 dropdown: Event (folder) + Jenis Event.
+- "tombol Cari Foto" -> "tombol Filter".
+- Sesuai kode: filter kosong = tampilkan semua foto (bukan peringatan).
+
+TABEL 4.2 - TEST CASE NO. 4 DAN 5 (perbaikan):
+
+TEKS DI SKRIPSI=
+4. Pencarian berdasarkan jenis event & timestamp (data valid)	Memilih jenis event pada dropdown dan mengisi timestamp dengan format jam:menit, lalu klik Cari Foto	Sistem menampilkan daftar foto yang sesuai dengan jenis event dan rentang waktu yang dipilih	Sesuai	Valid
+5. Pencarian berdasarkan jenis event & timestamp (data tidak diisi)	Menekan tombol Cari Foto tanpa memilih jenis event atau mengisi timestamp	Sistem menampilkan pesan peringatan bahwa data pencarian belum lengkap	Sesuai	Valid
+
+TEKS REVISI=
+4. Pencarian foto melalui filter Galeri Event (data valid)	Memilih event pada dropdown Event, memilih jenis event pada dropdown Jenis Event, mengisi tanggal, lalu klik Filter	Sistem menampilkan daftar foto yang sesuai dengan event, jenis event, dan tanggal yang dipilih	Sesuai	Valid
+5. Pencarian foto melalui filter Galeri Event (data tidak diisi)	Menekan tombol Filter tanpa memilih event, jenis event, atau tanggal	Sistem menampilkan seluruh foto galeri yang tersedia	Sesuai	Valid
+
+[PENJELASAN]
+- No.5 diubah hasil yang diharapkan: sistem TIDAK menampilkan pesan peringatan,
+  melainkan menampilkan semua foto (query tanpa filter). Sesuai implementasi galeri/views.py.
+
+
+B6:
+
+MENU "KATEGORI" DI SKRIPSI -> HAPUS (menu sudah dihapus dari web)
+- Tabel 3.3 baris "Kategori" = header KOLOM (Kode KNF / Kategori / Kebutuhan Non-Fungsional),
+  BUKAN menu -> biarkan, jangan diubah.
+- Yang diubah: narasi §4.2.1 dan Tabel 4.2 no.1 (menyebut "Kategori" sebagai menu navigasi).
+
+TEKS DI SKRIPSI (4.2.1)=
+Pada implementasi antarmuka pengguna untuk peserta lari, terdapat tampilan utama yang menampilkan navigasi sederhana berupa menu Beranda, Cari Foto, Events, Kategori, dan Tentang Kami yang dapat diakses oleh semua pengunjung. Di bagian tengah halaman, terdapat teks ajakan utama yang menyambut peserta untuk mengabadikan momen berharga selama event lari. Sementara itu, tombol Masuk dan Daftar yang terletak di sudut kanan atas halaman dirancang khusus untuk admin, bukan untuk peserta umum, guna mengelola konten foto dan data event. Dengan demikian, peserta tidak memerlukan akun untuk menjelajahi foto-foto yang tersedia, sehingga pengalaman browsing menjadi lebih cepat dan mudah tanpa hambatan akses.
+
+TEKS REVISI (4.2.1)=
+Pada implementasi antarmuka pengguna untuk peserta lari, terdapat tampilan utama yang menampilkan navigasi sederhana berupa menu Beranda, Cari Foto, Events, dan Tentang Kami yang dapat diakses oleh semua pengunjung. Di bagian tengah halaman, terdapat teks ajakan utama yang menyambut peserta untuk mengabadikan momen berharga selama event lari. Sementara itu, tombol Masuk dan Daftar yang terletak di sudut kanan atas halaman tersedia bagi pengguna yang terdaftar. Registrasi akun terbuka untuk semua peserta dan menghasilkan akun pengguna biasa, sedangkan admin menggunakan akun dengan hak akses khusus untuk mengelola konten foto dan data event. Dengan demikian, peserta tidak memerlukan akun untuk menjelajahi foto-foto yang tersedia, sehingga pengalaman browsing menjadi lebih cepat dan mudah tanpa hambatan akses.
+
+[PENJELASAN]
+- "Kategori," dihapus dari daftar menu navigasi (menu tidak ada di web berjalan).
+- Kalimat "tombol Masuk dan Daftar" memakai versi revisi B7 (registrasi terbuka untuk
+  umum, admin pakai akun berhak akses khusus).
+
+TABEL 4.2 NO.1 (hasil yang diharapkan):
+
+TEKS DI SKRIPSI=
+1	Melihat halaman beranda	Mengakses URL utama website dokumentasi foto event lari	Halaman beranda tampil dengan menu navigasi Beranda, Cari Foto, Events, Kategori, dan Tentang Kami	Sesuai	Valid
+
+TEKS REVISI=
+1	Melihat halaman beranda	Mengakses URL utama website dokumentasi foto event lari	Halaman beranda tampil dengan menu navigasi Beranda, Cari Foto, Events, dan Tentang Kami	Sesuai	Valid
+
+[PENJELASAN]
+- "Kategori," dihapus dari daftar menu pada hasil yang diharapkan.
+
+B7:
+
+TOMBOL "MASUK & DAFTAR" DI SKRIPSI (4.2.1) - klaim "dirancang khusus untuk admin" SALAH
+
+KENYATAAN DI KODE:
+- Registrasi TERBUKA untuk umum (dashboard/views.py register_view) dan membuat user
+  BIASA (is_staff=False, is_superuser=False) - lihat config/db.py create_user.
+- Login: kalau akun staff/superuser -> diredirect ke admin_dashboard; user biasa ->
+  ke halaman dashboard publik (dashboard/views.py:70-74).
+- Admin pakai akun staff/superuser di halaman login yang sama (bukan menu khusus).
+
+TEKS DI SKRIPSI=
+Sementara itu, tombol Masuk dan Daftar yang terletak di sudut kanan atas halaman dirancang khusus untuk admin, bukan untuk peserta umum, guna mengelola konten foto dan data event.
+
+TEKS REVISI=
+Sementara itu, tombol Masuk dan Daftar yang terletak di sudut kanan atas halaman tersedia bagi pengguna yang terdaftar. Registrasi akun terbuka untuk semua peserta dan menghasilkan akun pengguna biasa, sedangkan admin menggunakan akun dengan hak akses khusus untuk mengelola konten foto dan data event.
+
+[PENJELASAN]
+- "dirancang khusus untuk admin, bukan untuk peserta umum" -> "tersedia bagi pengguna yang
+  terdaftar; registrasi terbuka untuk peserta; admin pakai akun berhak akses khusus".
+- Kalimat ini satu paragraf dengan revisi B6 di §4.2.1 - gabungkan: pakai TEKS REVISI B6,
+  lalu ganti kalimat "tombol Masuk dan Daftar..." dengan versi B7 di atas.
+
+
+B8:
+
+"EMPAT METODE PENCARIAN" -> JADI "TIGA METODE" (keputusan user: tanpa pintu masuk peta)
+
+HASIL SCAN DI SKRIPSI:
+- §3.3 flowchart (line 602) -> SUDAH DIREVISI di B3 (tiga metode). Jangan diubah lagi.
+- §4.2.3 Halaman Cari Foto (line 703) -> SUDAH BENAR "tiga metode". Tidak perlu diubah.
+- Peta interaktif (KF-10..KF-16, Gambar 3.14 Activity Diagram Lihat Peta Event) -> itu
+  fitur terpisah untuk ADMIN kelola rute/checkpoint, BUKAN metode pencarian. JANGAN diubah.
+- YANG BELUM DIREVISI: deskripsi GAMBAR 3.4 USE CASE DIAGRAM (line 609) -> di bawah.
+
+TEKS DI SKRIPSI (Gambar 3.4 Use Case Diagram)=
+Diagram Use Case ini menggambarkan interaksi antara dua aktor, yaitu Admin dan Peserta, dalam sebuah Sistem Galeri Foto Event, di mana Admin bertanggung jawab mengelola hak akses (Login/Logout), data event (tambah, ubah, hapus), mengunggah foto beserta metadatanya, serta melihat galeri foto, sedangkan Peserta dapat mengakses halaman beranda, melihat daftar event, mengunduh foto, dan melihat hasil pencarian foto yang dilakukan melalui fitur Cari Foto—sebuah fungsi yang diperluas (<>) dengan empat metode pencarian opsional yang mencakup pencarian berdasarkan jenis event & timestamp, nomor BIB, pengenalan wajah (face recognition), serta lokasi (Map/Rute/GPS).
+
+TEKS REVISI (Gambar 3.4 Use Case Diagram)=
+Diagram Use Case ini menggambarkan interaksi antara dua aktor, yaitu Admin dan Peserta, dalam sebuah Sistem Galeri Foto Event, di mana Admin bertanggung jawab mengelola hak akses (Login/Logout), data event (tambah, ubah, hapus), mengunggah foto beserta metadatanya, serta melihat galeri foto, sedangkan Peserta dapat mengakses halaman beranda, melihat daftar event, mengunduh foto, dan melihat hasil pencarian foto yang dilakukan melalui fitur Cari Foto—sebuah fungsi yang diperluas (<>) dengan tiga metode pencarian opsional yang mencakup pencarian berdasarkan jenis event & timestamp, nomor BIB, dan pengenalan wajah (face recognition).
+
+[PENJELASAN]
+- "empat metode ... serta lokasi (Map/Rute/GPS)" -> "tiga metode ... jenis event & timestamp,
+  nomor BIB, dan face recognition".
+- NOTE SOAL NOTASI "(<>)" PADA GAMBAR 3.4:
+  Itu notasi UML yang tulisannya ilang saat ekstraksi. Di Word aslinya pasti:
+  "<<extend>>" (fungsi yang diperluas) atau "<<include>>" (fungsi yang disertakan).
+  Maksudnya: use case "Cari Foto" punya relasi extend/include ke use case metode
+  pencarian (Jenis Event & Timestamp, Nomor BIB, Face Recognition).
+  - Kalau metode-metode itu OPSIONAL/lanjutan -> tulis "<<extend>>".
+  - Kalau metode-metode itu SELALU bagian dari Cari Foto -> tulis "<<include>>".
+  Saat mengetik ulang di Word, tulis notasi lengkapnya (bukan "<>"), sama seperti di
+  diagram Gambar 3.4.
+- [note penting!] harus perbaiki GAMBAR 3.4 Use Case Diagram juga (user yang memperbaiki):
+  hapus cabang use case "pencarian berdasarkan lokasi/Map" dari bagian Cari Foto Peserta.
+
+
+B9:
+
+TABEL 4.1 NO.5 - "Sistem menghapus data event beserta foto-foto yang terhubung" SALAH
+KENYATAAN DI KODE: event_delete cuma menghapus dokumen event (events_collection.delete_one),
+foto di collection galeri (photos_photoevent) TIDAK ikut terhapus (dashboard/admin_urls.py:198-202).
+-> Sesuaikan hasil yang diharapkan menjadi "menghapus data event" saja.
+
+TEKS DI SKRIPSI=
+5	Menghapus data event	Memilih salah satu event, lalu klik tombol Hapus	Sistem menghapus data event terkait beserta foto-foto yang terhubung dengannya	Sesuai	Valid
+
+TEKS REVISI=
+5	Menghapus data event	Memilih salah satu event, lalu klik tombol Hapus	Sistem menghapus data event yang dipilih dari basis data	Sesuai	Valid
+
+[PENJELASAN]
+- "beserta foto-foto yang terhubung dengannya" dihapus karena implementasi tidak menghapus foto
+  (foto galeri berada di collection terpisah dan tetap tersedia).
+
+
+B10:
+
+MILO 2025 vs 2026 - RECHECK KE MONGODB (2026-08-07): SUDAH BENER, TIDAK PERLU DIUBAH
+- Collection yang DIPAKAI sistem (photos_photoevent) berisi milo_race_2026 sebanyak 760 foto,
+  event_name "milo_race_2026", jenis "2,5k dan 5k", timestamp 17 Mei 2026 06:00.
+  -> Konsisten dengan skripsi "Milo ... 2026" (bukan 2025).
+- Label "MILO ACTIV Indonesia Race 2025" hanya ada di EVENT_NAME_MAP utk folder 'milo'
+  (galeri/views.py:50, batch_embeddings.py:40, face_views.py:164) dan set_event_metadata,
+  TAPI folder 'milo' punya 0 data di DB -> kode legacy, tidak terpakai sistem berjalan.
+- KESIMPULAN: klaim skripsi "Milo 2026" VALID. Tidak ada yang perlu diubah.
+
+[CATATAN TEMUAN BARU - SUDAH DIPERBAIKI 2026-08-07]
+Timestamp di photos_photoevent tadinya KELIRU TEMPAT (geser satu event):
+  Sebelum fix             | Setelah fix (Tabel 1.1)
+  Color Run 28 Jun        | Color Run 17 Mei 2026 06:00
+  Tiento 19 Jul           | Tiento 28 Juni 2026 06:00
+  Milo 17 Mei             | Milo 19 Juli 2026 05:00
+Backup sebelum fix: backup\mongo_backup_20260807_125116\atlas\photos_photoevent.json
+Semua data (colorun 151, tientorun 294, milo_race_2026 760) sudah terverifikasi benar.
+Kode tidak perlu diubah.
+
+B11: 
+
+CLASS DIAGRAM & ERD - digambarkan sebagai model relasional, padahal implementasinya MongoDB dokumen
+
+KONSEP SINGKAT (biar paham perubahannya):
+- MongoDB = database dokumen (JSON), BUKAN relasional. Tidak ada foreign key / relasi
+  one-to-many secara teknis.
+- Hubungan data dipakai lewat:
+  1) REFERENCE: dokumen foto nyimpen event_name (string) + folder di path image
+     (lomba_lari/<folder>/...) sebagai penanda ke event.
+  2) EMBEDDING: jenis_event, timestamp, bib_number, face encoding TERTANAM langsung
+     di dalam dokumen foto (satu dokumen lengkap).
+- "Admin" BUKAN entitas terpisah: status admin = flag is_staff / is_superuser di
+  collection 'users'.
+- Kolom/field yang di skripsi disebut "kunci primer (id)" tetap ada (field _id / id),
+  tapi BUKAN kunci asing yang menghubungkan tabel.
+
+STRUKTUR COLLECTION ACTUAL (untuk referensi):
+  users:          {_id, username, email, password, is_staff, is_superuser, ...}
+  events:         {_id, name, event_type, location, timestamp}
+  event_types:    {_id, name, order}
+  photos_photoevent: {_id, id, event_name, image: 'lomba_lari/<folder>/<file>',
+                      jenis_event, timestamp, bib_number, ocr_raw_text, ...}
+  photos_photoevent_blaze: sama (untuk face recognition BlazeFace)
+
+PERUBAHAN 1 - CLASS DIAGRAM (Gambar 3.23) narasi:
+
+TEKS DI SKRIPSI=
+Class Diagram ini menggambarkan struktur dan relasi antar-kelas pada sistem pencarian foto event lari, di mana seorang Admin dapat mengelola banyak data Event (one-to-many), dan setiap Event memiliki banyak berkas Foto (one-to-many) beserta metadatanya seperti timestamp, nomor BIB, serta face encoding. Sementara itu, kelas Pencarian bertindak sebagai kelas kontroler yang memanfaatkan parameter input pengguna (seperti jenis event, timestamp, nomor BIB, atau sampel gambar) untuk memproses kriteria pencarian dan mengembalikan daftar objek Foto yang sesuai.
+
+TEKS REVISI=
+Class Diagram ini menggambarkan struktur dan relasi antar-kelas pada sistem pencarian foto event lari. Kelas User mewakili data pengguna yang dibedakan berdasarkan hak akses (admin ditandai melalui atribut is_staff atau is_superuser), sedangkan kelas Event mewakili data event lari. Kelas Foto menyimpan metadata yang tertanam langsung (embedded) di dalam dokumennya, seperti nama event, folder tempat foto disimpan, jenis event, timestamp, nomor BIB, dan face encoding. Sementara itu, kelas Pencarian bertindak sebagai kelas kontroler yang memanfaatkan parameter input pengguna (seperti jenis event, timestamp, nomor BIB, atau sampel gambar) untuk memproses kriteria pencarian dan mengembalikan daftar objek Foto yang sesuai. Karena sistem menggunakan basis data NoSQL MongoDB, keterkaitan antar data tidak direpresentasikan sebagai relasi kunci asing, melainkan melalui pencantuman atribut referensi (misalnya nama event) dan struktur dokumen yang tertanam.
+
+PERUBAHAN 2 - PERANCANGAN BASIS DATA / ERD (Gambar 3.24) narasi:
+
+TEKS DI SKRIPSI=
+Diagram erd menunjukkan struktur basis data dengan tiga entitas utama: admin, event, dan foto. entitas admin menyimpan data pengelola sistem dengan id admin sebagai kunci primer serta atribut username dan password. entitas event berisi informasi acara lari, meliputi id event sebagai kunci primer, nama event, jenis event, lokasi, dan tanggal event. entitas foto merekam dokumentasi unggahan dengan id foto sebagai kunci primer, file path, timestamp, nomor bib, dan face encoding untuk mendukung pencarian.
+hubungan antarentitas diatur melalui tiga relasi utama dengan kardinalitas jelas. relasi mengelola menghubungkan admin dan event dalam pola one-to-many, artinya satu admin dapat mengelola banyak event sementara setiap event hanya dikelola oleh satu admin. relasi mengunggah mengaitkan admin dengan foto juga dalam pola one-to-many, sehingga seorang admin bisa mengunggah banyak foto.
+Keterkaitan antara event dan foto dalam pola one-to-many, yang menunjukkan setiap event memiliki koleksi foto sedangkan satu foto hanya terkait pada satu event tertentu. rancangan ini memastikan entitas, relasi, dan atribut terintegrasi secara terstruktur untuk mendukung pencarian foto berdasarkan jenis event, timestamp, nomor bib, atau pengenalan wajah.
+
+TEKS REVISI=
+Perancangan basis data pada sistem ini menggunakan MongoDB yang bersifat dokumen (NoSQL), sehingga struktur penyimpanan digambarkan dalam bentuk collection dan dokumen, bukan tabel relasional. Rancangan konseptual data meliputi tiga collection utama, yaitu users, events, dan photos. Collection users menyimpan data pengguna dengan atribut _id, username, email, password, serta flag hak akses is_staff dan is_superuser yang membedakan pengguna biasa dan admin. Collection events menyimpan data event lari dengan atribut _id, nama event, jenis event, lokasi, dan tanggal event. Collection photos menyimpan data foto beserta metadata yang tertanam langsung di dalam dokumennya, meliputi _id, path file foto, nama event, folder, jenis event, timestamp, nomor bib, dan face encoding untuk mendukung pencarian.
+Keterkaitan antar data direpresentasikan menggunakan pendekatan dokumen. Dokumen foto menyimpan referensi nama event dan folder tempat foto disimpan untuk menunjukkan event asal foto, tanpa menggunakan relasi kunci asing seperti pada basis data relasional. Metadata seperti jenis event, timestamp, nomor BIB, dan face encoding disimpan langsung (tertanam) pada dokumen foto sehingga setiap dokumen bersifat mandiri. Pengelolaan data event dan foto dilakukan oleh pengguna yang memiliki hak akses admin (ditandai is_staff atau is_superuser). Rancangan ini memastikan seluruh atribut terintegrasi secara terstruktur dan mendukung pencarian foto berdasarkan jenis event, timestamp, nomor BIB, atau pengenalan wajah.
+
+[PENJELASAN]
+- "entitas admin/event/foto dengan relasi one-to-many" diganti jadi "collection users/events/photos
+  dengan reference + embedded document" (sesuai implementasi MongoDB aktual).
+- [note penting!] diagram Gambar 3.24 (ERD) perlu disesuaikan: ubah judul jadi
+  "Gambar 3.24 Perancangan Basis Data MongoDB (Collection & Dokumen)", hapus simbol
+  kardinalitas/relasi one-to-many, tampilkan 3 collection + field tiap dokumen.
+  Keterangan "admin" diganti "users (dengan flag hak akses)".
+- Diagram Gambar 3.23 (Class Diagram) juga disesuaikan: kelas User (bukan Admin),
+  keterkaitan antarkelas tanpa relasi one-to-many.
+
+
+=====================================================================
+CHECKLIST GAMBAR & TABEL YANG HARUS DIREVISI (ringkasan)
+=====================================================================
+
+=== GAMBAR YANG PERLU DIREVISI ===
+1. Gambar 3.2 Arsitektur Sistem (B4 no.2)
+   - Label "pencarian event/EXIF" -> "pencarian event (jenis event & timestamp)".
+2. Gambar 3.3 Flowchart Alur Sistem (B3)
+   - "database SQLite" -> "database MongoDB".
+   - "empat pilihan metode ... Rute/Map Interaktif" -> "tiga metode" (tanpa peta).
+3. Gambar 3.4 Use Case Diagram (B8)
+   - Hapus cabang use case "pencarian berdasarkan lokasi/Map" dari Cari Foto Peserta.
+   - "empat metode" -> "tiga metode"; notasi "(<>)" -> tulis "<<extend>>"/"<<include>>".
+4. Gambar 3.23 Class Diagram (B11)
+   - Kelas "Admin" -> "User" (dengan atribut hak akses).
+   - Hapus garis relasi one-to-many; ganti jadi reference + embedded document.
+5. Gambar 3.24 ERD / Perancangan Basis Data (B11)
+   - Judul -> "Gambar 3.24 Perancangan Basis Data MongoDB (Collection & Dokumen)".
+   - Hapus simbol kardinalitas/relasi one-to-many.
+   - Tampilkan 3 collection: users, events, photos + field tiap dokumen.
+6. Screenshot halaman §4.2.3 (B5)
+   - Screenshot "Halaman Event & Timestamp" -> ganti dengan "Galeri Event" UI aktual
+     (dropdown Event + dropdown Jenis Event + input tanggal + tombol Filter).
+7. Gambar 4.3 (B3 note)
+   - Dicek/disamakan dengan UI aktual: 3 metode pencarian, bukan 4.

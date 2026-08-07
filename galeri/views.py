@@ -87,8 +87,18 @@ def _build_query(request):
         query['jenis_event'] = jenis
     if tanggal:
         try:
-            d = datetime.strptime(tanggal, '%Y-%m-%d')
-            query['timestamp'] = {'$gte': d, '$lt': d + timedelta(days=1)}
+            if 'T' in tanggal:
+                # datetime-local (native): 2026-05-17T06:00
+                dt = datetime.strptime(tanggal, '%Y-%m-%dT%H:%M')
+            elif ' ' in tanggal:
+                # flatpickr: 2026-05-17 06:00 -> filter per jam/menit
+                dt = datetime.strptime(tanggal, '%Y-%m-%d %H:%M')
+            else:
+                # date-only: 2026-05-17 -> filter sepanjang hari
+                d = datetime.strptime(tanggal, '%Y-%m-%d')
+                query['timestamp'] = {'$gte': d, '$lt': d + timedelta(days=1)}
+                return query, folder, jenis, tanggal
+            query['timestamp'] = {'$gte': dt, '$lt': dt + timedelta(minutes=1)}
         except ValueError:
             pass
     return query, folder, jenis, tanggal

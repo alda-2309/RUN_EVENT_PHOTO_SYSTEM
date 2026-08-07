@@ -27,10 +27,10 @@ def dasboart_view(request):
     total_events = events_collection.count_documents({})
 
     events = list(events_collection.find())
-    marathon_count = sum(1 for e in events if e.get('event_type') == 'Marathon')
-    trail_count = sum(1 for e in events if e.get('event_type') == 'Trail Run')
-    funrun_count = sum(1 for e in events if 'Fun Run' in e.get('event_type', ''))
-    night_run_count = sum(1 for e in events if e.get('event_type') == 'Night Run')
+    event_type_counts = {}
+    for e in events:
+        et = e.get('event_type') or 'Lainnya'
+        event_type_counts[et] = event_type_counts.get(et, 0) + 1
 
     latest_uploads = list(photos_collection.find().sort('_id', -1).limit(5))
 
@@ -42,10 +42,7 @@ def dasboart_view(request):
     context = {
         'total_photos': total_photos,
         'total_events': total_events,
-        'marathon_count': marathon_count,
-        'trail_count': trail_count,
-        'funrun_count': funrun_count,
-        'night_run_count': night_run_count,
+        'event_type_counts': event_type_counts,
         'latest_uploads': latest_uploads,
     }
 

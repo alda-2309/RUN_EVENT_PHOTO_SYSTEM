@@ -508,10 +508,11 @@ flex-direction:column;
 
                     <div class="divider"></div>
 
-                    <p><b>Marathon:</b> {{ marathon_count }}</p>
-                    <p><b>Trail Run:</b> {{ trail_count }}</p>
-                    <p><b>Fun Run:</b> {{ funrun_count }}</p>
-                    <p><b>Night Run:</b> {{ night_run_count }}</p>
+                    {% for jenis, jumlah in event_type_counts.items %}
+                        <p><b>{{ jenis }}:</b> {{ jumlah }} event</p>
+                    {% empty %}
+                        <p>Belum ada jenis event.</p>
+                    {% endfor %}
                 </div>
 
                 <div class="box">
@@ -522,8 +523,10 @@ flex-direction:column;
                         {% for photo in latest_uploads %}
                         <div class="recent-item">
 
-                            {% with photo.image|default:photo.gambar as img_path %}
+                            {% with photo.image|default:"" as img_path %}
+                                {% if img_path %}
                                 <img src="/media/{{ img_path }}">
+                                {% endif %}
                             {% endwith %}
 
                             <div class="recent-info">

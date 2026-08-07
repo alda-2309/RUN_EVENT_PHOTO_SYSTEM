@@ -1,0 +1,145 @@
+{
+ "events": [
+  {
+   "_id": 1,
+   "old_id": 1,
+   "event_type": "Fun Run",
+   "timestamp": "2026-05-17 06:00:00",
+   "location": "Laswi Heritage Bandung",
+   "name": "Fun Run 1"
+  },
+  {
+   "_id": 2,
+   "old_id": 2,
+   "event_type": "Trail Run",
+   "timestamp": "2026-07-03 09:27:00",
+   "location": "bandung",
+   "name": "Trail Run 2"
+  },
+  {
+   "_id": 4,
+   "event_type": "Marathon",
+   "timestamp": "2000-11-11 00:13:00",
+   "location": "gatau dah",
+   "name": "Marathon 4"
+  },
+  {
+   "_id": 5,
+   "event_type": "Fun Run 5k",
+   "timestamp": "2026-05-17 06:00:00",
+   "location": "Laswi Heritage Bandung",
+   "name": "Bandung Color Run Festival 2026"
+  },
+  {
+   "_id": 7,
+   "name": "admin",
+   "event_type": "Fun Run",
+   "timestamp": "2026-08-06 12:00:00",
+   "location": "bandung"
+  }
+ ],
+ "event_types": [
+  {
+   "_id": 1,
+   "name": "Fun Run",
+   "order": 0,
+   "created_at": "2026-08-02 11:12:20"
+  },
+  {
+   "_id": 2,
+   "name": "Fun Run 5k",
+   "order": 1,
+   "created_at": "2026-08-02 11:12:20"
+  },
+  {
+   "_id": 3,
+   "name": "Marathon",
+   "order": 2,
+   "created_at": "2026-08-02 11:12:20"
+  },
+  {
+   "_id": 4,
+   "name": "Trail Run",
+   "order": 3,
+   "created_at": "2026-08-02 11:12:20"
+  }
+ ],
+ "map_points": [
+  {
+   "_id": 40,
+   "event_id": 1,
+   "name": "Checkpoint 1",
+   "lat": -6.912147813731424,
+   "lng": 107.63346620661393,
+   "order": 4,
+   "icon": "📍",
+   "created_at": "2026-08-02 13:09:26",
+   "updated_at": "2026-08-02 13:09:26"
+  },
+  {
+   "_id": 41,
+   "event_id": 1,
+   "name": "Checkpoint 2",
+   "lat": -6.905906370183014,
+   "lng": 107.62947313350422,
+   "order": 5,
+   "icon": "📍",
+   "created_at": "2026-08-02 13:10:43",
+   "updated_at": "2026-08-02 13:10:43"
+  },
+  {
+   "_id": 42,
+   "event_id": 1,
+   "name": "Checkpoint 3",
+   "lat": -6.908419998994705,
+   "lng": 107.62421580135111,
+   "order": 6,
+   "icon": "📍",
+   "created_at": "2026-08-02 13:12:09",
+   "updated_at": "2026-08-02 13:12:09"
+  },
+  {
+   "_id": 43,
+   "event_id": 1,
+   "name": "Checkpoint 4",
+   "lat": -6.913131241806928,
+   "lng": 107.62899082097202,
+   "order": 7,
+   "icon": "📍",
+   "created_at": "2026-08-02 13:12:42",
+   "updated_at": "2026-08-02 13:12:42"
+  },
+  {
+   "_id": 44,
+   "event_id": 1,
+   "name": "Checkpoint 5",
+   "lat": -6.917806935273481,
+   "lng": 107.63304738404317,
+   "order": 8,
+   "icon": "📍",
+   "created_at": "2026-08-02 13:13:04",
+   "updated_at": "2026-08-02 13:13:04"
+  }
+ ],
+ "map_routes": [
+  {
+   "_id": "6a67699f0463279aeb253a1e",
+   "event_id": 1,
+   "points": [
+    {
+     "lat": -6.9082779863152055,
+     "lng": 107.62417574041326
+    },
+    {
+     "lat": -6.905934772734723,
+     "lng": 107.6294129085416
+    },
+    {
+     "lat": -6.91224012104357,
+     "lng": 107.63344762584642
+    }
+   ],
+   "updated_at": "2026-08-02 13:33:02"
+  }
+ ]
+}
